@@ -1,20 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { MapPin, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { municipalities } from '@/lib/mock-data'
+import { useDepartments, useMunicipalities } from '@/hooks'
+import { fetchNearbyMunicipality } from '@/lib/api-client/municipalities'
 import Image from 'next/image'
+import type { Municipality } from '@/types'
 
 // Simple session-based location selection
-function setSelectedLocation(municipioId: string) {
-  const municipio = municipalities.find((m) => m.id === municipioId)
-  if (municipio) {
-    sessionStorage.setItem('selectedLocation', JSON.stringify(municipio))
-  }
+function setSelectedLocation(municipio: Municipality) {
+  sessionStorage.setItem('selectedLocation', JSON.stringify(municipio))
 }
 
 export function LandingPage() {
@@ -22,24 +21,31 @@ export function LandingPage() {
   const [selectedDept, setSelectedDept] = useState('')
   const [selectedMunic, setSelectedMunic] = useState('')
   const [isLoadingGeo, setIsLoadingGeo] = useState(false)
+  
+  const { departments, loading: departmentsLoading } = useDepartments()
+  const { municipalities: municipalitiesData, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
 
-  const departments = Array.from(new Set(municipalities.map((m) => m.department))).sort()
-  const deptMunicipios = selectedDept
-    ? municipalities.filter((m) => m.department === selectedDept).sort((a, b) => a.name.localeCompare(b.name))
-    : []
+  const loading = departmentsLoading || municipalitiesLoading
 
-  const handleUseCurrentLocation = () => {
+  const deptMunicipios = municipalitiesData
+
+  const handleUseCurrentLocation = async () => {
     setIsLoadingGeo(true)
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // Default to first municipality in Cauca
-          const defaultMunic = municipalities.find((m) => m.department === 'Cauca')
-          if (defaultMunic) {
-            setSelectedLocation(defaultMunic.id)
-            router.push('/inicio')
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords
+            const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude)
+            if (nearbyMunicipality) {
+              setSelectedLocation(nearbyMunicipality)
+              router.push('/inicio')
+            }
+          } catch (error) {
+            console.error('Error getting nearby municipality:', error)
+          } finally {
+            setIsLoadingGeo(false)
           }
-          setIsLoadingGeo(false)
         },
         () => {
           setIsLoadingGeo(false)
@@ -50,8 +56,26 @@ export function LandingPage() {
 
   const handleContinueWithSelection = () => {
     if (!selectedMunic) return
-    setSelectedLocation(selectedMunic)
-    router.push('/inicio')
+    const municipio = deptMunicipios.find((m) => m.id === selectedMunic)
+    if (municipio) {
+      setSelectedLocation(municipio)
+      router.push('/inicio')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="relative min-h-svh w-full overflow-hidden bg-black">
+        <div className="relative flex min-h-svh items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+          <Card className="w-full max-w-md space-y-6 p-8">
+            <div className="flex justify-center">
+              <Loader2 className="size-8 animate-spin" />
+            </div>
+            <p className="text-center text-muted-foreground">Cargando municipios...</p>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (

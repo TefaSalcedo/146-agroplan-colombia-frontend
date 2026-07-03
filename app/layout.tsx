@@ -4,6 +4,7 @@ import './globals.css'
 import { Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { LocationProvider } from '@/context/LocationContext'
 
 // Initialize fonts
 const _geist = V0_Font_Geist({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
@@ -51,10 +52,12 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className="bg-background">
       <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster position="top-center" richColors />
-        </ThemeProvider>
+        <LocationProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+            {children}
+            <Toaster position="top-center" richColors />
+          </ThemeProvider>
+        </LocationProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

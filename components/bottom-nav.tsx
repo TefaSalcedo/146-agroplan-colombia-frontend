@@ -4,9 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
+import { MapPin } from "lucide-react"
+import { useLocation } from '@/context/LocationContext'
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { selectedLocation } = useLocation()
 
   return (
     <nav
@@ -31,6 +34,12 @@ export function BottomNav() {
           </Link>
         )
       })}
+      {selectedLocation && (
+        <div className="flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium text-muted-foreground">
+          <MapPin className="size-5 text-primary" />
+          <span className="truncate text-center leading-tight">{selectedLocation.name}</span>
+        </div>
+      )}
     </nav>
   )
 }

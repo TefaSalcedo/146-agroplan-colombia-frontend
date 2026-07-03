@@ -8,22 +8,16 @@ import { navItems } from "@/lib/nav"
 import { MapPin } from "lucide-react"
 import Image from "next/image"
 import { LocationSelectorModal } from "./location-selector-modal"
+import { useLocation } from '@/context/LocationContext'
 
 export function AppSidebar() {
   const pathname = usePathname()
   const [isLocationOpen, setIsLocationOpen] = useState(false)
-  const [currentLocation, setCurrentLocation] = useState<string>('')
   const [mounted, setMounted] = useState(false)
+  const { selectedLocation } = useLocation()
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('selectedLocation')
-      if (stored) {
-        const location = JSON.parse(stored)
-        setCurrentLocation(`${location.name}, ${location.department}`)
-      }
-    }
   }, [])
 
   if (!mounted) return null
@@ -41,7 +35,7 @@ export function AppSidebar() {
           </div>
         </div>
 
-        {currentLocation && (
+        {selectedLocation && (
           <button
             onClick={() => setIsLocationOpen(true)}
             className="mx-3 mb-4 flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2 transition-all duration-200 hover:bg-primary/15 active:scale-95"
@@ -50,7 +44,7 @@ export function AppSidebar() {
             <MapPin className="size-4 text-primary" />
             <div className="text-left text-xs">
               <p className="text-muted-foreground">Ubicación</p>
-              <p className="font-medium text-sidebar-foreground">{currentLocation.split(',')[0]}</p>
+              <p className="font-medium text-sidebar-foreground">{selectedLocation.name}</p>
             </div>
           </button>
         )}

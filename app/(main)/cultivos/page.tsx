@@ -1,37 +1,33 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { PageHeader } from "@/components/page-header"
 import { CropCard } from "@/components/crop-card"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
-import { api, ApiError } from '@/lib/api'
+import { useRecommendations } from "@/hooks"
+import { useLocation } from '@/context/LocationContext'
 import type { Crop } from '@/types'
 
 export default function CultivosPage() {
-  const [crops, setCrops] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  const { selectedLocation } = useLocation()
+  
+  const municipalityId = selectedLocation?.id || ""
+  const { recommendations, loading, error } = useRecommendations(municipalityId)
 
   useEffect(() => {
-    loadCrops()
-  }, [])
-
-  const loadCrops = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await api.crops.list()
-      setCrops(data)
-    } catch (err) {
-      console.error('Error loading crops:', err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Error loading crops')
-      }
-    } finally {
-      setLoading(false)
+    setMounted(true)
+    
+    // Redirect to landing page if no location selected
+    if (!selectedLocation && mounted) {
+      router.push('/')
     }
+  }, [selectedLocation, mounted, router])
+
+  if (!mounted || !selectedLocation) {
+    return null
   }
 
   if (loading) {
@@ -50,7 +46,13 @@ export default function CultivosPage() {
     )
   }
 
-  const cropCards = crops.map((c: Crop) => ({
+  const topCrop = recommendations?.top_crop
+  const otherCrops = recommendations?.other_crops || []
+
+  const cropCards = [
+    ...(topCrop ? [topCrop] : []),
+    ...otherCrops
+  ].map((c: Crop) => ({
     id: c.id,
     name: c.name,
     image: c.image,
@@ -63,7 +65,7 @@ export default function CultivosPage() {
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Cultivos"
-          subtitle="Elige un cultivo para ver su ficha completa: siembra, cosecha, clima y consejos."
+          subtitle={`Cultivos recomendados para ${selectedLocation.name}, ${selectedLocation.department}`}
         />
         <DownloadPdfButton pageName="Cultivos-AgroPlan" />
       </div>

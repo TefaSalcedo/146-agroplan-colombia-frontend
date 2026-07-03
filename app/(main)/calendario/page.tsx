@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Info } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
@@ -13,7 +14,8 @@ import {
 } from "@/components/ui/select"
 import { CropCard } from "@/components/crop-card"
 import { MONTHS_LONG } from "@/lib/mock-data"
-import { api, ApiError } from "@/lib/api"
+import { useMunicipalities, useCrops, useCalendars } from "@/hooks"
+import { useLocation } from '@/context/LocationContext'
 import { cn } from "@/lib/utils"
 import type { Municipality, Crop } from "@/types"
 
@@ -26,20 +28,42 @@ const ratingStyles = {
 }
 
 export default function CalendarioPage() {
-  const [municipalities, setMunicipalities] = useState<Municipality[]>([])
-  const [crops, setCrops] = useState<Crop[]>([])
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  const { selectedLocation } = useLocation()
+  const { municipalities: municipalitiesData, loading: municipalitiesLoading, error: municipalitiesError } = useMunicipalities(selectedLocation?.department)
+  const { crops: cropsData, loading: cropsLoading, error: cropsError } = useCrops()
+  const { predict, loading: calendarLoading, error: calendarError } = useCalendars()
+  
   const [municipalityId, setMunicipalityId] = useState<string>("")
   const [cropId, setCropId] = useState<string>("")
   const [calendar, setCalendar] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
 
   useEffect(() => {
-    loadData()
-  }, [])
+    setMounted(true)
+    
+    // Redirect to landing page if no location selected
+    if (!selectedLocation && mounted) {
+      router.push('/')
+    }
+  }, [selectedLocation, mounted, router])
+
+  useEffect(() => {
+    if (municipalitiesData.length > 0 && !municipalityId) {
+      // Preselect the selected location municipality if available
+      if (selectedLocation && municipalitiesData.find(m => m.id === selectedLocation.id)) {
+        setMunicipalityId(selectedLocation.id)
+      } else {
+        setMunicipalityId(municipalitiesData[0].id)
+      }
+    }
+    if (cropsData.length > 0 && !cropId) {
+      setCropId(cropsData[0].id)
+    }
+  }, [municipalitiesData, cropsData, selectedLocation])
 
   useEffect(() => {
     if (municipalityId && cropId) {
@@ -47,54 +71,30 @@ export default function CalendarioPage() {
     }
   }, [municipalityId, cropId])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const [municipalitiesData, cropsData] = await Promise.all([
-        api.municipalities.list(),
-        api.crops.list(),
-      ])
-      setMunicipalities(municipalitiesData)
-      setCrops(cropsData)
-      if (municipalitiesData.length > 0) {
-        setMunicipalityId(municipalitiesData[0].id)
-      }
-      if (cropsData.length > 0) {
-        setCropId(cropsData[0].id)
-      }
-    } catch (err) {
-      console.error('Error loading data:', err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Error loading data')
-      }
-    } finally {
-      setLoading(false)
+  const loadCalendar = async () => {
+    const calendarData = await predict({
+      crop_id: cropId,
+      municipality_id: municipalityId,
+      month: currentMonth + 1, // API expects 1-based month
+      year: currentYear,
+    })
+    if (calendarData) {
+      setCalendar(calendarData)
     }
   }
 
-  const loadCalendar = async () => {
-    try {
-      const calendarData = await api.calendars.predict({
-        crop_id: cropId,
-        municipality_id: municipalityId,
-        month: currentMonth + 1, // API expects 1-based month
-        year: currentYear,
-      })
-      setCalendar(calendarData)
-    } catch (err) {
-      console.error('Error loading calendar:', err)
-      setError('Error loading calendar')
-    }
+  const loading = municipalitiesLoading || cropsLoading
+  const error = municipalitiesError || cropsError || calendarError
+
+  if (!mounted || !selectedLocation) {
+    return null
   }
 
   const days = calendar?.days || []
   const idealCount = calendar?.ideal_count || 0
   const startOffset = new Date(currentYear, currentMonth, 1).getDay() // 0 = Sunday, adjust to 0 = Monday
 
-  const otherCrops = crops
+  const otherCrops = cropsData
     .filter((c) => c.id !== cropId)
     .slice(0, 4)
     .map((c) => ({
@@ -138,13 +138,13 @@ export default function CalendarioPage() {
         <Select
           value={municipalityId}
           onValueChange={setMunicipalityId}
-          items={Object.fromEntries(municipalities.map((m) => [m.id, m.name]))}
+          items={Object.fromEntries(municipalitiesData.map((m) => [m.id, m.name]))}
         >
           <SelectTrigger>
             <SelectValue placeholder="Municipio" />
           </SelectTrigger>
           <SelectContent>
-            {municipalities.map((m) => (
+            {municipalitiesData.map((m) => (
               <SelectItem key={m.id} value={m.id}>
                 {m.name}
               </SelectItem>
@@ -154,13 +154,13 @@ export default function CalendarioPage() {
         <Select
           value={cropId}
           onValueChange={setCropId}
-          items={Object.fromEntries(crops.map((c) => [c.id, c.name]))}
+          items={Object.fromEntries(cropsData.map((c) => [c.id, c.name]))}
         >
           <SelectTrigger>
             <SelectValue placeholder="Cultivo" />
           </SelectTrigger>
           <SelectContent>
-            {crops.map((c) => (
+            {cropsData.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
               </SelectItem>

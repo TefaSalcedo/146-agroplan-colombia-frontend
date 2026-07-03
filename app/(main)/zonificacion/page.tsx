@@ -1,8 +1,9 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { X, Thermometer, CloudRain, Mountain, ArrowRight, MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,7 +18,8 @@ import {
 } from "@/components/ui/select"
 import { SuitabilityBadge } from "@/components/recommendation-badge"
 import { suitabilityColors, getSuitabilityLabel } from "@/lib/mock-data"
-import { api, ApiError } from "@/lib/api"
+import { useCrops, useMunicipalities, useZoning } from "@/hooks"
+import { useLocation } from '@/context/LocationContext'
 import { cn } from "@/lib/utils"
 import type { Municipality, Suitability, Crop } from "@/types"
 
@@ -37,8 +39,13 @@ const LAYERS: { key: Suitability; label: string }[] = [
 ]
 
 export default function ZonificacionPage() {
-  const [crops, setCrops] = useState<Crop[]>([])
-  const [municipalities, setMunicipalities] = useState<Municipality[]>([])
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  const { selectedLocation } = useLocation()
+  const { crops, loading: cropsLoading, error: cropsError } = useCrops()
+  const { municipalities, loading: municipalitiesLoading, error: municipalitiesError } = useMunicipalities(selectedLocation?.department)
+  const { predict, loading: zoningLoading } = useZoning()
+  
   const [cropId, setCropId] = useState<string>("")
   const [selected, setSelected] = useState<Municipality | null>(null)
   const [selectedSuitability, setSelectedSuitability] = useState<Suitability | null>(null)
@@ -48,12 +55,23 @@ export default function ZonificacionPage() {
     low: true,
     none: true,
   })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [suitabilityMap, setSuitabilityMap] = useState<Record<string, Suitability>>({})
 
   useEffect(() => {
-    loadData()
-  }, [])
+    setMounted(true)
+    
+    // Redirect to landing page if no location selected
+    if (!selectedLocation && mounted) {
+      console.log('No location selected, redirecting to landing page')
+      router.push('/')
+    }
+  }, [selectedLocation, mounted, router])
+
+  useEffect(() => {
+    if (crops.length > 0 && !cropId) {
+      setCropId(crops[0].id)
+    }
+  }, [crops])
 
   useEffect(() => {
     if (selected && cropId) {
@@ -61,46 +79,31 @@ export default function ZonificacionPage() {
     }
   }, [selected, cropId])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const [cropsData, municipalitiesData] = await Promise.all([
-        api.crops.list(),
-        api.municipalities.list(),
-      ])
-      setCrops(cropsData)
-      setMunicipalities(municipalities)
-      if (cropsData.length > 0) {
-        setCropId(cropsData[0].id)
-      }
-    } catch (err) {
-      console.error('Error loading data:', err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Error loading data')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const loadZoningPrediction = async (municipalityId: string, cropId: string) => {
-    try {
-      const prediction = await api.zoning.predict({
-        crop_id: cropId,
-        municipality_id: municipalityId,
-      })
+    console.log('loadZoningPrediction - municipalityId:', municipalityId, 'cropId:', cropId)
+    const prediction = await predict({
+      crop_id: cropId,
+      municipality_id: municipalityId,
+    })
+    console.log('loadZoningPrediction - prediction:', prediction)
+    if (prediction) {
+      setSuitabilityMap(prev => ({ ...prev, [municipalityId]: prediction.suitability }))
       setSelectedSuitability(prediction.suitability)
-    } catch (err) {
-      console.error('Error loading zoning prediction:', err)
+    } else {
+      setSuitabilityMap(prev => ({ ...prev, [municipalityId]: "none" }))
       setSelectedSuitability("none")
     }
   }
 
   function toggleLayer(key: Suitability) {
     setActiveLayers((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const loading = cropsLoading || municipalitiesLoading
+  const error = cropsError || municipalitiesError
+
+  if (!mounted || !selectedLocation) {
+    return null
   }
 
   if (loading) {
@@ -182,7 +185,9 @@ export default function ZonificacionPage() {
           cropId={cropId}
           activeLayers={activeLayers}
           selectedId={selected?.id ?? null}
+          suitabilityMap={suitabilityMap}
           onSelect={setSelected}
+          municipalities={municipalities}
         />
 
         {!selected && (
@@ -239,15 +244,12 @@ export default function ZonificacionPage() {
               </div>
             </dl>
 
-            <Button
-              className="w-full"
-              render={
-                <Link href="/cultivos">
-                  Ver cultivos recomendados
-                  <ArrowRight className="size-4" />
-                </Link>
-              }
-            />
+            <Button asChild className="w-full">
+              <Link href="/cultivos">
+                Ver cultivos recomendados
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </Card>
         )}
       </div>

@@ -11,62 +11,31 @@ import { ClimateAlertCard } from '@/components/climate-alert-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { Card } from '@/components/ui/card'
 import { MONTHS_LONG } from '@/lib/mock-data'
-import { api, ApiError } from '@/lib/api'
+import { useWeather, useRecommendations } from "@/hooks"
+import { useLocation } from '@/context/LocationContext'
 import type { Crop, Weather, Municipality } from '@/types'
 
 export default function InicioPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<Municipality | null>(null)
-  const [weather, setWeather] = useState<Weather | null>(null)
-  const [recommendations, setRecommendations] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { selectedLocation } = useLocation()
+  
+  const municipalityId = selectedLocation?.id || ""
+  
+  const { weather, loading: weatherLoading, error: weatherError } = useWeather(municipalityId)
+  const { recommendations, loading: recommendationsLoading, error: recommendationsError } = useRecommendations(municipalityId)
+
+  const loading = weatherLoading || recommendationsLoading
+  const error = weatherError || recommendationsError
 
   useEffect(() => {
     setMounted(true)
     
-    // Check if user has selected a location
-    if (typeof window !== 'undefined') {
-      const storedLocation = sessionStorage.getItem('selectedLocation')
-      if (!storedLocation) {
-        // Redirect to landing page if no location selected
-        router.push('/')
-        return
-      }
-
-      const location = JSON.parse(storedLocation)
-      setSelectedLocation(location)
-      
-      // Load data from API
-      loadData(location.id)
+    // Redirect to landing page if no location selected
+    if (!selectedLocation && mounted) {
+      router.push('/')
     }
-  }, [router])
-
-  const loadData = async (municipalityId: string) => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      // Fetch weather and recommendations in parallel
-      const [weatherData, recommendationsData] = await Promise.all([
-        api.weather.get(municipalityId),
-        api.recommendations.get(municipalityId),
-      ])
-      
-      setWeather(weatherData)
-      setRecommendations(recommendationsData)
-    } catch (err) {
-      console.error('Error loading data:', err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Error loading data')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [selectedLocation, mounted, router])
 
   if (!mounted || !selectedLocation) {
     return null
@@ -122,7 +91,7 @@ export default function InicioPage() {
         <h2 id="rec-title" className="sr-only">
           Cultivo recomendado
         </h2>
-        <RecommendationCard crop={topCrop} />
+        {topCrop ? <RecommendationCard crop={topCrop} /> : null}
       </section>
 
       <section aria-labelledby="more-title" className="flex flex-col gap-4">
@@ -130,9 +99,9 @@ export default function InicioPage() {
           Más cultivos para ti
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {otherCrops.map((crop) => (
+          {otherCrops.length > 0 ? otherCrops.map((crop) => (
             <CropCard key={crop.id} {...crop} />
-          ))}
+          )) : null}
         </div>
       </section>
 

@@ -1,5 +1,6 @@
-import type { Metadata } from 'next'
-import { BrainCircuit, Mail, Trophy, ArrowUpRight } from "lucide-react"
+'use client'
+
+import { BrainCircuit, Mail, Trophy, ArrowUpRight, MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { PageHeader } from "@/components/page-header"
@@ -7,20 +8,38 @@ import { SettingsControls } from "@/components/settings-controls"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-export const metadata: Metadata = {
-  title: 'Configuración | Ajustes de Aplicación | AgroPlan Colombia',
-  description: 'Configura tu perfil, ubicación, idioma, tema y más. Información sobre AgroPlan y soporte al usuario.',
-  keywords: 'configuración aplicación, ajustes usuario, soporte AgroPlan',
-}
+import { useLocation } from '@/context/LocationContext'
 
 export default function ConfiguracionPage() {
+  const { selectedLocation, clearLocation } = useLocation()
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-start justify-between gap-4">
         <PageHeader title="Configuración" subtitle="Ajusta la app a tu gusto." />
-        <DownloadPdfButton pageName="Configuración" />
+        {/* <DownloadPdfButton pageName="Configuración" /> */}
       </div>
+
+      {/* {selectedLocation && (
+        <Card className="flex flex-row items-start gap-4 p-5">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <MapPin className="size-5" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium">Ubicación seleccionada</p>
+            <p className="text-sm text-muted-foreground">
+              {selectedLocation.name}, {selectedLocation.department}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearLocation}
+          >
+            Cambiar
+          </Button>
+        </Card>
+      )} */}
 
       <SettingsControls />
 
@@ -66,15 +85,6 @@ export default function ConfiguracionPage() {
           </div>
         </Card>
 
-        <Card className="flex flex-row items-start gap-4 p-5">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Mail className="size-5" />
-          </div>
-          <div>
-            <p className="font-medium">Contacto</p>
-            <p className="text-sm text-muted-foreground">contacto@agroplan.co</p>
-          </div>
-        </Card>
       </section>
 
       <section className="flex flex-col gap-4">

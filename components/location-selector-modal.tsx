@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { MapPin, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { municipalities } from '@/lib/mock-data'
+import { useMunicipalities, useDepartments } from '@/hooks'
+import type { Municipality } from '@/types'
 
 interface LocationSelectorModalProps {
   isOpen: boolean
@@ -12,9 +13,12 @@ interface LocationSelectorModalProps {
 }
 
 export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModalProps) {
+  const { departments, loading: deptsLoading } = useDepartments()
+  const { municipalities, loading: municsLoading, reload } = useMunicipalities()
   const [selectedDept, setSelectedDept] = useState('')
   const [selectedMunic, setSelectedMunic] = useState('')
   const [currentLocation, setCurrentLocation] = useState<string>('')
+  const [filteredMunicipalities, setFilteredMunicipalities] = useState<Municipality[]>([])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -26,10 +30,16 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
     }
   }, [])
 
-  const departments = Array.from(new Set(municipalities.map((m) => m.department))).sort()
-  const deptMunicipios = selectedDept
-    ? municipalities.filter((m) => m.department === selectedDept).sort((a, b) => a.name.localeCompare(b.name))
-    : []
+  useEffect(() => {
+    if (selectedDept && municipalities.length > 0) {
+      const filtered = municipalities
+        .filter((m) => m.department === selectedDept)
+        .sort((a, b) => a.name.localeCompare(b.name))
+      setFilteredMunicipalities(filtered)
+    } else {
+      setFilteredMunicipalities([])
+    }
+  }, [selectedDept, municipalities])
 
   const handleContinue = () => {
     if (selectedMunic) {
@@ -44,6 +54,8 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
       }
     }
   }
+
+  const loading = deptsLoading || municsLoading
 
   if (!isOpen) return null
 
@@ -102,13 +114,13 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
               <Select
                 value={selectedMunic}
                 onValueChange={setSelectedMunic}
-                items={Object.fromEntries(deptMunicipios.map((m) => [m.id, m.name]))}
+                items={Object.fromEntries(filteredMunicipalities.map((m) => [m.id, m.name]))}
               >
                 <SelectTrigger className="transition-colors hover:border-primary hover:bg-accent">
                   <SelectValue placeholder="Selecciona un municipio" />
                 </SelectTrigger>
                 <SelectContent>
-                  {deptMunicipios.map((munic) => (
+                  {filteredMunicipalities.map((munic) => (
                     <SelectItem key={munic.id} value={munic.id}>
                       {munic.name}
                     </SelectItem>

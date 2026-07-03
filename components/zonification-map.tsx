@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
-import { municipalities, suitabilityColors } from "@/lib/mock-data"
+import { suitabilityColors } from "@/lib/mock-data"
 import type { Municipality, Suitability } from "@/types"
 
 interface ZonificationMapProps {
@@ -10,9 +10,11 @@ interface ZonificationMapProps {
   activeLayers: Record<Suitability, boolean>
   selectedId: string | null
   onSelect: (m: Municipality) => void
+  municipalities: Municipality[]
+  suitabilityMap?: Record<string, Suitability>
 }
 
-export function ZonificationMap({ cropId, activeLayers, selectedId, onSelect }: ZonificationMapProps) {
+export function ZonificationMap({ cropId, activeLayers, selectedId, onSelect, municipalities, suitabilityMap = {} }: ZonificationMapProps) {
   return (
     <MapContainer
       center={[6.1, -75.4]}
@@ -26,7 +28,7 @@ export function ZonificationMap({ cropId, activeLayers, selectedId, onSelect }: 
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
       {municipalities.map((m) => {
-        const suit = (m.suitability[cropId] ?? "none") as Suitability
+        const suit = (suitabilityMap[m.id] ?? "none") as Suitability
         if (!activeLayers[suit]) return null
         const isSelected = selectedId === m.id
         return (

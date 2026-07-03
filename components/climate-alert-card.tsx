@@ -10,7 +10,7 @@ const config = {
 }
 
 export function ClimateAlertCard({ alert }: { alert: ClimateAlert }) {
-  const { icon: Icon, tone } = config[alert.level]
+  const { icon: Icon, tone } = config[alert.level] || config.info
   return (
     <Card className="flex flex-row items-start gap-3 p-4">
       <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", tone)}>
