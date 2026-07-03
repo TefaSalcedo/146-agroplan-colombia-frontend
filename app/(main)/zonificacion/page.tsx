@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { X, Thermometer, CloudRain, Mountain, ArrowRight, MapPin } from "lucide-react"
@@ -16,9 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { SuitabilityBadge } from "@/components/recommendation-badge"
-import { crops, suitabilityColors, getSuitabilityLabel } from "@/lib/mock-data"
+import { suitabilityColors, getSuitabilityLabel } from "@/lib/mock-data"
+import { api, ApiError } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import type { Municipality, Suitability } from "@/types"
+import type { Municipality, Suitability, Crop } from "@/types"
 
 const ZonificationMap = dynamic(
   () => import("@/components/zonification-map").then((m) => m.ZonificationMap),
@@ -36,22 +37,86 @@ const LAYERS: { key: Suitability; label: string }[] = [
 ]
 
 export default function ZonificacionPage() {
-  const [cropId, setCropId] = useState(crops[0].id)
+  const [crops, setCrops] = useState<Crop[]>([])
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([])
+  const [cropId, setCropId] = useState<string>("")
   const [selected, setSelected] = useState<Municipality | null>(null)
+  const [selectedSuitability, setSelectedSuitability] = useState<Suitability | null>(null)
   const [activeLayers, setActiveLayers] = useState<Record<Suitability, boolean>>({
     high: true,
     medium: true,
     low: true,
     none: true,
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const selectedSuit = useMemo<Suitability | null>(() => {
-    if (!selected) return null
-    return (selected.suitability[cropId] ?? "none") as Suitability
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  useEffect(() => {
+    if (selected && cropId) {
+      loadZoningPrediction(selected.id, cropId)
+    }
   }, [selected, cropId])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const [cropsData, municipalitiesData] = await Promise.all([
+        api.crops.list(),
+        api.municipalities.list(),
+      ])
+      setCrops(cropsData)
+      setMunicipalities(municipalities)
+      if (cropsData.length > 0) {
+        setCropId(cropsData[0].id)
+      }
+    } catch (err) {
+      console.error('Error loading data:', err)
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Error loading data')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadZoningPrediction = async (municipalityId: string, cropId: string) => {
+    try {
+      const prediction = await api.zoning.predict({
+        crop_id: cropId,
+        municipality_id: municipalityId,
+      })
+      setSelectedSuitability(prediction.suitability)
+    } catch (err) {
+      console.error('Error loading zoning prediction:', err)
+      setSelectedSuitability("none")
+    }
+  }
 
   function toggleLayer(key: Suitability) {
     setActiveLayers((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Cargando datos de zonificación...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-destructive">Error: {error}</p>
+      </div>
+    )
   }
 
   return (
@@ -129,7 +194,7 @@ export default function ZonificacionPage() {
           </div>
         )}
 
-        {selected && selectedSuit && (
+        {selected && selectedSuitability && (
           <Card className="absolute inset-x-4 bottom-4 z-[1000] gap-3 p-5 shadow-xl md:inset-x-auto md:right-4 md:top-4 md:bottom-auto md:w-80 animate-in fade-in slide-in-from-bottom-4 duration-200">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -150,7 +215,7 @@ export default function ZonificacionPage() {
               <span className="text-sm text-muted-foreground">
                 {crops.find((c) => c.id === cropId)?.name}:
               </span>
-              <SuitabilityBadge level={selectedSuit} />
+              <SuitabilityBadge level={selectedSuitability} />
             </div>
 
             <dl className="grid grid-cols-1 gap-2 text-sm">
@@ -164,7 +229,7 @@ export default function ZonificacionPage() {
                 <dt className="flex items-center gap-2 text-muted-foreground">
                   <CloudRain className="size-4" /> Precipitación
                 </dt>
-                <dd className="font-medium">{selected.precipitation.toLocaleString("es-CO")} mm</dd>
+                <dd className="font-medium">{(selected.precipitation || 0).toLocaleString("es-CO")} mm</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="flex items-center gap-2 text-muted-foreground">

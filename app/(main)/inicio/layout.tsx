@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { AppShell } from '@/components/app-shell'
 
 export const metadata: Metadata = {
   title: 'Dashboard Agrícola | AgroPlan Colombia - Recomendaciones Personalizadas',
@@ -12,5 +11,5 @@ export default function InicioLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <AppShell>{children}</AppShell>
+  return children
 }

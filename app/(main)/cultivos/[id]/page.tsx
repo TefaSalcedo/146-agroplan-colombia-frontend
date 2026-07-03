@@ -85,7 +85,7 @@ export default async function CropDetailPage({
   return (
     <div className="flex flex-col gap-5">
       <Link
-        href="/inicio/cultivos"
+        href="/cultivos"
         className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />

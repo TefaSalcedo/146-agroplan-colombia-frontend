@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Info } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
@@ -12,14 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CropCard } from "@/components/crop-card"
-import {
-  crops,
-  extraCrops,
-  municipalities,
-  generateCalendar,
-  MONTHS_LONG,
-} from "@/lib/mock-data"
+import { MONTHS_LONG } from "@/lib/mock-data"
+import { api, ApiError } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import type { Municipality, Crop } from "@/types"
 
 const WEEKDAYS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"]
 
@@ -30,23 +26,75 @@ const ratingStyles = {
 }
 
 export default function CalendarioPage() {
-  const [municipalityId, setMunicipalityId] = useState(municipalities[0].id)
-  const [cropId, setCropId] = useState(crops[0].id)
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([])
+  const [crops, setCrops] = useState<Crop[]>([])
+  const [municipalityId, setMunicipalityId] = useState<string>("")
+  const [cropId, setCropId] = useState<string>("")
+  const [calendar, setCalendar] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const currentMonth = new Date().getMonth()
-  const seed = useMemo(() => {
-    const mIndex = municipalities.findIndex((m) => m.id === municipalityId)
-    const cIndex = crops.findIndex((c) => c.id === cropId)
-    return (mIndex + 1) * 31 + (cIndex + 1) * 7 + currentMonth
-  }, [municipalityId, cropId, currentMonth])
+  const currentYear = new Date().getFullYear()
 
-  const days = useMemo(() => generateCalendar(seed), [seed])
-  // simple offset so grid looks like a real month
-  const startOffset = seed % 7
+  useEffect(() => {
+    loadData()
+  }, [])
 
-  const idealCount = days.filter((d) => d.rating === "ideal").length
+  useEffect(() => {
+    if (municipalityId && cropId) {
+      loadCalendar()
+    }
+  }, [municipalityId, cropId])
 
-  const otherCrops = [...crops, ...extraCrops]
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const [municipalitiesData, cropsData] = await Promise.all([
+        api.municipalities.list(),
+        api.crops.list(),
+      ])
+      setMunicipalities(municipalitiesData)
+      setCrops(cropsData)
+      if (municipalitiesData.length > 0) {
+        setMunicipalityId(municipalitiesData[0].id)
+      }
+      if (cropsData.length > 0) {
+        setCropId(cropsData[0].id)
+      }
+    } catch (err) {
+      console.error('Error loading data:', err)
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Error loading data')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadCalendar = async () => {
+    try {
+      const calendarData = await api.calendars.predict({
+        crop_id: cropId,
+        municipality_id: municipalityId,
+        month: currentMonth + 1, // API expects 1-based month
+        year: currentYear,
+      })
+      setCalendar(calendarData)
+    } catch (err) {
+      console.error('Error loading calendar:', err)
+      setError('Error loading calendar')
+    }
+  }
+
+  const days = calendar?.days || []
+  const idealCount = calendar?.ideal_count || 0
+  const startOffset = new Date(currentYear, currentMonth, 1).getDay() // 0 = Sunday, adjust to 0 = Monday
+
+  const otherCrops = crops
     .filter((c) => c.id !== cropId)
     .slice(0, 4)
     .map((c) => ({
@@ -57,6 +105,22 @@ export default function CalendarioPage() {
       successRate: c.successRate,
     }))
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Cargando calendario...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-destructive">Error: {error}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
@@ -66,7 +130,7 @@ export default function CalendarioPage() {
             ¿Qué puedo sembrar este mes? Elige tu municipio y cultivo.
           </p>
         </div>
-        <DownloadPdfButton pageName="Calendario-AgroPlan" contentId="pdf-calendario" />
+        <DownloadPdfButton pageName="Calendario-AgroPlan" />
       </div>
 
       <div id="pdf-calendario" className="flex flex-col gap-6 bg-white p-6 rounded-lg">
@@ -120,12 +184,12 @@ export default function CalendarioPage() {
           {Array.from({ length: startOffset }).map((_, i) => (
             <div key={`empty-${i}`} aria-hidden />
           ))}
-          {days.map((d) => (
+          {days.map((d: any) => (
             <div
               key={d.day}
               className={cn(
                 "flex aspect-square items-center justify-center rounded-lg text-sm font-medium tabular-nums transition-transform hover:scale-105",
-                ratingStyles[d.rating],
+                ratingStyles[d.rating as keyof typeof ratingStyles],
               )}
             >
               {d.day}
