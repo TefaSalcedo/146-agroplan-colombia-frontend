@@ -1,7 +1,12 @@
 "use client"
 
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet"
-import "leaflet/dist/leaflet.css"
+import {
+  Map,
+  MapControls,
+  MapMarker,
+  MarkerContent,
+  MarkerTooltip,
+} from "@/components/ui/map"
 import { suitabilityColors } from "@/lib/mock-data"
 import type { Municipality, Suitability } from "@/types"
 
@@ -14,42 +19,56 @@ interface ZonificationMapProps {
   suitabilityMap?: Record<string, Suitability>
 }
 
-export function ZonificationMap({ cropId, activeLayers, selectedId, onSelect, municipalities, suitabilityMap = {} }: ZonificationMapProps) {
+// Estilo vectorial tipo MapBox usando OpenFreeMap (gratuito, sin API key)
+const mapStyles = {
+  light: "https://tiles.openfreemap.org/styles/bright",
+  dark: "https://tiles.openfreemap.org/styles/dark",
+}
+
+export function ZonificationMap({
+  cropId,
+  activeLayers,
+  selectedId,
+  onSelect,
+  municipalities,
+  suitabilityMap = {},
+}: ZonificationMapProps) {
   return (
-    <MapContainer
-      center={[6.1, -75.4]}
+    <Map
+      center={[-75.4, 6.1]}
       zoom={10}
-      scrollWheelZoom
+      scrollZoom
+      styles={mapStyles}
       className="h-full w-full"
-      style={{ background: "#e8efe8" }}
+      attributionControl={{ compact: true }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
+      <MapControls position="bottom-right" showZoom />
       {municipalities.map((m) => {
         const suit = (suitabilityMap[m.id] ?? "none") as Suitability
         if (!activeLayers[suit]) return null
         const isSelected = selectedId === m.id
+        const size = isSelected ? 16 : 12
         return (
-          <CircleMarker
+          <MapMarker
             key={m.id}
-            center={[m.lat, m.lng]}
-            radius={isSelected ? 16 : 12}
-            pathOptions={{
-              color: "#ffffff",
-              weight: isSelected ? 3 : 2,
-              fillColor: suitabilityColors[suit],
-              fillOpacity: 0.85,
-            }}
-            eventHandlers={{ click: () => onSelect(m) }}
+            longitude={m.lng}
+            latitude={m.lat}
+            onClick={() => onSelect(m)}
           >
-            <Tooltip direction="top" offset={[0, -8]}>
-              {m.name}
-            </Tooltip>
-          </CircleMarker>
+            <MarkerContent>
+              <div
+                className="rounded-full border-2 border-white shadow-sm transition-all"
+                style={{
+                  width: size,
+                  height: size,
+                  backgroundColor: suitabilityColors[suit],
+                }}
+              />
+            </MarkerContent>
+            <MarkerTooltip>{m.name}</MarkerTooltip>
+          </MapMarker>
         )
       })}
-    </MapContainer>
+    </Map>
   )
 }
