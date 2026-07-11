@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { normalize } from "@/lib/string-utils"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 import type { Municipality } from "@/types"
@@ -8,7 +8,7 @@ import type { Municipality } from "@/types"
 interface MunicipalityAutocompleteProps {
   municipalities: Municipality[]
   value?: string
-  onSelect: (municipality: Municipality) => void
+  onSelect: (municipality: Municipality | null) => void
   loading?: boolean
   placeholder?: string
 }
@@ -38,6 +38,17 @@ export function MunicipalityAutocomplete({
       .slice(0, 8)
   }, [options, search])
 
+  useEffect(() => {
+    if (!value) {
+      setSearch("")
+      return
+    }
+    const selected = municipalities.find((m) => m.id === value)
+    if (selected) {
+      setSearch(`${selected.name}, ${selected.department}`)
+    }
+  }, [value, municipalities])
+
   const handleValueChange = (selectedId: string) => {
     const selected = municipalities.find((m) => m.id === selectedId)
     if (selected) {
@@ -46,11 +57,20 @@ export function MunicipalityAutocomplete({
     }
   }
 
+  const handleInputChange = (newValue: string) => {
+    setSearch(newValue)
+    if (newValue === "") {
+      onSelect(null)
+    }
+  }
+
   return (
     <Combobox
       options={filteredOptions}
       value={value}
       onValueChange={handleValueChange}
+      inputValue={search}
+      onInputChange={handleInputChange}
       placeholder={placeholder}
       emptyMessage="No encontramos ese municipio. Intenta con otro nombre."
       loading={loading}

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LandingPage } from '@/components/landing-page'
 import { useLocation } from '@/context/LocationContext'
+import { buildLocationPath } from '@/lib/routing'
 
 export function PageWrapper() {
   const router = useRouter()
@@ -11,7 +12,7 @@ export function PageWrapper() {
 
   useEffect(() => {
     if (selectedLocation) {
-      router.push('/inicio')
+      router.push(buildLocationPath(selectedLocation.department, selectedLocation.name, 'inicio'))
     }
   }, [selectedLocation, router])
 

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Crop } from "@/types"
 
-export function RecommendationCard({ crop }: { crop: Crop }) {
+export function RecommendationCard({ crop, href }: { crop: Crop; href?: string }) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="grid gap-0 sm:grid-cols-2">
@@ -38,7 +38,7 @@ export function RecommendationCard({ crop }: { crop: Crop }) {
             size="lg"
             className="mt-auto w-full sm:w-fit"
             nativeButton={false}
-            render={<Link href={`/cultivos/${crop.id}`} />}
+            render={<Link href={href ?? `/cultivos/${crop.id}`} />}
           >
             Ver detalles
             <ArrowRight className="size-4" />

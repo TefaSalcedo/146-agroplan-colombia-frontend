@@ -21,6 +21,7 @@ import { SuitabilityBadge } from "@/components/recommendation-badge"
 import { suitabilityColors, getSuitabilityLabel } from "@/lib/constants"
 import { useCrops, useMunicipalities, useZoning } from "@/hooks"
 import { useLocation } from '@/context/LocationContext'
+import { buildLocationPath } from "@/lib/routing"
 import { cn } from "@/lib/utils"
 import type { Municipality, Suitability, Crop } from "@/types"
 
@@ -46,7 +47,7 @@ export default function ZonificacionPage() {
   const { crops, loading: cropsLoading, error: cropsError } = useCrops()
   const { municipalities, loading: municipalitiesLoading, error: municipalitiesError } = useMunicipalities(selectedLocation?.department)
   const { predict, loading: zoningLoading } = useZoning()
-  
+
   const [cropId, setCropId] = useState<string>("")
   const [selected, setSelected] = useState<Municipality | null>(null)
   const [selectedSuitability, setSelectedSuitability] = useState<Suitability | null>(null)
@@ -60,10 +61,9 @@ export default function ZonificacionPage() {
 
   useEffect(() => {
     setMounted(true)
-    
+
     // Redirect to landing page if no location selected
     if (!selectedLocation && mounted) {
-      console.log('No location selected, redirecting to landing page')
       router.push('/')
     }
   }, [selectedLocation, mounted, router])
@@ -81,12 +81,10 @@ export default function ZonificacionPage() {
   }, [selected, cropId])
 
   const loadZoningPrediction = async (municipalityId: string, cropId: string) => {
-    console.log('loadZoningPrediction - municipalityId:', municipalityId, 'cropId:', cropId)
     const prediction = await predict({
       crop_id: cropId,
       municipality_id: municipalityId,
     })
-    console.log('loadZoningPrediction - prediction:', prediction)
     if (prediction) {
       setSuitabilityMap(prev => ({ ...prev, [municipalityId]: prediction.suitability }))
       setSelectedSuitability(prediction.suitability)
@@ -113,11 +111,13 @@ export default function ZonificacionPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <p className="text-destructive">Error: {error}</p>
       </div>
     )
   }
+
+  const cropsBasePath = buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
 
   return (
     <div className="flex flex-col gap-4">
@@ -244,7 +244,7 @@ export default function ZonificacionPage() {
             <Button
               className="w-full"
               nativeButton={false}
-              render={<Link href="/cultivos" />}
+              render={<Link href={cropsBasePath} />}
             >
               Ver cultivos recomendados
               <ArrowRight className="size-4" />

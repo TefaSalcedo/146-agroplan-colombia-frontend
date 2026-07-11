@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/dialog"
 import type { Municipality } from "@/types"
 
-const LocationMap = dynamic(
+interface LocationMapProps {
+  municipalities: Municipality[]
+  selected: Municipality | null
+  onSelect: (municipality: Municipality) => void
+}
+
+const LocationMap = dynamic<LocationMapProps>(
   () => import("./location-map").then((m) => m.LocationMap),
   {
     ssr: false,
@@ -49,6 +55,7 @@ export function MapModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {open && (
       <DialogContent className="max-w-5xl p-0">
         <DialogHeader className="px-6 pt-6 text-left">
           <DialogTitle className="flex items-center gap-2">
@@ -87,6 +94,7 @@ export function MapModal({
           </Button>
         </DialogFooter>
       </DialogContent>
+      )}
     </Dialog>
   )
 }

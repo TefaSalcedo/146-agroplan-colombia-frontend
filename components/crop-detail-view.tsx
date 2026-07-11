@@ -50,7 +50,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
     return (
       <div className="flex flex-col gap-8">
         <Link
-          href="/cultivos"
+          href=".."
           className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
@@ -63,7 +63,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
               {error || "No se pudieron cargar los datos de este cultivo."}
             </p>
           </div>
-          <Button nativeButton={false} render={<Link href="/cultivos">Ver otros cultivos</Link>} />
+          <Button nativeButton={false} render={<Link href="..">Ver otros cultivos</Link>} />
         </Card>
       </div>
     )
@@ -81,7 +81,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
   return (
     <div className="flex flex-col gap-5">
       <Link
-        href="/cultivos"
+        href=".."
         className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
@@ -90,7 +90,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-1">
-          <Card className="overflow-hidden p-0 h-full">
+          <Card className="h-full overflow-hidden p-0">
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
               <Image
                 src={crop.image || "/placeholder.svg"}
@@ -103,13 +103,13 @@ export function CropDetailView({ id }: CropDetailViewProps) {
             </div>
           </Card>
         </div>
-        <div className="md:col-span-2 flex flex-col gap-3 justify-center">
+        <div className="md:col-span-2 flex flex-col justify-center gap-3">
           <div>
             <RecommendationBadge level={crop.recommendation} />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-balance">{crop.name}</h1>
-            <p className="italic text-sm text-muted-foreground">{crop.scientificName}</p>
+            <h1 className="text-2xl font-bold text-balance md:text-3xl">{crop.name}</h1>
+            <p className="text-sm italic text-muted-foreground">{crop.scientificName}</p>
           </div>
           <SuccessIndicator value={crop.successRate} />
         </div>

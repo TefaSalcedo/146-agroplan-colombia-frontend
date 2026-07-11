@@ -9,11 +9,13 @@ interface CropCardProps {
   image: string
   recommendation: "high" | "medium" | "low"
   successRate?: number
+  href?: string
 }
 
-export function CropCard({ id, name, image, recommendation, successRate }: CropCardProps) {
+export function CropCard({ id, name, image, recommendation, successRate, href }: CropCardProps) {
+  const targetHref = href ?? `/cultivos/${id}`
   return (
-    <Link href={`/cultivos/${id}`} className="group block focus:outline-none">
+    <Link href={targetHref} className="group block focus:outline-none">
       <Card className="overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring active:scale-95">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <Image

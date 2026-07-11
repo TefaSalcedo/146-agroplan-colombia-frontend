@@ -1,5 +1,10 @@
 import { fetchApi } from "./client"
-import type { ZoningRequest, ZoningResponse } from "./types"
+import type {
+  ZoningRequest,
+  ZoningResponse,
+  ZoningBatchRequest,
+  ZoningBatchResponse,
+} from "./types"
 
 export async function predictZoning(
   request: ZoningRequest
@@ -10,6 +15,16 @@ export async function predictZoning(
   })
 }
 
+export async function predictZoningBatch(
+  request: ZoningBatchRequest
+): Promise<ZoningBatchResponse> {
+  return fetchApi<ZoningBatchResponse>("/zoning/predict/batch", {
+    method: "POST",
+    body: JSON.stringify(request),
+  })
+}
+
 export const zoningApi = {
   predict: predictZoning,
+  predictBatch: predictZoningBatch,
 }

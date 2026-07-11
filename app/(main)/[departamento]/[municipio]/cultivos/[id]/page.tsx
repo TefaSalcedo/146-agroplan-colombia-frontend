@@ -1,4 +1,4 @@
-import { CropDetailView } from "./CropDetailView"
+import { CropDetailView } from '@/components/crop-detail-view'
 
 export default async function CropDetailPage({
   params,

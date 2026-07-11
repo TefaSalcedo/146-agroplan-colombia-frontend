@@ -78,6 +78,17 @@ export interface ZoningResponse {
   factors: ZoningFactors
 }
 
+export interface ZoningBatchRequest {
+  crop_id: string
+}
+
+export interface ZoningBatchResponse {
+  crop_id: string
+  predictions: ZoningResponse[]
+  count: number
+  model_version: string
+}
+
 // ==================== Calendars ====================
 
 export interface CalendarRequest {

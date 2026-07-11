@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
+import { buildNavHref } from "@/lib/routing"
 import { MapPin } from "lucide-react"
 import { useLocation } from '@/context/LocationContext'
 
@@ -17,12 +18,14 @@ export function BottomNav() {
       aria-label="Navegación principal"
     >
       {navItems.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+        const segment = item.href.replace(/^\//, '')
+        const href = buildNavHref(selectedLocation, segment)
+        const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
         const Icon = item.icon
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium transition-colors",

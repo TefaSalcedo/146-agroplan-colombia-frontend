@@ -8,6 +8,7 @@ import { useTheme } from "next-themes"
 import { Droplets, Loader2, MapPin, Moon, Sun, Thermometer } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
+import { buildNavHref } from "@/lib/routing"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -308,13 +309,15 @@ export function AppSidebar() {
 
       <nav className="flex flex-1 flex-col gap-1 px-3 py-2" aria-label="Navegación principal">
         {navItems.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+          const segment = item.href.replace(/^\//, '')
+          const href = buildNavHref(selectedLocation, segment)
+          const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
           const Icon = item.icon
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
