@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Info } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
+import { PageLoading } from "@/components/page-loading"
 import {
   Select,
   SelectContent,
@@ -13,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CropCard } from "@/components/crop-card"
-import { MONTHS_LONG } from "@/lib/mock-data"
+import { MONTHS_LONG } from "@/lib/constants"
 import { useMunicipalities, useCrops, useCalendars } from "@/hooks"
 import { useLocation } from '@/context/LocationContext'
 import { cn } from "@/lib/utils"
@@ -91,8 +92,8 @@ export default function CalendarioPage() {
   }
 
   const days = calendar?.days || []
-  const idealCount = calendar?.ideal_count || 0
-  const startOffset = new Date(currentYear, currentMonth, 1).getDay() // 0 = Sunday, adjust to 0 = Monday
+  const idealCount = calendar?.idealCount || 0
+  const startOffset = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7 // 0 = Monday, aligning with WEEKDAYS
 
   const otherCrops = cropsData
     .filter((c) => c.id !== cropId)
@@ -106,11 +107,7 @@ export default function CalendarioPage() {
     }))
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Cargando calendario...</p>
-      </div>
-    )
+    return <PageLoading title="Calendario agrícola" />
   }
 
   if (error) {
@@ -137,7 +134,7 @@ export default function CalendarioPage() {
       <div className="grid gap-3 sm:grid-cols-2">
         <Select
           value={municipalityId}
-          onValueChange={setMunicipalityId}
+          onValueChange={(value) => setMunicipalityId(value)}
           items={Object.fromEntries(municipalitiesData.map((m) => [m.id, m.name]))}
         >
           <SelectTrigger>
@@ -153,7 +150,7 @@ export default function CalendarioPage() {
         </Select>
         <Select
           value={cropId}
-          onValueChange={setCropId}
+          onValueChange={(value) => setCropId(value)}
           items={Object.fromEntries(cropsData.map((c) => [c.id, c.name]))}
         >
           <SelectTrigger>

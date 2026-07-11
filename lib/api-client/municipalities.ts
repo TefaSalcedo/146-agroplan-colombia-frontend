@@ -14,14 +14,25 @@ export async function fetchMunicipalities(
   const response = await fetchApi<MunicipalityListResponse>(
     `/municipalities${query}`
   )
-  
-  return response.municipalities
+
+  return response.municipalities.map((m) => ({
+    ...m,
+    avgTemperature: m.avgTemperature ?? 0,
+    precipitation: m.precipitation ?? 0,
+    suitability: {},
+  }))
 }
 
 export async function fetchMunicipality(
   id: string
 ): Promise<Municipality> {
-  return fetchApi<Municipality>(`/municipalities/${id}`)
+  const municipality = await fetchApi<Municipality>(`/municipalities/${id}`)
+  return {
+    ...municipality,
+    avgTemperature: municipality.avgTemperature ?? 0,
+    precipitation: municipality.precipitation ?? 0,
+    suitability: {},
+  }
 }
 
 export async function fetchDepartments(): Promise<string[]> {
@@ -31,13 +42,21 @@ export async function fetchDepartments(): Promise<string[]> {
 
 export async function fetchNearbyMunicipality(
   lat: number,
-  lng: number
+  lng: number,
+  maxDistanceKm = 20
 ): Promise<Municipality> {
   const params = new URLSearchParams()
   params.append("lat", lat.toString())
   params.append("lng", lng.toString())
-  
-  return fetchApi<Municipality>(`/municipalities/nearby?${params.toString()}`)
+  params.append("max_distance_km", maxDistanceKm.toString())
+
+  const municipality = await fetchApi<Municipality>(`/municipalities/nearby?${params.toString()}`)
+  return {
+    ...municipality,
+    avgTemperature: municipality.avgTemperature ?? 0,
+    precipitation: municipality.precipitation ?? 0,
+    suitability: {},
+  }
 }
 
 export const municipalitiesApi = {

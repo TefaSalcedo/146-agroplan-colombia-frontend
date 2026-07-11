@@ -7,7 +7,7 @@ import {
   MarkerContent,
   MarkerTooltip,
 } from "@/components/ui/map"
-import { suitabilityColors } from "@/lib/mock-data"
+import { suitabilityColors } from "@/lib/constants"
 import type { Municipality, Suitability } from "@/types"
 
 interface ZonificationMapProps {

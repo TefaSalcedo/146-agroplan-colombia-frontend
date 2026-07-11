@@ -16,6 +16,7 @@ export function useRecommendations(municipalityId: string) {
       const data = await fetchRecommendations(id)
       setRecommendations(data)
     } catch (err) {
+      setRecommendations(null)
       setError(err instanceof ApiError ? err.message : "Error loading recommendations")
     } finally {
       setLoading(false)

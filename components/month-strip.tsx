@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { MONTHS } from "@/lib/mock-data"
+import { MONTHS } from "@/lib/constants"
 
 interface MonthStripProps {
   activeMonths: number[]

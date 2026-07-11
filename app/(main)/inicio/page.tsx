@@ -9,9 +9,10 @@ import { RecommendationCard } from '@/components/recommendation-card'
 import { CropCard } from '@/components/crop-card'
 import { ClimateAlertCard } from '@/components/climate-alert-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
+import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { Card } from '@/components/ui/card'
-import { MONTHS_LONG } from '@/lib/mock-data'
-import { useWeather, useRecommendations } from "@/hooks"
+import { MONTHS_LONG } from '@/lib/constants'
+import { useWeather, useRecommendations, useAlerts } from "@/hooks"
 import { useLocation } from '@/context/LocationContext'
 import type { Crop, Weather, Municipality } from '@/types'
 
@@ -24,9 +25,10 @@ export default function InicioPage() {
   
   const { weather, loading: weatherLoading, error: weatherError } = useWeather(municipalityId)
   const { recommendations, loading: recommendationsLoading, error: recommendationsError } = useRecommendations(municipalityId)
+  const { alerts, loading: alertsLoading, error: alertsError } = useAlerts(municipalityId)
 
-  const loading = weatherLoading || recommendationsLoading
-  const error = weatherError || recommendationsError
+  const loading = weatherLoading || recommendationsLoading || alertsLoading
+  const error = weatherError || recommendationsError || alertsError
 
   useEffect(() => {
     setMounted(true)
@@ -42,11 +44,7 @@ export default function InicioPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Cargando...</p>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   if (error) {
@@ -57,9 +55,9 @@ export default function InicioPage() {
     )
   }
 
-  const topCrop = recommendations?.top_crop
-  const otherCrops = recommendations?.other_crops || []
-  const nextSeason = recommendations?.next_planting_season
+  const topCrop = recommendations?.topCrop
+  const otherCrops = recommendations?.otherCrops || []
+  const nextSeason = recommendations?.nextPlantingSeason
 
   // Create a location object with the selected municipality for display
   const displayLocation = {
@@ -115,12 +113,12 @@ export default function InicioPage() {
           </div>
           <div>
             <p className="font-semibold">
-              {nextSeason ? `${nextSeason.month_name} · Temporada de siembra` : MONTHS_LONG[8] + ' · Segunda cosecha'}
+              {nextSeason ? `${nextSeason.monthName} · Temporada de siembra` : 'Próxima temporada de siembra'}
             </p>
             <p className="text-sm text-muted-foreground text-pretty">
               {nextSeason && nextSeason.crops.length > 0
                 ? `Cultivos recomendados: ${nextSeason.crops.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}.`
-                : 'La mejor ventana para sembrar café y fríjol comienza en septiembre, cuando llegan las lluvias moderadas.'}
+                : 'No hay información de temporada disponible en este momento.'}
             </p>
           </div>
         </Card>
@@ -131,18 +129,18 @@ export default function InicioPage() {
           Alertas del clima
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <ClimateAlertCard alert={{
-            id: '1',
-            type: 'warning',
-            title: 'Lluvias moderadas',
-            description: 'Se esperan lluvias moderadas en los próximos días, ideal para la siembra.',
-          }} />
-          <ClimateAlertCard alert={{
-            id: '2',
-            type: 'info',
-            title: 'Temperatura estable',
-            description: 'Las temperaturas se mantienen dentro de los rangos óptimos.',
-          }} />
+          {alerts.length > 0 ? (
+            alerts.map((alert) => <ClimateAlertCard key={alert.id} alert={alert} />)
+          ) : (
+            <ClimateAlertCard
+              alert={{
+                id: "no-alerts",
+                level: "info",
+                title: "Sin alertas activas",
+                description: "No hay alertas climáticas para tu municipio en este momento.",
+              }}
+            />
+          )}
         </div>
       </section>
       </div>

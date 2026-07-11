@@ -16,6 +16,7 @@ export function useCrops() {
       const data = await fetchCrops()
       setCrops(data)
     } catch (err) {
+      setCrops([])
       setError(err instanceof ApiError ? err.message : "Error loading crops")
     } finally {
       setLoading(false)

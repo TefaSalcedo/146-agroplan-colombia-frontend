@@ -16,6 +16,7 @@ export function useWeather(municipalityId: string) {
       const data = await fetchWeather(id)
       setWeather(data)
     } catch (err) {
+      setWeather(null)
       setError(err instanceof ApiError ? err.message : "Error loading weather")
     } finally {
       setLoading(false)

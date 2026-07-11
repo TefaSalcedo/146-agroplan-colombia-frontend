@@ -4,21 +4,15 @@ import { useState, useEffect } from 'react'
 import Image from "next/image"
 import { MapPin } from 'lucide-react'
 import { LocationSelectorModal } from "./location-selector-modal"
+import { useLocation } from '@/context/LocationContext'
 
 export function MobileTopbar() {
   const [isLocationOpen, setIsLocationOpen] = useState(false)
-  const [currentLocation, setCurrentLocation] = useState<string>('')
   const [mounted, setMounted] = useState(false)
+  const { selectedLocation } = useLocation()
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('selectedLocation')
-      if (stored) {
-        const location = JSON.parse(stored)
-        setCurrentLocation(`${location.name}`)
-      }
-    }
   }, [])
 
   if (!mounted) return null
@@ -40,7 +34,7 @@ export function MobileTopbar() {
           aria-label="Cambiar ubicación"
         >
           <MapPin className="size-4 text-primary transition-transform duration-200 group-hover:scale-110" />
-          {currentLocation && <span className="text-xs font-medium text-muted-foreground">{currentLocation}</span>}
+          {selectedLocation && <span className="text-xs font-medium text-muted-foreground">{selectedLocation.name}</span>}
         </button>
       </header>
       <LocationSelectorModal isOpen={isLocationOpen} onClose={() => setIsLocationOpen(false)} />

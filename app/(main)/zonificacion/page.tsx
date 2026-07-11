@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
+import { PageLoading } from "@/components/page-loading"
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { SuitabilityBadge } from "@/components/recommendation-badge"
-import { suitabilityColors, getSuitabilityLabel } from "@/lib/mock-data"
+import { suitabilityColors, getSuitabilityLabel } from "@/lib/constants"
 import { useCrops, useMunicipalities, useZoning } from "@/hooks"
 import { useLocation } from '@/context/LocationContext'
 import { cn } from "@/lib/utils"
@@ -107,11 +108,7 @@ export default function ZonificacionPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Cargando datos de zonificación...</p>
-      </div>
-    )
+    return <PageLoading title="Zonificación" />
   }
 
   if (error) {
@@ -137,7 +134,7 @@ export default function ZonificacionPage() {
       <div className="flex flex-wrap items-center gap-3">
         <Select
           value={cropId}
-          onValueChange={setCropId}
+          onValueChange={(value) => setCropId(value)}
           items={Object.fromEntries(crops.map((c) => [c.id, c.name]))}
         >
           <SelectTrigger className="w-full sm:w-56">
@@ -244,18 +241,20 @@ export default function ZonificacionPage() {
               </div>
             </dl>
 
-            <Button asChild className="w-full">
-              <Link href="/cultivos">
-                Ver cultivos recomendados
-                <ArrowRight className="size-4" />
-              </Link>
+            <Button
+              className="w-full"
+              nativeButton={false}
+              render={<Link href="/cultivos" />}
+            >
+              Ver cultivos recomendados
+              <ArrowRight className="size-4" />
             </Button>
           </Card>
         )}
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Datos de aptitud simulados con el modelo de zonificación agroclimática. La leyenda usa colores:{" "}
+        Datos de aptitud generados por el modelo de zonificación agroclimática. La leyenda usa colores:{" "}
         {LAYERS.map((l) => getSuitabilityLabel(l.key)).join(", ")}.
       </p>
     </div>

@@ -1,11 +1,17 @@
 // API Types - Centralized type definitions for API requests and responses
 // These types are specific to the API layer and should be used in api-client modules
 
+import type { Crop } from "@/types"
+
 // ==================== Municipalities ====================
 
 export interface MunicipalityListResponse {
   municipalities: MunicipalityDTO[]
   count: number
+}
+
+export interface DepartmentsResponse {
+  departments: string[]
 }
 
 export interface MunicipalityDTO {
@@ -15,8 +21,9 @@ export interface MunicipalityDTO {
   lat: number
   lng: number
   altitude: number
-  avg_temperature?: number
+  avgTemperature?: number
   precipitation?: number
+  distanceKm?: number
 }
 
 // ==================== Weather ====================
@@ -28,39 +35,25 @@ export interface WeatherResponse {
   precipitation: number
   icon: string
   source: string
-  fetched_at: string
+  fetchedAt: string
 }
 
 // ==================== Crops ====================
 
 export interface CropListResponse {
-  crops: CropDTO[]
+  crops: Crop[]
   count: number
 }
 
-export interface CropDTO {
-  id: string
-  name: string
-  image: string
-  description: string
-  recommendation: string
-  success_rate: number
-  planting_months: number[]
-  optimal_altitude_min: number
-  optimal_altitude_max: number
-  optimal_temp_min: number
-  optimal_temp_max: number
-  optimal_precipitation_min: number
-  optimal_precipitation_max: number
-}
+export type CropResponseLite = Pick<
+  Crop,
+  "id" | "name" | "image" | "recommendation" | "successRate"
+>
 
-export interface CropResponseLite {
-  id: string
-  name: string
-  image: string
-  recommendation: string
-  success_rate: number
-}
+/** Backward-compatible alias used by several hooks and fallback data. */
+export type CropLite = CropResponseLite
+
+export type CropDTO = Crop
 
 // ==================== Zoning ====================
 
@@ -70,18 +63,18 @@ export interface ZoningRequest {
 }
 
 export interface ZoningFactors {
-  temperature_match: boolean
-  precipitation_match: boolean
-  soil_match: boolean
-  altitude_match: boolean
+  temperatureMatch: boolean
+  precipitationMatch: boolean
+  soilMatch: boolean
+  altitudeMatch: boolean
 }
 
 export interface ZoningResponse {
-  crop_id: string
-  municipality_id: string
+  cropId: string
+  municipalityId: string
   suitability: "high" | "medium" | "low" | "none"
   confidence: number
-  model_version: string
+  modelVersion: string
   factors: ZoningFactors
 }
 
@@ -101,31 +94,53 @@ export interface CalendarDay {
 }
 
 export interface CalendarResponse {
-  crop_id: string
-  municipality_id: string
+  cropId: string
+  municipalityId: string
   month: number
   year: number
   days: CalendarDay[]
-  ideal_count: number
-  model_version: string
+  idealCount: number
+  modelVersion: string
 }
 
 // ==================== Recommendations ====================
 
 export interface RecommendationRequest {
-  municipality_id: string
+  municipalityId: string
 }
 
 export interface NextPlantingSeason {
   month: number
-  month_name: string
+  monthName: string
   crops: string[]
 }
 
 export interface RecommendationResponse {
-  top_crop: CropDTO & { suitability: "high" | "medium" | "low" | "none" }
-  other_crops: CropResponseLite[]
-  next_planting_season: NextPlantingSeason
+  topCrop: Crop & { suitability: "high" | "medium" | "low" | "none" }
+  otherCrops: CropResponseLite[]
+  nextPlantingSeason: NextPlantingSeason
+}
+
+// ==================== Alerts ====================
+
+export interface AlertResponse {
+  id: string
+  level: "info" | "warning" | "danger"
+  title: string
+  description: string
+}
+
+// ==================== Forecast ====================
+
+export interface ForecastDayResponse {
+  date: string
+  tempMin: number | null
+  tempMax: number | null
+  tempMean: number | null
+  precipitation: number | null
+  humidity: number | null
+  uvIndex: number | null
+  windSpeed: number | null
 }
 
 // ==================== Health ====================
@@ -133,5 +148,5 @@ export interface RecommendationResponse {
 export interface HealthResponse {
   status: string
   version: string
-  models_loaded: boolean
+  modelsLoaded: boolean
 }

@@ -15,6 +15,7 @@ export function useMunicipalities(department?: string) {
       const data = await fetchMunicipalities(dept)
       setMunicipalities(data)
     } catch (err) {
+      setMunicipalities([])
       setError(err instanceof ApiError ? err.message : "Error loading municipalities")
     } finally {
       setLoading(false)
@@ -41,6 +42,7 @@ export function useDepartments() {
         const data = await fetchDepartments()
         setDepartments(data)
       } catch (err) {
+        setDepartments([])
         setError(err instanceof ApiError ? err.message : "Error loading departments")
       } finally {
         setLoading(false)
@@ -66,6 +68,7 @@ export function useMunicipality(id: string) {
         const data = await fetchMunicipality(id)
         setMunicipality(data)
       } catch (err) {
+        setMunicipality(null)
         setError(err instanceof ApiError ? err.message : "Error loading municipality")
       } finally {
         setLoading(false)

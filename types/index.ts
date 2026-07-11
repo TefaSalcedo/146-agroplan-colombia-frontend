@@ -59,6 +59,7 @@ export interface Municipality {
   altitude: number
   avgTemperature: number
   precipitation: number
+  distanceKm?: number
   /** suitability per crop id */
   suitability: Record<string, Suitability>
 }

@@ -1,6 +1,27 @@
 // API Configuration
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
+// Convert snake_case API keys to camelCase for the frontend
+function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+}
+
+function convertKeysToCamelCase(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map(convertKeysToCamelCase)
+  }
+
+  if (obj !== null && typeof obj === "object") {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      result[toCamelCase(key)] = convertKeysToCamelCase(value)
+    }
+    return result
+  }
+
+  return obj
+}
+
 // Error handling
 export class ApiError extends Error {
   constructor(
@@ -40,7 +61,8 @@ export async function fetchApi<T>(
       )
     }
 
-    return await response.json()
+    const data = await response.json()
+    return convertKeysToCamelCase(data) as T
   } catch (error) {
     if (error instanceof ApiError) {
       throw error

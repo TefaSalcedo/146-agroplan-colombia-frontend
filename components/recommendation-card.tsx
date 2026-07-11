@@ -30,20 +30,19 @@ export function RecommendationCard({ crop }: { crop: Crop }) {
             <p className="text-sm italic text-muted-foreground">{crop.scientificName}</p>
           </div>
           <div className="flex items-end gap-2">
-            <span className="text-5xl font-bold tabular-nums text-primary">{crop.successRate}%</span>
+            <span className="text-5xl font-bold tabular-nums text-primary">{crop.successRate ?? 0}%</span>
             <span className="pb-1.5 text-sm text-muted-foreground">probabilidad de éxito</span>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground text-pretty">{crop.shortReason}</p>
           <Button
             size="lg"
             className="mt-auto w-full sm:w-fit"
-            render={
-              <Link href={`/cultivos/${crop.id}`}>
-                Ver detalles
-                <ArrowRight className="size-4" />
-              </Link>
-            }
-          />
+            nativeButton={false}
+            render={<Link href={`/cultivos/${crop.id}`} />}
+          >
+            Ver detalles
+            <ArrowRight className="size-4" />
+          </Button>
         </div>
       </div>
     </Card>

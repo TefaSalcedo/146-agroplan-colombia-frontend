@@ -12,28 +12,28 @@ export * from "./health"
 // Unified API object for convenience
 export const api = {
   municipalities: {
-    list: (department?: string) => (await import("./municipalities")).fetchMunicipalities(department),
-    get: (id: string) => (await import("./municipalities")).fetchMunicipality(id),
-    departments: () => (await import("./municipalities")).fetchDepartments(),
+    list: async (department?: string) => (await import("./municipalities")).fetchMunicipalities(department),
+    get: async (id: string) => (await import("./municipalities")).fetchMunicipality(id),
+    departments: async () => (await import("./municipalities")).fetchDepartments(),
   },
   weather: {
-    get: (municipalityId: string) => (await import("./weather")).fetchWeather(municipalityId),
+    get: async (municipalityId: string) => (await import("./weather")).fetchWeather(municipalityId),
   },
   crops: {
-    list: () => (await import("./crops")).fetchCrops(),
-    get: (id: string) => (await import("./crops")).fetchCrop(id),
-    lite: () => (await import("./crops")).fetchCropsLite(),
+    list: async () => (await import("./crops")).fetchCrops(),
+    get: async (id: string) => (await import("./crops")).fetchCrop(id),
+    lite: async () => (await import("./crops")).fetchCropsLite(),
   },
   zoning: {
-    predict: (request: any) => (await import("./zoning")).predictZoning(request),
+    predict: async (request: any) => (await import("./zoning")).predictZoning(request),
   },
   calendars: {
-    predict: (request: any) => (await import("./calendars")).predictCalendar(request),
+    predict: async (request: any) => (await import("./calendars")).predictCalendar(request),
   },
   recommendations: {
-    get: (municipalityId: string) => (await import("./recommendations")).fetchRecommendations(municipalityId),
+    get: async (municipalityId: string) => (await import("./recommendations")).fetchRecommendations(municipalityId),
   },
   health: {
-    check: () => (await import("./health")).fetchHealth(),
+    check: async () => (await import("./health")).fetchHealth(),
   },
 }

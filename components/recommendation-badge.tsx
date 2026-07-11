@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { getRecommendationLabel, getSuitabilityLabel } from "@/lib/mock-data"
+import { getRecommendationLabel, getSuitabilityLabel } from "@/lib/constants"
 
 const toneMap: Record<string, string> = {
   high: "bg-primary/15 text-primary border-primary/20",

@@ -16,30 +16,8 @@ export default function ConfiguracionPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Configuración" subtitle="Ajusta la app a tu gusto." />
-        {/* <DownloadPdfButton pageName="Configuración" /> */}
+        <PageHeader title="Configuración" subtitle="Ajusta la app a tu gusto y revisa la información del proyecto." />
       </div>
-
-      {/* {selectedLocation && (
-        <Card className="flex flex-row items-start gap-4 p-5">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <MapPin className="size-5" />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium">Ubicación seleccionada</p>
-            <p className="text-sm text-muted-foreground">
-              {selectedLocation.name}, {selectedLocation.department}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearLocation}
-          >
-            Cambiar
-          </Button>
-        </Card>
-      )} */}
 
       <SettingsControls />
 

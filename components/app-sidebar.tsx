@@ -1,58 +1,316 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
+import { Droplets, Loader2, MapPin, Moon, Sun, Thermometer } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
-import { MapPin } from "lucide-react"
-import Image from "next/image"
-import { LocationSelectorModal } from "./location-selector-modal"
-import { useLocation } from '@/context/LocationContext'
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { useLocation } from "@/context/LocationContext"
+import { useDepartments, useForecast, useMunicipalities, useWeather } from "@/hooks"
+import { ApiError } from "@/lib/api-client/client"
+import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
+import { isWithinColombia } from "@/lib/location-utils"
+
+function formatMetric(value: number | null | undefined, suffix: string) {
+  if (value == null || Number.isNaN(value)) {
+    return "--"
+  }
+
+  return `${Math.round(value)}${suffix}`
+}
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const [isLocationOpen, setIsLocationOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const { selectedLocation, setSelectedLocation } = useLocation()
   const [mounted, setMounted] = useState(false)
-  const { selectedLocation } = useLocation()
+  const [selectedDept, setSelectedDept] = useState("")
+  const [selectedMunic, setSelectedMunic] = useState("")
+  const [isLoadingGeo, setIsLoadingGeo] = useState(false)
+  const [isLoadingManual, setIsLoadingManual] = useState(false)
+
+  const municipalityId = selectedLocation?.id ?? ""
+  const { departments, loading: departmentsLoading } = useDepartments()
+  const { municipalities, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
+  const { weather, loading: weatherLoading } = useWeather(municipalityId)
+  const { forecast, loading: forecastLoading } = useForecast(municipalityId, 1)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (!selectedLocation) return
+
+    setSelectedDept(selectedLocation.department)
+    setSelectedMunic(selectedLocation.id)
+  }, [selectedLocation])
+
+  const handleUseCurrentLocation = async () => {
+    setIsLoadingGeo(true)
+
+    if (!("geolocation" in navigator)) {
+      alert("Tu navegador no soporta geolocalización. Por favor selecciona tu ubicación manualmente.")
+      setIsLoadingGeo(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+
+          if (!isWithinColombia(latitude, longitude)) {
+            alert("Tu ubicación parece estar fuera de Colombia. Por favor selecciona tu ubicación manualmente.")
+            return
+          }
+
+          const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude, 20)
+          setSelectedLocation(nearbyMunicipality)
+        } catch (error) {
+          const message =
+            error instanceof ApiError && error.status && [400, 404].includes(error.status)
+              ? "No encontramos un municipio cubierto por AgroPlan a menos de 20 km de tu ubicación. Por favor selecciona tu ubicación manualmente."
+              : "No pudimos determinar tu ubicación. Por favor selecciona tu ubicación manualmente."
+          alert(message)
+        } finally {
+          setIsLoadingGeo(false)
+        }
+      },
+      (error) => {
+        console.error("Error de geolocalización:", error)
+        let errorMessage = "No pudimos obtener tu ubicación. "
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Por favor permite el acceso a tu ubicación en el navegador."
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "La información de ubicación no está disponible."
+            break
+          case error.TIMEOUT:
+            errorMessage += "La solicitud de ubicación ha expirado."
+            break
+          default:
+            errorMessage += "Por favor selecciona tu ubicación manualmente."
+        }
+
+        alert(errorMessage)
+        setIsLoadingGeo(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000,
+      }
+    )
+  }
+
+  const handleContinueWithSelection = async () => {
+    if (!selectedMunic) return
+
+    setIsLoadingManual(true)
+
+    try {
+      const municipality = await fetchMunicipality(selectedMunic)
+      setSelectedLocation(municipality)
+    } catch (error) {
+      const message =
+        error instanceof ApiError && error.status === 404
+          ? "No encontramos el municipio seleccionado en el backend. Intenta con otro municipio."
+          : "No pudimos cargar el municipio seleccionado desde el backend. Inténtalo de nuevo."
+      alert(message)
+    } finally {
+      setIsLoadingManual(false)
+    }
+  }
+
   if (!mounted) return null
 
+  const isDark = theme === "dark"
+  const uvIndex = forecast[0]?.uvIndex
+
   return (
-    <>
-      <aside className="hidden md:flex md:w-64 lg:w-72 shrink-0 flex-col border-r border-border bg-sidebar">
-        <div className="flex items-center gap-3 px-6 py-6">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary transition-transform duration-200 hover:scale-105">
-            <Image src="/logo.webp" alt="AgroPlan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
+    <aside className="hidden shrink-0 flex-col border-r border-border bg-sidebar md:flex md:w-80">
+      <div className="flex items-center gap-3 px-6 py-6">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary transition-transform duration-200 hover:scale-105">
+          <Image src="/logo.webp" alt="AgroPlan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
+        </div>
+        <div className="leading-tight">
+          <p className="font-semibold text-sidebar-foreground">AgroPlan</p>
+          <p className="text-xs text-muted-foreground">Colombia</p>
+        </div>
+      </div>
+
+      <div className="px-3 pb-4">
+        <div className="rounded-3xl border border-border bg-sidebar-accent/30 p-4">
+          <div className="mb-4 flex items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MapPin className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Ubicación actual</p>
+              <p className="truncate font-semibold text-sidebar-foreground">
+                {selectedLocation?.name ?? "Selecciona tu municipio"}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {selectedLocation?.department ?? "Usa tu ubicación o el selector manual"}
+              </p>
+            </div>
           </div>
-          <div className="leading-tight">
-            <p className="font-semibold text-sidebar-foreground">AgroPlan</p>
-            <p className="text-xs text-muted-foreground">Colombia</p>
+
+          <div className="mb-4 grid grid-cols-3 gap-2">
+            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+              <div className="mb-1 flex items-center gap-1 text-primary">
+                <Thermometer className="size-3.5" />
+                <span className="text-[11px] font-medium">Temp.</span>
+              </div>
+              <p className="text-sm font-semibold">
+                {weatherLoading ? "..." : formatMetric(weather?.temperature, "°C")}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+              <div className="mb-1 flex items-center gap-1 text-primary">
+                <Droplets className="size-3.5" />
+                <span className="text-[11px] font-medium">Humedad</span>
+              </div>
+              <p className="text-sm font-semibold">
+                {weatherLoading ? "..." : formatMetric(weather?.humidity, "%")}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+              <div className="mb-1 flex items-center gap-1 text-primary">
+                <Sun className="size-3.5" />
+                <span className="text-[11px] font-medium">UV</span>
+              </div>
+              <p className="text-sm font-semibold">
+                {forecastLoading ? "..." : formatMetric(uvIndex, "")}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleUseCurrentLocation}
+            disabled={isLoadingGeo}
+            className="mb-4 w-full bg-primary hover:bg-primary/90"
+          >
+            {isLoadingGeo ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Localizando...
+              </>
+            ) : (
+              <>
+                <MapPin className="size-4" />
+                Usar mi ubicación actual
+              </>
+            )}
+          </Button>
+
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase">
+              <span className="bg-sidebar px-2 text-muted-foreground">O selecciona manualmente</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-sidebar-foreground">Departamento</label>
+              <Select
+                value={selectedDept}
+                onValueChange={(dept) => {
+                  setSelectedDept(dept)
+                  setSelectedMunic("")
+                }}
+                disabled={departmentsLoading}
+                items={Object.fromEntries(departments.map((department) => [department, department]))}
+              >
+                <SelectTrigger className="w-full bg-background/70">
+                  <SelectValue
+                    placeholder={
+                      departmentsLoading ? "Cargando departamentos..." : "Selecciona un departamento"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map((department) => (
+                    <SelectItem key={department} value={department}>
+                      {department}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedDept && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-sidebar-foreground">Municipio</label>
+                <div className="relative">
+                  <Select
+                    value={selectedMunic}
+                    onValueChange={setSelectedMunic}
+                    disabled={municipalitiesLoading || municipalities.length === 0}
+                    items={Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.name]))}
+                  >
+                    <SelectTrigger className="w-full bg-background/70 pr-9">
+                      <SelectValue
+                        placeholder={
+                          municipalitiesLoading
+                            ? "Cargando municipios..."
+                            : municipalities.length === 0
+                              ? "Sin municipios disponibles"
+                              : "Selecciona un municipio"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {municipalities.map((municipality) => (
+                        <SelectItem key={municipality.id} value={municipality.id}>
+                          {municipality.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {municipalitiesLoading && (
+                    <Loader2 className="pointer-events-none absolute right-8 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            <Button
+              onClick={handleContinueWithSelection}
+              disabled={!selectedMunic || isLoadingManual}
+              variant="outline"
+              className="w-full"
+            >
+              {isLoadingManual ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Validando municipio...
+                </>
+              ) : (
+                "Aplicar ubicación"
+              )}
+            </Button>
           </div>
         </div>
-
-        {selectedLocation && (
-          <button
-            onClick={() => setIsLocationOpen(true)}
-            className="mx-3 mb-4 flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2 transition-all duration-200 hover:bg-primary/15 active:scale-95"
-            aria-label="Cambiar ubicación"
-          >
-            <MapPin className="size-4 text-primary" />
-            <div className="text-left text-xs">
-              <p className="text-muted-foreground">Ubicación</p>
-              <p className="font-medium text-sidebar-foreground">{selectedLocation.name}</p>
-            </div>
-          </button>
-        )}
+      </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3 py-2" aria-label="Navegación principal">
         {navItems.map((item) => {
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
           const Icon = item.icon
+
           return (
             <Link
               key={item.href}
@@ -62,7 +320,7 @@ export function AppSidebar() {
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
                 active
                   ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1",
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
               )}
             >
               <Icon className={cn("size-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
@@ -72,13 +330,28 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="px-6 py-6">
+      <div className="px-3 pb-3 pt-2">
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-sidebar-accent/20 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-sidebar-foreground">Modo oscuro</p>
+            <p className="text-xs text-muted-foreground">Cambia entre claro y oscuro</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isDark ? <Moon className="size-4 text-primary" /> : <Sun className="size-4 text-primary" />}
+            <Switch
+              checked={isDark}
+              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              aria-label="Activar tema oscuro"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 pb-6 pt-2">
         <p className="text-xs text-muted-foreground text-pretty">
           Datos al Ecosistema 2026 · Zonificación agroclimática con IA
         </p>
       </div>
-      </aside>
-      <LocationSelectorModal isOpen={isLocationOpen} onClose={() => setIsLocationOpen(false)} />
-    </>
+    </aside>
   )
 }

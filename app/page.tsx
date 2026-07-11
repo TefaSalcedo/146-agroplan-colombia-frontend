@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { LandingPage } from '@/components/landing-page'
+import { PageWrapper } from './page-wrapper'
 
 export const metadata: Metadata = {
   title: 'AgroPlan Colombia · ¿Qué sembrar hoy?',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <LandingPage />
+  return <PageWrapper />
 }

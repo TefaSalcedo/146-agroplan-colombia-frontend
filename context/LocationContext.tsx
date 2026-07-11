@@ -14,13 +14,16 @@ const LocationContext = createContext<LocationContextType | undefined>(undefined
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [selectedLocation, setSelectedLocationState] = useState<Municipality | null>(null)
 
-  // Load location from sessionStorage on mount
+  // Load location from browser storage on mount and keep both stores in sync.
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('selectedLocation')
+      const stored = localStorage.getItem('selectedLocation') ?? sessionStorage.getItem('selectedLocation')
       if (stored) {
         try {
-          setSelectedLocationState(JSON.parse(stored))
+          const parsed = JSON.parse(stored) as Municipality
+          setSelectedLocationState(parsed)
+          localStorage.setItem('selectedLocation', JSON.stringify(parsed))
+          sessionStorage.setItem('selectedLocation', JSON.stringify(parsed))
         } catch (error) {
           console.error('Error parsing stored location:', error)
         }
@@ -32,8 +35,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     setSelectedLocationState(location)
     if (typeof window !== 'undefined') {
       if (location) {
-        sessionStorage.setItem('selectedLocation', JSON.stringify(location))
+        const serialized = JSON.stringify(location)
+        localStorage.setItem('selectedLocation', serialized)
+        sessionStorage.setItem('selectedLocation', serialized)
       } else {
+        localStorage.removeItem('selectedLocation')
         sessionStorage.removeItem('selectedLocation')
       }
     }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { PageHeader } from "@/components/page-header"
 import { CropCard } from "@/components/crop-card"
 import { DownloadPdfButton } from "@/components/download-pdf-button"
+import { PageLoading } from "@/components/page-loading"
 import { useRecommendations } from "@/hooks"
 import { useLocation } from '@/context/LocationContext'
 import type { Crop } from '@/types'
@@ -31,11 +32,7 @@ export default function CultivosPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Cargando cultivos...</p>
-      </div>
-    )
+    return <PageLoading title="Cultivos recomendados" />
   }
 
   if (error) {
@@ -46,18 +43,18 @@ export default function CultivosPage() {
     )
   }
 
-  const topCrop = recommendations?.top_crop
-  const otherCrops = recommendations?.other_crops || []
+  const topCrop = recommendations?.topCrop
+  const otherCrops = recommendations?.otherCrops || []
 
   const cropCards = [
     ...(topCrop ? [topCrop] : []),
     ...otherCrops
-  ].map((c: Crop) => ({
+  ].map((c) => ({
     id: c.id,
     name: c.name,
     image: c.image,
     recommendation: c.recommendation,
-    successRate: c.success_rate,
+    successRate: c.successRate,
   }))
 
   return (
