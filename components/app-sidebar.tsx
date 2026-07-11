@@ -5,13 +5,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
+import { Collapsible } from "@base-ui/react/collapsible"
 import { Droplets, Loader2, MapPin, Moon, Sun, Thermometer } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
 import { buildNavHref } from "@/lib/routing"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { useLocation } from "@/context/LocationContext"
 import { useDepartments, useForecast, useMunicipalities, useWeather } from "@/hooks"
 import { ApiError } from "@/lib/api-client/client"
@@ -138,16 +138,55 @@ export function AppSidebar() {
   const uvIndex = forecast[0]?.uvIndex
 
   return (
-    <aside className="hidden shrink-0 flex-col border-r border-border bg-sidebar md:flex md:w-80">
-      <div className="flex items-center gap-3 px-6 py-6">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary transition-transform duration-200 hover:scale-105">
-          <Image src="/logo.webp" alt="AgroPlan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
+    <aside className="sticky top-0 hidden h-svh shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar self-start md:flex md:w-80">
+      <div className="flex items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary transition-transform duration-200 hover:scale-105">
+            <Image src="/logo.webp" alt="AgroPlan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
+          </div>
+          <div className="leading-tight">
+            <p className="font-semibold text-sidebar-foreground">AgroPlan</p>
+            <p className="text-xs text-muted-foreground">Colombia</p>
+          </div>
         </div>
-        <div className="leading-tight">
-          <p className="font-semibold text-sidebar-foreground">AgroPlan</p>
-          <p className="text-xs text-muted-foreground">Colombia</p>
-        </div>
+        <button
+          type="button"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          aria-pressed={isDark}
+          className="flex size-9 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50"
+        >
+          {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+        </button>
       </div>
+
+      <nav className="flex flex-col gap-1 px-3 py-2" aria-label="Navegación principal">
+        {navItems.map((item) => {
+          const segment = item.href.replace(/^\//, "")
+          const href = buildNavHref(selectedLocation, segment)
+          const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
+          const Icon = item.icon
+
+          return (
+            <Link
+              key={item.href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
+                active
+                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+              )}
+            >
+              <Icon className={cn("size-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      <div className="flex-1" />
 
       <div className="px-3 pb-4">
         <div className="rounded-3xl border border-border bg-sidebar-accent/30 p-4">
@@ -196,164 +235,126 @@ export function AppSidebar() {
             </div>
           </div>
 
-          <Button
-            onClick={handleUseCurrentLocation}
-            disabled={isLoadingGeo}
-            className="mb-4 w-full bg-primary hover:bg-primary/90"
-          >
-            {isLoadingGeo ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Localizando...
-              </>
-            ) : (
-              <>
-                <MapPin className="size-4" />
-                Usar mi ubicación actual
-              </>
-            )}
-          </Button>
-
-          <div className="relative mb-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-[10px] uppercase">
-              <span className="bg-sidebar px-2 text-muted-foreground">O selecciona manualmente</span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-sidebar-foreground">Departamento</label>
-              <Select
-                value={selectedDept}
-                onValueChange={(dept) => {
-                  setSelectedDept(dept)
-                  setSelectedMunic("")
-                }}
-                disabled={departmentsLoading}
-                items={Object.fromEntries(departments.map((department) => [department, department]))}
-              >
-                <SelectTrigger className="w-full bg-background/70">
-                  <SelectValue
-                    placeholder={
-                      departmentsLoading ? "Cargando departamentos..." : "Selecciona un departamento"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((department) => (
-                    <SelectItem key={department} value={department}>
-                      {department}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedDept && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-sidebar-foreground">Municipio</label>
-                <div className="relative">
-                  <Select
-                    value={selectedMunic}
-                    onValueChange={setSelectedMunic}
-                    disabled={municipalitiesLoading || municipalities.length === 0}
-                    items={Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.name]))}
-                  >
-                    <SelectTrigger className="w-full bg-background/70 pr-9">
-                      <SelectValue
-                        placeholder={
-                          municipalitiesLoading
-                            ? "Cargando municipios..."
-                            : municipalities.length === 0
-                              ? "Sin municipios disponibles"
-                              : "Selecciona un municipio"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {municipalities.map((municipality) => (
-                        <SelectItem key={municipality.id} value={municipality.id}>
-                          {municipality.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {municipalitiesLoading && (
-                    <Loader2 className="pointer-events-none absolute right-8 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          <Collapsible.Root>
+            <Collapsible.Trigger
+              className={cn(buttonVariants({ variant: "default" }), "w-full bg-primary hover:bg-primary/90")}
+            >
+              Cambiar ubicación
+            </Collapsible.Trigger>
+            <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-300 ease-out data-starting-style:h-0 data-ending-style:h-0 [&[hidden]:not([hidden='until-found'])]:hidden">
+              <div className="pt-4">
+                <Button
+                  onClick={handleUseCurrentLocation}
+                  disabled={isLoadingGeo}
+                  className="mb-4 w-full bg-primary hover:bg-primary/90"
+                >
+                  {isLoadingGeo ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Localizando...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="size-4" />
+                      Usar mi ubicación actual
+                    </>
                   )}
+                </Button>
+
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase">
+                    <span className="bg-sidebar px-2 text-muted-foreground">O selecciona manualmente</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-sidebar-foreground">Departamento</label>
+                    <Select
+                      value={selectedDept}
+                      onValueChange={(dept) => {
+                        setSelectedDept(dept)
+                        setSelectedMunic("")
+                      }}
+                      disabled={departmentsLoading}
+                      items={Object.fromEntries(departments.map((department) => [department, department]))}
+                    >
+                      <SelectTrigger className="w-full bg-background/70">
+                        <SelectValue
+                          placeholder={
+                            departmentsLoading ? "Cargando departamentos..." : "Selecciona un departamento"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((department) => (
+                          <SelectItem key={department} value={department}>
+                            {department}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedDept && (
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-medium text-sidebar-foreground">Municipio</label>
+                      <div className="relative">
+                        <Select
+                          value={selectedMunic}
+                          onValueChange={setSelectedMunic}
+                          disabled={municipalitiesLoading || municipalities.length === 0}
+                          items={Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.name]))}
+                        >
+                          <SelectTrigger className="w-full bg-background/70 pr-9">
+                            <SelectValue
+                              placeholder={
+                                municipalitiesLoading
+                                  ? "Cargando municipios..."
+                                  : municipalities.length === 0
+                                    ? "Sin municipios disponibles"
+                                    : "Selecciona un municipio"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {municipalities.map((municipality) => (
+                              <SelectItem key={municipality.id} value={municipality.id}>
+                                {municipality.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {municipalitiesLoading && (
+                          <Loader2 className="pointer-events-none absolute right-8 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleContinueWithSelection}
+                    disabled={!selectedMunic || isLoadingManual}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {isLoadingManual ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Validando municipio...
+                      </>
+                    ) : (
+                      "Aplicar ubicación"
+                    )}
+                  </Button>
                 </div>
               </div>
-            )}
-
-            <Button
-              onClick={handleContinueWithSelection}
-              disabled={!selectedMunic || isLoadingManual}
-              variant="outline"
-              className="w-full"
-            >
-              {isLoadingManual ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Validando municipio...
-                </>
-              ) : (
-                "Aplicar ubicación"
-              )}
-            </Button>
-          </div>
+            </Collapsible.Panel>
+          </Collapsible.Root>
         </div>
-      </div>
-
-      <nav className="flex flex-1 flex-col gap-1 px-3 py-2" aria-label="Navegación principal">
-        {navItems.map((item) => {
-          const segment = item.href.replace(/^\//, '')
-          const href = buildNavHref(selectedLocation, segment)
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
-          const Icon = item.icon
-
-          return (
-            <Link
-              key={item.href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
-                active
-                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-              )}
-            >
-              <Icon className={cn("size-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
-              {item.label}
-            </Link>
-          )
-        })}
-      </nav>
-
-      <div className="px-3 pb-3 pt-2">
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-sidebar-accent/20 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground">Modo oscuro</p>
-            <p className="text-xs text-muted-foreground">Cambia entre claro y oscuro</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {isDark ? <Moon className="size-4 text-primary" /> : <Sun className="size-4 text-primary" />}
-            <Switch
-              checked={isDark}
-              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-              aria-label="Activar tema oscuro"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 pb-6 pt-2">
-        <p className="text-xs text-muted-foreground text-pretty">
-          Datos al Ecosistema 2026 · Zonificación agroclimática con IA
-        </p>
       </div>
     </aside>
   )
