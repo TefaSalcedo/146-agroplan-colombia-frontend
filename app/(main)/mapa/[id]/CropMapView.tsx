@@ -70,6 +70,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null)
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
   const [showMapInfoCards, setShowMapInfoCards] = useState(true)
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
 
   useEffect(() => {
     if (!cropId || municipalities.length === 0) return
@@ -173,7 +174,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Fixed width */}
-        <div className="hidden w-[300px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-r bg-background p-4 xl:flex 2xl:w-[360px] 2xl:p-6">
+        <div className="hidden w-[300px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-r bg-background p-4 2xl:flex 2xl:w-[360px] 2xl:p-6">
           <Card className="overflow-hidden p-0">
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
               <Image
@@ -304,7 +305,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
                 type="button"
                 size="sm"
                 variant="secondary"
-                className="hidden h-8 rounded-full border border-white/30 bg-white/10 px-3 text-xs text-white hover:bg-white/20 xl:inline-flex"
+                className="hidden h-8 rounded-full border border-white/30 bg-white/10 px-3 text-xs text-white hover:bg-white/20 2xl:inline-flex"
                 onClick={() => setShowMapInfoCards((prev) => !prev)}
               >
                 {showMapInfoCards ? <EyeOff className="mr-1 size-3.5" /> : <Eye className="mr-1 size-3.5" />}
@@ -314,40 +315,76 @@ export function CropMapView({ cropId }: CropMapViewProps) {
           </div>
 
           {showMapInfoCards && (
-            <div className="absolute right-4 top-20 z-10 hidden max-h-[calc(100%-120px)] w-[320px] flex-col gap-3 overflow-y-auto xl:flex 2xl:w-[340px]">
-              <Card className="space-y-3 p-4 shadow-lg">
-                <div className="flex items-center gap-2">
+            <div className="absolute right-4 top-20 z-10 hidden max-h-[calc(100%-120px)] w-[280px] flex-col gap-2 overflow-y-auto 2xl:flex 2xl:w-[300px]">
+              <Card
+                className="w-full shadow-lg transition-all duration-300 hover:shadow-xl"
+                onMouseEnter={() => setExpandedCard("manejo")}
+                onMouseLeave={() => setExpandedCard(null)}
+                onClick={() => setExpandedCard(expandedCard === "manejo" ? null : "manejo")}
+              >
+                <div className="flex items-center gap-2 p-2">
                   <Layers className="size-4 text-primary" />
                   <h3 className="text-sm font-semibold">Recomendaciones de manejo</h3>
                 </div>
-                <div className="space-y-1.5 text-xs text-muted-foreground">
-                  <p>• Tipo de suelo: {crop.soilType}</p>
-                  <p>• Riego: {crop.irrigation}</p>
-                  <p>• Sustratos recomendados: {crop.substrates.join(", ")}</p>
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    expandedCard === "manejo" ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1 p-2 text-xs text-muted-foreground">
+                    <p>• Tipo de suelo: {crop.soilType}</p>
+                    <p>• Riego: {crop.irrigation}</p>
+                    <p>• Sustratos recomendados: {crop.substrates.join(", ")}</p>
+                  </div>
                 </div>
               </Card>
 
-              <Card className="space-y-3 p-4 shadow-lg">
-                <div className="flex items-center gap-2">
+              <Card
+                className="w-full shadow-lg transition-all duration-300 hover:shadow-xl"
+                onMouseEnter={() => setExpandedCard("consejos")}
+                onMouseLeave={() => setExpandedCard(null)}
+                onClick={() => setExpandedCard(expandedCard === "consejos" ? null : "consejos")}
+              >
+                <div className="flex items-center gap-2 p-2">
                   <Mountain className="size-4 text-primary" />
                   <h3 className="text-sm font-semibold">Consejos prácticos</h3>
                 </div>
-                <div className="space-y-1.5 text-xs text-muted-foreground">
-                  {crop.tips.slice(0, 3).map((tip, index) => (
-                    <p key={index}>• {tip.title}: {tip.description}</p>
-                  ))}
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    expandedCard === "consejos" ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1 p-2 text-xs text-muted-foreground">
+                    {crop.tips.slice(0, 3).map((tip, index) => (
+                      <p key={index}>• {tip.title}: {tip.description}</p>
+                    ))}
+                  </div>
                 </div>
               </Card>
 
-              <Card className="space-y-3 p-4 shadow-lg">
-                <div className="flex items-center gap-2">
+              <Card
+                className="w-full shadow-lg transition-all duration-300 hover:shadow-xl"
+                onMouseEnter={() => setExpandedCard("cosecha")}
+                onMouseLeave={() => setExpandedCard(null)}
+                onClick={() => setExpandedCard(expandedCard === "cosecha" ? null : "cosecha")}
+              >
+                <div className="flex items-center gap-2 p-2">
                   <Thermometer className="size-4 text-primary" />
                   <h3 className="text-sm font-semibold">Información de cosecha</h3>
                 </div>
-                <div className="space-y-1.5 text-xs text-muted-foreground">
-                  <p>• Días a cosecha: {crop.daysToHarvest} días</p>
-                  <p>• Meses de cosecha: {crop.harvestMonths.join(", ")}</p>
-                  <p>• Tasa de éxito: {crop.successRate}%</p>
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    expandedCard === "cosecha" ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="space-y-1 p-2 text-xs text-muted-foreground">
+                    <p>• Días a cosecha: {crop.daysToHarvest} días</p>
+                    <p>• Meses de cosecha: {crop.harvestMonths.join(", ")}</p>
+                    <p>• Tasa de éxito: {crop.successRate}%</p>
+                  </div>
                 </div>
               </Card>
             </div>
@@ -389,9 +426,9 @@ export function CropMapView({ cropId }: CropMapViewProps) {
         </div>
 
         {/* Mobile drawer overlay */}
-        <div 
+        <div
           className={cn(
-            "absolute inset-x-0 bottom-0 z-40 flex flex-col rounded-t-3xl border-t bg-background shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 xl:hidden",
+            "absolute inset-x-0 bottom-0 z-40 flex flex-col rounded-t-3xl border-t bg-background shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 2xl:hidden",
             isMobileDrawerOpen ? "translate-y-0" : "translate-y-[calc(100%-64px)]"
           )}
           style={{ maxHeight: "85vh" }}

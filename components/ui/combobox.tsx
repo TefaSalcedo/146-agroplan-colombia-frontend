@@ -78,7 +78,12 @@ function Combobox({
       setInternalInputValue(newValue)
     }
     onInputChange?.(newValue)
-    setOpen(true)
+    // Only open dropdown if there are 2 or more characters or if it's empty (to show the help message)
+    if (newValue.length >= 2 || newValue === "") {
+      setOpen(true)
+    } else {
+      setOpen(false)
+    }
     if (newValue === "") {
       onValueChange?.("")
     }
@@ -98,6 +103,7 @@ function Combobox({
           value={inputValue}
           onChange={handleInputChange}
           onFocus={() => setOpen(true)}
+          minLength={1}
           className={cn(
             "w-full rounded-lg border border-input bg-transparent py-2.5 pr-4 pl-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
             inputClassName
@@ -112,7 +118,7 @@ function Combobox({
         >
           {options.length === 0 ? (
             <li className="py-4 text-center text-sm text-muted-foreground">
-              {emptyMessage}
+              {inputValue.trim() === "" ? "Escribe tu municipio para buscar..." : emptyMessage}
             </li>
           ) : (
             options.map((option) => {

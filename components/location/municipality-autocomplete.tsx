@@ -18,7 +18,7 @@ export function MunicipalityAutocomplete({
   value,
   onSelect,
   loading = false,
-  placeholder = "Buscar municipio o vereda...",
+  placeholder = "Escribe al menos 2 letras para buscar municipio...",
 }: MunicipalityAutocompleteProps) {
   const [search, setSearch] = useState("")
 
@@ -32,7 +32,7 @@ export function MunicipalityAutocomplete({
 
   const filteredOptions = useMemo(() => {
     const term = normalize(search)
-    if (!term) return []
+    if (!term || term.length < 2) return []
     return options
       .filter((option) => normalize(option.label).includes(term) || normalize(option.description || "").includes(term))
       .slice(0, 8)
@@ -72,7 +72,7 @@ export function MunicipalityAutocomplete({
       inputValue={search}
       onInputChange={handleInputChange}
       placeholder={placeholder}
-      emptyMessage="No encontramos ese municipio. Intenta con otro nombre."
+      emptyMessage="No encontramos resultados para tu búsqueda."
       loading={loading}
       inputClassName="pl-10"
     />

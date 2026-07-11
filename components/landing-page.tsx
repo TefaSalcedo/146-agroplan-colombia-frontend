@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { gsap } from "gsap"
+import { useGSAP } from "@gsap/react"
 import {
   Sprout,
   MapPin,
@@ -11,6 +13,8 @@ import {
   CloudSun,
   Leaf,
   BarChart3,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,10 +33,23 @@ import { isWithinColombia } from "@/lib/location-utils"
 import { GeoButton, MunicipalityAutocomplete, MapModal } from "@/components/location"
 import { Municipality } from "@/types"
 
+gsap.registerPlugin(useGSAP)
+
 export function LandingPage() {
   const router = useRouter()
   const { setSelectedLocation } = useLocation()
   const currentYear = new Date().getFullYear()
+
+  // Refs for GSAP animation
+  const cardsContainerRef = useRef<HTMLDivElement>(null)
+  const centerTriggerRef = useRef<HTMLButtonElement>(null)
+  const cropBodyRef = useRef<HTMLDivElement>(null)
+  const locationBodyRef = useRef<HTMLDivElement>(null)
+  const isExpandedRef = useRef(false)
+  const isMouseInsideRef = useRef(false)
+  const toggleCardsRef = useRef<(() => void) | undefined>(undefined)
+
+  const [isExpanded, setIsExpanded] = useState(false)
 
   // Crop selection state
   const [selectedCrop, setSelectedCrop] = useState("")
@@ -153,6 +170,163 @@ export function LandingPage() {
 
   const selectedMunicipality = allMunicipalities.find((m) => m.id === selectedMunic) ?? null
 
+  useGSAP(
+    (context, contextSafe) => {
+      if (!contextSafe) return
+
+      gsap.set([cropBodyRef.current, locationBodyRef.current], {
+        height: 0,
+        opacity: 0,
+      })
+
+      let collapseTimer: ReturnType<typeof setTimeout> | null = null
+      let selectObserver: MutationObserver | null = null
+
+      const cancelCollapseTimer = () => {
+        if (collapseTimer) {
+          clearTimeout(collapseTimer)
+          collapseTimer = null
+        }
+      }
+
+      const hasOpenSelect = () => {
+        return !!container?.querySelector('[aria-expanded="true"]')
+      }
+
+      const animateCollapse = contextSafe(() => {
+        isExpandedRef.current = false
+        setIsExpanded(false)
+
+        gsap.to([cropBodyRef.current, locationBodyRef.current], {
+          height: 0,
+          opacity: 0,
+          duration: 0.45,
+          ease: "power2.inOut",
+          stagger: 0.04,
+        })
+      })
+
+      const maybeCollapseAfterSelectsClose = () => {
+        if (isMouseInsideRef.current || hasOpenSelect()) return
+        cancelCollapseTimer()
+        collapseTimer = setTimeout(() => {
+          if (isMouseInsideRef.current || hasOpenSelect()) return
+          animateCollapse()
+        }, 200)
+      }
+
+      const startSelectObserver = () => {
+        if (selectObserver || !container) return
+        selectObserver = new MutationObserver(() => {
+          if (!hasOpenSelect()) {
+            maybeCollapseAfterSelectsClose()
+          }
+        })
+        selectObserver.observe(container, {
+          attributes: true,
+          subtree: true,
+          attributeFilter: ["aria-expanded"],
+        })
+      }
+
+      const stopSelectObserver = () => {
+        selectObserver?.disconnect()
+        selectObserver = null
+      }
+
+      const expandCards = contextSafe(() => {
+        cancelCollapseTimer()
+        stopSelectObserver()
+        if (isExpandedRef.current) return
+        isExpandedRef.current = true
+        setIsExpanded(true)
+
+        gsap.to([cropBodyRef.current, locationBodyRef.current], {
+          height: "auto",
+          opacity: 1,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.08,
+        })
+      })
+
+      const collapseCards = contextSafe(() => {
+        if (!isExpandedRef.current) return
+        cancelCollapseTimer()
+        stopSelectObserver()
+
+        if (hasOpenSelect()) {
+          startSelectObserver()
+          return
+        }
+
+        collapseTimer = setTimeout(() => {
+          if (hasOpenSelect() || isMouseInsideRef.current) return
+          animateCollapse()
+        }, 200)
+      })
+
+      const toggleCards = contextSafe(() => {
+        if (isExpandedRef.current) {
+          cancelCollapseTimer()
+          stopSelectObserver()
+          animateCollapse()
+        } else {
+          expandCards()
+        }
+      })
+
+      toggleCardsRef.current = toggleCards
+
+      const container = cardsContainerRef.current
+      const trigger = centerTriggerRef.current
+
+      const handleMouseEnter = contextSafe(() => {
+        isMouseInsideRef.current = true
+        expandCards()
+      })
+
+      const handleMouseLeave = contextSafe(() => {
+        isMouseInsideRef.current = false
+        collapseCards()
+      })
+
+      const handleFocusIn = contextSafe(() => {
+        expandCards()
+      })
+
+      const handleFocusOut = contextSafe((event: FocusEvent) => {
+        const relatedTarget = event.relatedTarget as Node | null
+        if (container && relatedTarget && container.contains(relatedTarget)) return
+        collapseCards()
+      })
+
+      const cleanup = () => {
+        cancelCollapseTimer()
+        stopSelectObserver()
+        container?.removeEventListener("mouseenter", handleMouseEnter)
+        container?.removeEventListener("mouseleave", handleMouseLeave)
+        container?.removeEventListener("focusin", handleFocusIn)
+        container?.removeEventListener("focusout", handleFocusOut)
+        trigger?.removeEventListener("touchstart", toggleCards)
+      }
+
+      if (container) {
+        container.addEventListener("mouseenter", handleMouseEnter)
+        container.addEventListener("mouseleave", handleMouseLeave)
+        container.addEventListener("focusin", handleFocusIn)
+        container.addEventListener("focusout", handleFocusOut)
+      }
+
+      if (trigger) {
+        trigger.addEventListener("touchstart", toggleCards, { passive: true })
+      }
+
+      return cleanup
+    },
+    { scope: cardsContainerRef }
+  )
+
   return (
     <div className="relative min-h-svh w-full overflow-hidden bg-black">
       {/* Video Background */}
@@ -182,230 +356,268 @@ export function LandingPage() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid w-full max-w-4xl gap-6 lg:grid-cols-2">
+        <div
+          ref={cardsContainerRef}
+          className="relative grid w-full max-w-4xl gap-6 lg:grid-cols-2"
+        >
           {/* Crop Card */}
-          <Card className="flex flex-col gap-5 border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                <Sprout className="size-6" />
+          <div className="h-full min-h-0">
+            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                  <Sprout className="size-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Por cultivo</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Elige tu cultivo y descubre el mejor momento y lugar para sembrar.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">Por cultivo</h2>
-                <p className="text-sm text-muted-foreground">
-                  Elige tu cultivo y descubre el mejor momento y lugar para sembrar.
-                </p>
-              </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
-                1. ¿Qué quieres sembrar?
-              </label>
-              <p className="text-xs text-muted-foreground">Elige uno de estos cultivos</p>
-              <Select
-                value={selectedCrop}
-                onValueChange={setSelectedCrop}
-                disabled={cropsLoading}
-                items={Object.fromEntries(crops.map((c) => [c.id, c.name]))}
+              <div
+                ref={cropBodyRef}
+                className="overflow-hidden"
+                style={{ height: 0, opacity: 0 }}
               >
-                <SelectTrigger className="h-12 w-full">
-                  <SelectValue
-                    placeholder={
-                      cropsLoading ? "Cargando cultivos..." : "Selecciona un cultivo"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {crops.map((crop) => (
-                    <SelectItem key={crop.id} value={crop.id}>
-                      {crop.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground">
+                    1. ¿Qué quieres sembrar?
+                  </label>
+                  <p className="text-xs text-muted-foreground">Elige uno de estos cultivos</p>
+                  <Select
+                    value={selectedCrop}
+                    onValueChange={setSelectedCrop}
+                    disabled={cropsLoading}
+                    items={Object.fromEntries(crops.map((c) => [c.id, c.name]))}
+                  >
+                    <SelectTrigger className="h-12 w-full">
+                      <SelectValue
+                        placeholder={
+                          cropsLoading ? "Cargando cultivos..." : "Selecciona un cultivo"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {crops.map((crop) => (
+                        <SelectItem key={crop.id} value={crop.id}>
+                          {crop.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <Button
-              onClick={handleContinueWithCrop}
-              disabled={!selectedCrop}
-              size="lg"
-              className="mt-auto h-12 w-full gap-2 rounded-xl text-base font-semibold"
-            >
-              <Leaf className="size-5" />
-              Ver recomendaciones
-            </Button>
-          </Card>
+                <Button
+                  onClick={handleContinueWithCrop}
+                  disabled={!selectedCrop}
+                  size="lg"
+                  className="mt-6 h-12 w-full gap-2 rounded-xl text-base font-semibold"
+                >
+                  <Leaf className="size-5" />
+                  Ver recomendaciones
+                </Button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Central expand trigger */}
+          <button
+            ref={centerTriggerRef}
+            type="button"
+            aria-label={isExpanded ? "Colapsar tarjetas" : "Expandir tarjetas"}
+            aria-expanded={isExpanded}
+            onClick={() => toggleCardsRef.current?.()}
+            className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center justify-center gap-1 rounded-full border-2 border-white/40 bg-black/50 p-3 text-white shadow-xl backdrop-blur-md transition-all hover:scale-110 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:p-4"
+          >
+            {isExpanded ? (
+              <Minimize2 className="size-5 sm:size-6" />
+            ) : (
+              <Maximize2 className="size-5 sm:size-6" />
+            )}
+            <span className="max-w-[4rem] text-center text-[10px] leading-tight font-medium sm:text-xs">
+              {isExpanded ? "Cerrar" : "Abrir"}
+            </span>
+          </button>
 
           {/* Location Card */}
-          <Card className="flex flex-col gap-5 border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-                <MapPin className="size-6" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">Por ubicación</h2>
-                <p className="text-sm text-muted-foreground">
-                  Usa tu ubicación actual o busca tu lugar en el mapa.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <GeoButton
-                isLoading={isLoadingGeo}
-                onClick={handleUseCurrentLocation}
-              />
-
-              {/* Divider */}
-              <div className="relative flex items-center py-1">
-                <div className="grow border-t border-border" />
-                <span className="mx-3 shrink-0 text-xs text-muted-foreground">
-                  o buscar manualmente
-                </span>
-                <div className="grow border-t border-border" />
-              </div>
-
-              {/* Autocomplete */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <Search className="size-4 text-muted-foreground" />
-                  Buscar municipio
-                </label>
-                <MunicipalityAutocomplete
-                  municipalities={allMunicipalities}
-                  value={selectedMunic}
-                  onSelect={handleSelectMunicipalityFromSearch}
-                  loading={allMunicipalitiesLoading}
-                  placeholder="Buscar municipio o vereda..."
-                />
-                {selectedMunicipality && (
-                  <p className="text-xs text-primary">
-                    {selectedMunicipality.name}, {selectedMunicipality.department}
+          <div className="h-full min-h-0">
+            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+                  <MapPin className="size-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Por ubicación</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Usa tu ubicación actual o busca tu lugar en el mapa.
                   </p>
-                )}
+                </div>
               </div>
 
-              {/* Optional manual selects */}
-              <button
-                type="button"
-                onClick={() => setShowManualSelects((prev) => !prev)}
-                className="flex w-full items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+              <div
+                ref={locationBodyRef}
+                className="overflow-hidden"
+                style={{ height: 0, opacity: 0 }}
               >
-                {showManualSelects ? (
-                  <>
-                    Ocultar selects manuales
-                    <ChevronUp className="size-3.5" />
-                  </>
-                ) : (
-                  <>
-                    Seleccionar con departamento y municipio
-                    <ChevronDown className="size-3.5" />
-                  </>
-                )}
-              </button>
+                <div className="space-y-4">
+                  <GeoButton
+                    isLoading={isLoadingGeo}
+                    onClick={handleUseCurrentLocation}
+                  />
 
-              {showManualSelects && (
-                <div className="space-y-3 rounded-xl border border-border bg-muted/50 p-3">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-foreground">Departamento</label>
-                    <Select
-                      value={selectedDept}
-                      onValueChange={(dept) => {
-                        setSelectedDept(dept)
-                        setSelectedMunic("")
-                      }}
-                      disabled={departmentsLoading}
-                      items={Object.fromEntries(departments.map((d) => [d, d]))}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue
-                          placeholder={
-                            departmentsLoading ? "Cargando departamentos..." : "Selecciona un departamento"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Divider */}
+                  <div className="relative flex items-center py-1">
+                    <div className="grow border-t border-border" />
+                    <span className="mx-3 shrink-0 text-xs text-muted-foreground">
+                      o buscar manualmente
+                    </span>
+                    <div className="grow border-t border-border" />
                   </div>
 
-                  {selectedDept && (
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-medium text-foreground">Municipio</label>
-                      <Select
-                        value={selectedMunic}
-                        onValueChange={setSelectedMunic}
-                        disabled={municipalitiesLoading || deptMunicipios.length === 0}
-                        items={Object.fromEntries(deptMunicipios.map((m) => [m.id, m.name]))}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={
-                              municipalitiesLoading
-                                ? "Cargando municipios..."
-                                : deptMunicipios.length === 0
-                                  ? "Sin municipios disponibles"
-                                  : "Selecciona un municipio"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {deptMunicipios.map((munic) => (
-                            <SelectItem key={munic.id} value={munic.id}>
-                              {munic.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Autocomplete */}
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                      <Search className="size-4 text-muted-foreground" />
+                      Buscar municipio
+                    </label>
+                    <MunicipalityAutocomplete
+                      municipalities={allMunicipalities}
+                      value={selectedMunic}
+                      onSelect={handleSelectMunicipalityFromSearch}
+                      loading={allMunicipalitiesLoading}
+                      placeholder="Buscar municipio o vereda..."
+                    />
+                    {selectedMunicipality && (
+                      <p className="text-xs text-primary">
+                        {selectedMunicipality.name}, {selectedMunicipality.department}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Optional manual selects */}
+                  <button
+                    type="button"
+                    onClick={() => setShowManualSelects((prev) => !prev)}
+                    className="flex w-full items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    {showManualSelects ? (
+                      <>
+                        Ocultar selecciones manuales
+                        <ChevronUp className="size-3.5" />
+                      </>
+                    ) : (
+                      <>
+                        Seleccionar con departamento y municipio
+                        <ChevronDown className="size-3.5" />
+                      </>
+                    )}
+                  </button>
+
+                  {showManualSelects && (
+                    <div className="space-y-3 rounded-xl border border-border bg-muted/50 p-3">
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-foreground">Departamento</label>
+                        <Select
+                          value={selectedDept}
+                          onValueChange={(dept) => {
+                            setSelectedDept(dept)
+                            setSelectedMunic("")
+                          }}
+                          disabled={departmentsLoading}
+                          items={Object.fromEntries(departments.map((d) => [d, d]))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue
+                              placeholder={
+                                departmentsLoading ? "Cargando departamentos..." : "Selecciona un departamento"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments.map((dept) => (
+                              <SelectItem key={dept} value={dept}>
+                                {dept}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {selectedDept && (
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-medium text-foreground">Municipio</label>
+                          <Select
+                            value={selectedMunic}
+                            onValueChange={setSelectedMunic}
+                            disabled={municipalitiesLoading || deptMunicipios.length === 0}
+                            items={Object.fromEntries(deptMunicipios.map((m) => [m.id, m.name]))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue
+                                placeholder={
+                                  municipalitiesLoading
+                                    ? "Cargando municipios..."
+                                    : deptMunicipios.length === 0
+                                      ? "Sin municipios disponibles"
+                                      : "Selecciona un municipio"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {deptMunicipios.map((munic) => (
+                                <SelectItem key={munic.id} value={munic.id}>
+                                  {munic.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
                   )}
+
+                  {/* Map trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setMapOpen(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <MapPin className="size-4" />
+                    Elegir en el mapa
+                  </button>
+
+                  <MapModal
+                    municipalities={allMunicipalities}
+                    selected={selectedMapMunicipality}
+                    onSelect={setSelectedMapMunicipality}
+                    onConfirm={handleConfirmMapSelection}
+                    open={mapOpen}
+                    onOpenChange={setMapOpen}
+                  />
+
+                  <Button
+                    onClick={handleContinueWithSelection}
+                    disabled={!selectedMunic || isLoadingManual}
+                    size="lg"
+                    className="mt-2 h-12 w-full gap-2 rounded-xl text-base font-semibold"
+                  >
+                    {isLoadingManual ? (
+                      <>
+                        <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Validando municipio...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="size-5" />
+                        Ver recomendaciones
+                      </>
+                    )}
+                  </Button>
                 </div>
-              )}
-
-              {/* Map trigger */}
-              <button
-                type="button"
-                onClick={() => setMapOpen(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <MapPin className="size-4" />
-                Elegir en el mapa
-              </button>
-
-              <MapModal
-                municipalities={allMunicipalities}
-                selected={selectedMapMunicipality}
-                onSelect={setSelectedMapMunicipality}
-                onConfirm={handleConfirmMapSelection}
-                open={mapOpen}
-                onOpenChange={setMapOpen}
-              />
-
-              <Button
-                onClick={handleContinueWithSelection}
-                disabled={!selectedMunic || isLoadingManual}
-                size="lg"
-                className="h-12 w-full gap-2 rounded-xl text-base font-semibold"
-              >
-                {isLoadingManual ? (
-                  <>
-                    <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Validando municipio...
-                  </>
-                ) : (
-                  <>
-                    <MapPin className="size-5" />
-                    Ver recomendaciones
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </div>
         </div>
 
         {/* Footer Benefits */}
