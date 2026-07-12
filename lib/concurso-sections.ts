@@ -14,7 +14,7 @@ export interface ConcursoSectionConfig {
 }
 
 export const concursoSections: ConcursoSectionConfig[] = [
-  { id: "que-es", label: "Qué es", icon: Award },
+  { id: "que-es", label: "Datos al ecosistema 2026", icon: Award },
   { id: "nuestro-proyecto", label: "Nuestro Proyecto", icon: GitBranch },
   { id: "como-lo-hicimos", label: "Cómo lo hicimos", icon: Calendar },
   { id: "nuestro-equipo", label: "Nuestro equipo", icon: Users },

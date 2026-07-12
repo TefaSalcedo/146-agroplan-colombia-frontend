@@ -12,6 +12,11 @@ const nextConfig = {
         ...(apiOrigin.port ? { port: apiOrigin.port } : {}),
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        pathname: '/**',
+      },
     ],
   },
   allowedDevOrigins: ['localhost', '127.0.0.1'],
