@@ -103,7 +103,7 @@ function Combobox({
           aria-controls={listboxId}
           aria-expanded={open}
           aria-autocomplete="list"
-          disabled={disabled || loading}
+          disabled={disabled}
           placeholder={loading ? "Cargando..." : placeholder}
           value={inputValue}
           onChange={handleInputChange}
