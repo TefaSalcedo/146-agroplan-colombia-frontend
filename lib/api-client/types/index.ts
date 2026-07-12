@@ -182,6 +182,47 @@ export interface ZoningMapResponse {
   cacheHit?: boolean | null
 }
 
+// ==================== AI Insights ====================
+// fetchApi converts snake_case backend keys to camelCase, so these types reflect
+// the shape seen by the frontend after conversion.
+
+export interface AiInsightsAlternativeCrop {
+  cropName: string
+  why: string
+  confidence: "high" | "medium" | "low"
+}
+
+export interface AiInsightsFarmingSystem {
+  title: string
+  recommendation: string
+  suitable: "yes" | "no" | "maybe"
+}
+
+export interface AiInsightsSoilAndFertilizer {
+  title: string
+  content: string
+}
+
+export interface AiInsightsResponse {
+  municipalityId: string
+  municipalityName: string
+  summary: string
+  alternativeCrops: AiInsightsAlternativeCrop[]
+  farmingSystems: AiInsightsFarmingSystem[]
+  soilAndFertilizer: AiInsightsSoilAndFertilizer[]
+  generatedAt: string
+  expiresAt: string
+  cached: boolean
+  provider: string
+  model: string
+  tokensIn: number
+  tokensOut: number
+  tokensTotal: number
+  latencyMs: number
+  status: "success" | "error"
+  error: string | null
+}
+
 // ==================== Calendars ====================
 
 export interface CalendarRequest {
@@ -299,6 +340,10 @@ export interface RecommendationResponse {
   otherCrops: CropResponseLite[]
   nextPlantingSeason: NextPlantingSeason
   source: "data" | "climate" | "fallback"
+  sourceDescription: string
+  whyItMatters: string
+  modelVersion: string
+  method: string
 }
 
 // ==================== Alerts ====================

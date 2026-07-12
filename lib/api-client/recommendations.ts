@@ -118,6 +118,9 @@ function buildRecommendationResponse(
   const top = ranked[0]
   const alternatives = ranked.slice(1, 5)
 
+  const topModelVersion = top?.result.modelVersion ?? zoning.modelVersion ?? "unknown"
+  const topMethod = top?.result.method ?? (useResults ? "zoning_model" : "climate_forecast")
+
   const topSuitability = top?.result.suitability ?? "high"
   const topConfidence = top?.result.confidence ?? 0.75
   const topCrop = top
@@ -166,6 +169,18 @@ function buildRecommendationResponse(
     source = "climate"
   }
 
+  const sourceDescriptions: Record<typeof source, string> = {
+    data: "Estas recomendaciones se generan a partir de datos históricos de aptitud del suelo, clima y producción en esta zona. El modelo analiza qué cultivos han tenido mejor desempeño en condiciones similares.",
+    climate: "Estas recomendaciones usan el pronóstico climático actual (temperatura, lluvia y humedad) para estimar qué cultivos se adaptan mejor en este momento.",
+    fallback: "Recomendación general cuando no hay datos históricos ni climáticos específicos suficientes para este municipio.",
+  }
+
+  const whyItMatters: Record<typeof source, string> = {
+    data: "Útil para decisiones de largo plazo basadas en el comportamiento real de la región.",
+    climate: "Ideal para decidir qué sembrar en la próxima temporada según el clima esperado.",
+    fallback: "Sirve como punto de partida, pero se recomienda validar con un agrónomo local.",
+  }
+
   return {
     topCrop,
     otherCrops,
@@ -175,6 +190,10 @@ function buildRecommendationResponse(
       crops: [topCrop.id, ...otherCrops.slice(0, 2).map((c) => c.id)],
     },
     source,
+    sourceDescription: sourceDescriptions[source],
+    whyItMatters: whyItMatters[source],
+    modelVersion: topModelVersion,
+    method: topMethod,
   }
 }
 

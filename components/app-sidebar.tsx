@@ -448,16 +448,6 @@ export function AppSidebar() {
               <Thermometer className="size-5 shrink-0" />
               Información del cultivo temperatura
             </button>
-            <Link
-              href="/concurso"
-              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
-            >
-              <Trophy className="size-5 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <span className="block">Datos al ecosistema 2026</span>
-                <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
-              </div>
-            </Link>
             {configHref ? (
               <Link
                 href={configHref}
@@ -472,6 +462,16 @@ export function AppSidebar() {
                 Configuración
               </div>
             )}
+            <Link
+              href="/concurso"
+              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
+            >
+              <Trophy className="size-5 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="block">Datos al ecosistema 2026</span>
+                <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
+              </div>
+            </Link>
           </>
         )}
 
@@ -500,6 +500,13 @@ export function AppSidebar() {
               )
             })}
             <Link
+              href="/configuracion"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+            >
+              <Settings className="size-5 shrink-0" />
+              Configuración
+            </Link>
+            <Link
               href="/concurso"
               className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
             >
@@ -508,13 +515,6 @@ export function AppSidebar() {
                 <span className="block">Datos al ecosistema 2026</span>
                 <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
               </div>
-            </Link>
-            <Link
-              href="/configuracion"
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-            >
-              <Settings className="size-5 shrink-0" />
-              Configuración
             </Link>
           </>
         )}

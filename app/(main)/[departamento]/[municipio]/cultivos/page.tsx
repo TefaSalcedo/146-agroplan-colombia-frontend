@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Database, Cloud } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { CropCard } from '@/components/crop-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { PageLoading } from '@/components/page-loading'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { useRecommendations } from '@/hooks'
+import { useRecommendations, useAiInsights } from '@/hooks'
 import { useLocation } from '@/context/LocationContext'
+import { AiInsightsPanel } from '@/components/ai-insights-panel'
+import { RecommendationSourceBanner } from '@/components/recommendation-source-banner'
 import { buildLocationPath } from '@/lib/routing'
 import type { Crop } from '@/types'
 
@@ -21,6 +20,7 @@ export default function CultivosPage() {
 
   const municipalityId = selectedLocation?.id || ''
   const { recommendations, loading, error } = useRecommendations(municipalityId)
+  const { insights, loading: insightsLoading, error: insightsError, retryAttempt: insightsRetryAttempt, reload: reloadInsights } = useAiInsights(municipalityId)
 
   useEffect(() => {
     setMounted(true)
@@ -72,19 +72,13 @@ export default function CultivosPage() {
             subtitle={`Cultivos recomendados para ${selectedLocation.name}, ${selectedLocation.department}`}
           />
           {recommendations?.source && (
-            <div className='flex items-center gap-2'>
-              {recommendations.source === 'data' ? (
-                <Badge variant='default' className='w-fit gap-1.5 text-xs'>
-                  <Database className='size-3' />
-                  Basado en datos históricos
-                </Badge>
-              ) : recommendations.source === 'climate' ? (
-                <Badge variant='secondary' className='w-fit gap-1.5 text-xs'>
-                  <Cloud className='size-3' />
-                  Predicción climática
-                </Badge>
-              ) : null}
-            </div>
+            <RecommendationSourceBanner
+              source={recommendations.source}
+              sourceDescription={recommendations.sourceDescription}
+              whyItMatters={recommendations.whyItMatters}
+              modelVersion={recommendations.modelVersion}
+              method={recommendations.method}
+            />
           )}
         </div>
         <DownloadPdfButton pageName='Cultivos-AgroPlan' />
@@ -97,6 +91,14 @@ export default function CultivosPage() {
           <CropCard key={crop.id} {...crop} href={`${cropsBasePath}/${crop.id}`} />
         ))}
       </div>
+      <AiInsightsPanel
+        insights={insights}
+        loading={insightsLoading}
+        error={insightsError}
+        retryAttempt={insightsRetryAttempt}
+        municipalityName={selectedLocation.name}
+        onReload={() => reloadInsights()}
+      />
     </div>
   )
 }

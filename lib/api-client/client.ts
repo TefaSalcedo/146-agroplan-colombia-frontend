@@ -83,6 +83,7 @@ export async function fetchApi<T>(
   // Use the Next.js rewrite in the browser to avoid CORS issues.
   // Server-side requests can still hit the API directly.
   const url = typeof window !== "undefined" ? `/api${endpoint}` : `${API_URL}${endpoint}`
+  console.log(`[fetchApi] Request URL: ${url} (window=${typeof window !== "undefined"})`)
   
   const defaultOptions: RequestInit = {
     headers: {
@@ -103,9 +104,11 @@ export async function fetchApi<T>(
 
   try {
     const response = await fetchWithRetry(url, defaultOptions)
+    console.log(`[fetchApi] Response status: ${response.status} for ${url}`)
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      console.error(`[fetchApi] HTTP error ${response.status} for ${url}:`, errorData)
       throw new ApiError(
         errorData.detail || `HTTP error! status: ${response.status}`,
         response.status,

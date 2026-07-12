@@ -10,6 +10,7 @@ export * from "./recommendations"
 export * from "./health"
 export * from "./alerts"
 export * from "./forecast"
+export * from "./ai-insights"
 export * from "./admin"
 
 // Unified API object for convenience
@@ -44,6 +45,9 @@ export const api = {
   },
   recommendations: {
     get: async (municipalityId: string) => (await import("./recommendations")).fetchRecommendations(municipalityId),
+  },
+  aiInsights: {
+    get: async (municipalityId: string) => (await import("./ai-insights")).fetchAiInsights(municipalityId),
   },
   alerts: {
     list: async (municipalityId: string) => (await import("./alerts")).fetchAlerts(municipalityId),
