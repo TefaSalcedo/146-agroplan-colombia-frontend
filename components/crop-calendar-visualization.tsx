@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Sprout, Wheat, Calendar, TrendingUp } from "lucide-react"
+import { Sprout, Wheat, Calendar, TrendingUp, Clock } from "lucide-react"
 import { MONTHS_LONG } from "@/lib/constants"
 import { CropImage } from "@/components/crop-image"
-import { AnalysisPlantBadge, LandscapeIllustration } from "@/components/crop-illustrations"
 import type { CalendarBatchResponse } from "@/lib/api-client/types"
 
 interface CropCalendarVisualizationProps {
@@ -40,12 +39,12 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
   const cropResult = calendarData.results[0]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       {/* Top row: Yield prediction and harvest windows */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Yield Prediction */}
         {cropResult.yieldPrediction && (
-          <Card className="relative flex flex-col justify-between gap-3 overflow-hidden bg-emerald-700 p-5 text-white">
+          <Card className="relative flex min-h-[240px] flex-col justify-between gap-4 overflow-hidden bg-emerald-700 p-6 text-white">
             <div className="pointer-events-none absolute inset-0">
               {cropImage ? (
                 <div className="absolute inset-0">
@@ -67,14 +66,16 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
               )}
             </div>
 
-            <div className="relative flex flex-col gap-3">
+            <div className="relative flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <TrendingUp className="size-5 text-emerald-100" />
-                <h3 className="font-semibold">Predicción de rendimiento</h3>
+                <h3 className="text-base font-semibold">Predicción de rendimiento</h3>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">{cropResult.yieldPrediction.toFixed(2)}</span>
-                <span className="text-emerald-100">toneladas/hectárea</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold">{cropResult.yieldPrediction.toFixed(2)}</span>
+                  <span className="text-emerald-100">toneladas/hectárea</span>
+                </div>
               </div>
               {cropResult.yieldConfidence && (
                 <Badge variant="secondary" className="w-fit border-emerald-500/50 bg-emerald-800/70 text-emerald-50 hover:bg-emerald-800/70">
@@ -86,44 +87,51 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
         )}
 
         {/* Harvest Windows */}
-        <Card className="flex flex-col gap-4 p-5">
+        <Card className="flex flex-col gap-5 p-6">
           <div className="flex items-center gap-2">
-            <Wheat className="size-5 text-amber-500" />
-            <h3 className="font-semibold">Ventanas de cosecha recomendadas</h3>
+            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+              <Wheat className="size-5" />
+            </div>
+            <h3 className="text-base font-semibold">Ventanas de cosecha recomendadas</h3>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {cropResult.topHarvestMonths.map((window, index) => (
               <div
                 key={`${window.harvestYear}-${window.harvestMonth}-${index}`}
-                className="flex flex-col gap-2 rounded-lg border border-border p-4"
+                className="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-5"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="size-4 text-primary" />
-                    <span className="font-medium">
+                    <Calendar className="size-5 text-primary" />
+                    <span className="text-lg font-semibold text-foreground">
                       {window.harvestMonthName} {window.harvestYear}
                     </span>
                   </div>
-                  <Badge variant="default" className="bg-primary">
+                  <Badge variant="default" className="bg-primary px-2.5 py-0.5 text-xs font-semibold">
                     Score: {(window.score * 100).toFixed(0)}%
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <Sprout className="size-4 text-emerald-500" />
-                  <span className="text-muted-foreground">
-                    Siembra: {window.plantingMonths.map(m => MONTHS_LONG[m - 1]).join(", ")} {window.plantingYear}
-                  </span>
-                </div>
-
-                {window.durationDaysMin && window.durationDaysMax && (
-                  <div className="text-xs text-muted-foreground">
-                    Duración: {window.durationDaysMin === window.durationDaysMax
-                      ? `${window.durationDaysMin} días`
-                      : `${window.durationDaysMin} - ${window.durationDaysMax} días`}
+                <div className="flex flex-col gap-2 text-sm text-foreground">
+                  <div className="flex items-center gap-2">
+                    <Sprout className="size-4 shrink-0 text-emerald-600" />
+                    <span>
+                      Siembra: {window.plantingMonths.map(m => MONTHS_LONG[m - 1]).join(", ")} {window.plantingYear}
+                    </span>
                   </div>
-                )}
+
+                  {window.durationDaysMin && window.durationDaysMax && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="size-4 shrink-0 text-slate-400" />
+                      <span>
+                        Duración: {window.durationDaysMin === window.durationDaysMax
+                          ? `${window.durationDaysMin} días`
+                          : `${window.durationDaysMin} - ${window.durationDaysMax} días`}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -132,22 +140,15 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
 
       {/* AI Explanation */}
       {cropResult.explanation?.text && (
-        <Card className="relative flex flex-col gap-3 overflow-hidden p-5">
-          <div className="pointer-events-none absolute right-3 top-3 w-16 opacity-80">
-            <AnalysisPlantBadge className="h-full w-full" />
+        <Card className="relative flex flex-col gap-4 overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-background to-background p-6">
+          <div>
+            <h3 className="text-base font-semibold">Análisis inteligente</h3>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24">
-            <LandscapeIllustration className="h-full w-full" />
-          </div>
-          <div className="relative flex items-center gap-2">
-            <Calendar className="size-5 text-primary" />
-            <h3 className="font-semibold">Análisis inteligente</h3>
-          </div>
-          <p className="relative text-sm leading-relaxed text-muted-foreground">
+          <p className="text-justify text-sm leading-loose text-foreground print:text-base print:leading-loose">
             {cropResult.explanation.text}
           </p>
           {cropResult.explanation.model && (
-            <div className="relative text-xs text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               Modelo: {cropResult.explanation.model}
               {cropResult.explanation.latencyMs && ` · ${cropResult.explanation.latencyMs}ms`}
             </div>
@@ -159,7 +160,7 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
       {cropResult.warnings && cropResult.warnings.length > 0 && (
         <Card className="border-amber-200 bg-amber-50 p-5">
           <h4 className="mb-2 font-medium text-amber-900">Advertencias</h4>
-          <ul className="space-y-1 text-sm text-amber-800">
+          <ul className="space-y-2 text-sm leading-relaxed text-amber-800">
             {cropResult.warnings.map((warning, index) => (
               <li key={index}>• {warning}</li>
             ))}

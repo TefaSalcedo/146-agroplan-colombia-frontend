@@ -22,6 +22,7 @@ import { MonthStrip } from "@/components/month-strip"
 import { PageLoading } from "@/components/page-loading"
 import { useCrop, useCropRecommendations, useCropCalendar } from "@/hooks"
 import { useLocation } from "@/context/LocationContext"
+import { buildLocationPath } from "@/lib/routing"
 import { AIRecommendationCard } from "@/components/ai-recommendation-card"
 import { CropCalendarVisualization } from "@/components/crop-calendar-visualization"
 import { LandscapeIllustration, SproutPotIllustration, OrganicRingsIllustration } from "@/components/crop-illustrations"
@@ -54,6 +55,9 @@ interface CropDetailViewProps {
 export function CropDetailView({ id }: CropDetailViewProps) {
   const { crop, loading, error } = useCrop(id)
   const { selectedLocation } = useLocation()
+  const cropsHref = selectedLocation
+    ? buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
+    : '..'
   const {
     recommendation,
     loading: recommendationLoading,
@@ -64,28 +68,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
     loading: calendarLoading,
   } = useCropCalendar(id, selectedLocation?.id ?? "")
 
-  // Console logs para debugging de respuestas del backend
-  useEffect(() => {
-    console.log('📍 [CROP DETAIL] Crop ID:', id)
-    console.log('📍 [CROP DETAIL] Selected Location:', selectedLocation)
-  }, [id, selectedLocation])
-
-  useEffect(() => {
-    console.log('🌱 [CROP DETAIL] Crop data:', crop)
-    console.log('🌱 [CROP DETAIL] Crop loading:', loading)
-    console.log('🌱 [CROP DETAIL] Crop error:', error)
-  }, [crop, loading, error])
-
-  useEffect(() => {
-    console.log('🤖 [CROP DETAIL] AI Recommendation:', recommendation)
-    console.log('🤖 [CROP DETAIL] Recommendation loading:', recommendationLoading)
-    console.log('🤖 [CROP DETAIL] Recommendation error:', recommendationError)
-  }, [recommendation, recommendationLoading, recommendationError])
-
-  useEffect(() => {
-    console.log('📅 [CROP DETAIL] Calendar result:', cropResult)
-    console.log('📅 [CROP DETAIL] Calendar loading:', calendarLoading)
-  }, [cropResult, calendarLoading])
+  
 
   if (loading) {
     return <PageLoading title="Cargando cultivo" />
@@ -97,7 +80,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
     return (
       <div className="flex flex-col gap-8">
         <Link
-          href=".."
+          href={cropsHref}
           className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
@@ -110,7 +93,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
               {error || "No se pudieron cargar los datos de este cultivo."}
             </p>
           </div>
-          <Button nativeButton={false} render={<Link href="..">Ver otros cultivos</Link>} />
+          <Button nativeButton={false} render={<Link href={cropsHref}>Ver otros cultivos</Link>} />
         </Card>
       </div>
     )
@@ -132,7 +115,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
       </div>
 
       <Link
-        href=".."
+        href={cropsHref}
         className="relative flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
