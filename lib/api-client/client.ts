@@ -1,6 +1,17 @@
 // API Configuration
-// Use localhost backend URL
-const API_URL = 'http://localhost:8000/api/v1'
+// NEXT_PUBLIC_API_URL is expected to include the /api/v1 prefix.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+
+// Base URL without the API path prefix, used for static assets (e.g. crop images).
+function getApiBaseUrl(): string {
+  try {
+    return new URL(API_URL).origin
+  } catch {
+    return 'http://localhost:8000'
+  }
+}
+
+export const API_BASE_URL = getApiBaseUrl()
 
 // Simple in-memory cache for GET requests
 const cache = new Map<string, { data: unknown; timestamp: number }>()

@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react"
-import { predictZoning, predictZoningBatch } from "@/lib/api-client/zoning"
+import { predictZoning, predictZoningBatch, fetchZoningMap } from "@/lib/api-client/zoning"
 import type {
   ZoningRequest,
   ZoningResponse,
   ZoningBatchRequest,
   ZoningBatchResponse,
+  ZoningMapResponse,
 } from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
 
@@ -42,5 +43,19 @@ export function useZoning() {
     }
   }, [])
 
-  return { predict, predictBatch, loading, error }
+  const getMap = useCallback(async (cropId: string): Promise<ZoningMapResponse | null> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await fetchZoningMap(cropId)
+      return result
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Error loading zoning map")
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { predict, predictBatch, getMap, loading, error }
 }

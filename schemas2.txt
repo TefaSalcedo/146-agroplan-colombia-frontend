@@ -1,0 +1,773 @@
+﻿=== ZoningBatchCropResult ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+    },
+    "crop_name": {
+      "type": "string",
+      "title": "Crop Name"
+    },
+    "suitability": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "title": "Suitability"
+    },
+    "confidence": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    },
+    "method": {
+      "type": "string",
+      "title": "Method",
+      "description": "Prediction method: primary_model, fallback, unavailable"
+    },
+    "factors": {
+      "$ref": "#/components/schemas/ZoningFactors"
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Probabilities"
+    },
+    "warnings": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Warnings"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "crop_name",
+    "suitability",
+    "confidence",
+    "model_version",
+    "method",
+    "factors"
+  ],
+  "title": "ZoningBatchCropResult",
+  "description": "Zoning result for a single crop in a batch request."
+}
+=== ZoningFactors ===
+{
+  "properties": {
+    "temperature_match": {
+      "type": "boolean",
+      "title": "Temperature Match",
+      "description": "Temperature range compatibility"
+    },
+    "precipitation_match": {
+      "type": "boolean",
+      "title": "Precipitation Match",
+      "description": "Precipitation compatibility"
+    },
+    "soil_match": {
+      "type": "boolean",
+      "title": "Soil Match",
+      "description": "Soil compatibility"
+    },
+    "altitude_match": {
+      "type": "boolean",
+      "title": "Altitude Match",
+      "description": "Altitude compatibility"
+    }
+  },
+  "type": "object",
+  "required": [
+    "temperature_match",
+    "precipitation_match",
+    "soil_match",
+    "altitude_match"
+  ],
+  "title": "ZoningFactors"
+}
+=== ZoningMapResponse ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+    },
+    "crop_name": {
+      "type": "string",
+      "title": "Crop Name"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    },
+    "method": {
+      "type": "string",
+      "title": "Method",
+      "description": "Primary method used across municipalities"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/components/schemas/ZoningMapMunicipalityResult"
+      },
+      "type": "array",
+      "title": "Results"
+    },
+    "total_municipalities": {
+      "type": "integer",
+      "title": "Total Municipalities"
+    },
+    "cache_hit": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Cache Hit"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "crop_name",
+    "model_version",
+    "method",
+    "results",
+    "total_municipalities"
+  ],
+  "title": "ZoningMapResponse",
+  "description": "Zoning map for a crop across all municipalities."
+}
+=== ZoningMapMunicipalityResult ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id"
+    },
+    "municipality_name": {
+      "type": "string",
+      "title": "Municipality Name"
+    },
+    "dane_code": {
+      "type": "string",
+      "title": "Dane Code"
+    },
+    "lat": {
+      "type": "number",
+      "title": "Lat"
+    },
+    "lng": {
+      "type": "number",
+      "title": "Lng"
+    },
+    "suitability": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "title": "Suitability"
+    },
+    "confidence": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence"
+    },
+    "method": {
+      "type": "string",
+      "title": "Method"
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Probabilities"
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id",
+    "municipality_name",
+    "dane_code",
+    "lat",
+    "lng",
+    "suitability",
+    "confidence",
+    "method"
+  ],
+  "title": "ZoningMapMunicipalityResult",
+  "description": "Single municipality result in a zoning map."
+}
+=== NextPlantingSeason ===
+{
+  "properties": {
+    "month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Month",
+      "description": "Month of the next planting season"
+    },
+    "month_name": {
+      "type": "string",
+      "title": "Month Name",
+      "description": "Spanish name of the month"
+    },
+    "crops": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Crops",
+      "description": "Crop IDs recommended for planting in that month"
+    }
+  },
+  "type": "object",
+  "required": [
+    "month",
+    "month_name",
+    "crops"
+  ],
+  "title": "NextPlantingSeason"
+}
+=== AlertResponse ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Alert identifier"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "danger"
+      ],
+      "title": "Level",
+      "description": "Severity level"
+    },
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Short alert title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Detailed recommendation for the farmer"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "level",
+    "title",
+    "description"
+  ],
+  "title": "AlertResponse"
+}
+=== ForecastDayResponse ===
+{
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "temp_min": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Min",
+      "description": "Minimum temperature (░C)"
+    },
+    "temp_max": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Max",
+      "description": "Maximum temperature (░C)"
+    },
+    "temp_mean": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Mean",
+      "description": "Mean temperature (░C)"
+    },
+    "precipitation": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Precipitation",
+      "description": "Daily precipitation (mm)"
+    },
+    "humidity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Humidity",
+      "description": "Relative humidity (%)"
+    },
+    "uv_index": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Uv Index",
+      "description": "Maximum UV index"
+    },
+    "wind_speed": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Wind Speed",
+      "description": "Maximum wind speed (km/h)"
+    }
+  },
+  "type": "object",
+  "required": [
+    "date"
+  ],
+  "title": "ForecastDayResponse"
+}
+=== HealthResponse ===
+{
+  "properties": {
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "description": "Service health status"
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "API semantic version"
+    },
+    "models_loaded": {
+      "type": "boolean",
+      "title": "Models Loaded",
+      "description": "Whether production ML models are currently loaded"
+    }
+  },
+  "type": "object",
+  "required": [
+    "status",
+    "version",
+    "models_loaded"
+  ],
+  "title": "HealthResponse",
+  "description": "Basic readiness endpoint used by local tooling and containers."
+}
+=== ReadinessResponse ===
+{
+  "properties": {
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "description": "Overall status: ok or degraded"
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "API semantic version"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/components/schemas/ComponentStatus"
+      },
+      "type": "array",
+      "title": "Components"
+    }
+  },
+  "type": "object",
+  "required": [
+    "status",
+    "version"
+  ],
+  "title": "ReadinessResponse",
+  "description": "Detailed readiness for all infrastructure components."
+}
+=== GrowthStage ===
+{
+  "properties": {
+    "label": {
+      "type": "string",
+      "title": "Label",
+      "description": "Stage name"
+    },
+    "icon": {
+      "type": "string",
+      "title": "Icon",
+      "description": "Frontend icon token"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Detailed stage description"
+    }
+  },
+  "type": "object",
+  "required": [
+    "label",
+    "icon",
+    "description"
+  ],
+  "title": "GrowthStage",
+  "description": "Single growth stage description for a crop profile."
+}
+=== Tip ===
+{
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Tip title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Tip details"
+    }
+  },
+  "type": "object",
+  "required": [
+    "title",
+    "description"
+  ],
+  "title": "Tip",
+  "description": "Agronomic tip for a crop."
+}
+=== CalendarDay ===
+{
+  "properties": {
+    "day": {
+      "type": "integer",
+      "maximum": 31.0,
+      "minimum": 1.0,
+      "title": "Day",
+      "description": "Day of month"
+    },
+    "rating": {
+      "type": "string",
+      "enum": [
+        "ideal",
+        "acceptable",
+        "notRecommended"
+      ],
+      "title": "Rating"
+    }
+  },
+  "type": "object",
+  "required": [
+    "day",
+    "rating"
+  ],
+  "title": "CalendarDay"
+}
+=== CalendarCropResult ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+    },
+    "crop_name": {
+      "type": "string",
+      "title": "Crop Name"
+    },
+    "yield_prediction": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Yield Prediction",
+      "description": "Predicted yield (t/ha) from ensemble model"
+    },
+    "yield_model_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Yield Model Version"
+    },
+    "yield_confidence": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Yield Confidence",
+      "description": "Confidence level: high, medium, low"
+    },
+    "top_harvest_months": {
+      "items": {
+        "$ref": "#/components/schemas/CalendarHarvestWindow"
+      },
+      "type": "array",
+      "title": "Top Harvest Months",
+      "description": "Top 3 recommended harvest months"
+    },
+    "monthly_forecasts": {
+      "items": {
+        "$ref": "#/components/schemas/CalendarMonthlyForecast"
+      },
+      "type": "array",
+      "title": "Monthly Forecasts",
+      "description": "Climate data used for each month in the horizon"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+    },
+    "method": {
+      "type": "string",
+      "title": "Method",
+      "description": "Prediction method used"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "crop_name",
+    "method"
+  ],
+  "title": "CalendarCropResult",
+  "description": "Calendar prediction for a single crop in a batch request."
+}
+=== CalendarMonthlyForecast ===
+{
+  "properties": {
+    "month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Month"
+    },
+    "year": {
+      "type": "integer",
+      "maximum": 2100.0,
+      "minimum": 2000.0,
+      "title": "Year"
+    },
+    "temp_mean": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Mean"
+    },
+    "precipitation": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Precipitation"
+    },
+    "humidity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Humidity"
+    },
+    "climate_source": {
+      "type": "string",
+      "enum": [
+        "open_meteo_forecast",
+        "not_available"
+      ],
+      "title": "Climate Source",
+      "description": "Source of climate data for this month: open_meteo_forecast or not_available"
+    }
+  },
+  "type": "object",
+  "required": [
+    "month",
+    "year",
+    "climate_source"
+  ],
+  "title": "CalendarMonthlyForecast",
+  "description": "Climate forecast for a single month in the horizon."
+}
+=== CalendarHarvestWindow ===
+{
+  "properties": {
+    "harvest_month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Harvest Month"
+    },
+    "harvest_year": {
+      "type": "integer",
+      "maximum": 2100.0,
+      "minimum": 2000.0,
+      "title": "Harvest Year"
+    },
+    "harvest_month_name": {
+      "type": "string",
+      "title": "Harvest Month Name"
+    },
+    "score": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score",
+      "description": "Relative ranking score"
+    },
+    "planting_months": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "title": "Planting Months",
+      "description": "Recommended planting months (may be empty if no data)"
+    },
+    "planting_year": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Planting Year"
+    },
+    "duration_days_min": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Duration Days Min"
+    },
+    "duration_days_max": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Duration Days Max"
+    }
+  },
+  "type": "object",
+  "required": [
+    "harvest_month",
+    "harvest_year",
+    "harvest_month_name",
+    "score"
+  ],
+  "title": "CalendarHarvestWindow",
+  "description": "A recommended harvest month with computed planting windows."
+}

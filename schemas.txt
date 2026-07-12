@@ -1,0 +1,1300 @@
+﻿=== MunicipalityResponse ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Unique municipality DANE code (5 digits)"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Municipality display name"
+    },
+    "department": {
+      "type": "string",
+      "title": "Department",
+      "description": "Department name (backwards compatible)"
+    },
+    "department_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Department Id",
+      "description": "Department DANE code (2 digits)"
+    },
+    "lat": {
+      "type": "number",
+      "title": "Lat",
+      "description": "Latitude in decimal degrees"
+    },
+    "lng": {
+      "type": "number",
+      "title": "Lng",
+      "description": "Longitude in decimal degrees"
+    },
+    "altitude": {
+      "type": "integer",
+      "title": "Altitude",
+      "description": "Altitude above sea level in meters",
+      "default": 0
+    },
+    "avg_temperature": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Avg Temperature",
+      "description": "Average annual temperature (░C)"
+    },
+    "precipitation": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Precipitation",
+      "description": "Average annual precipitation (mm)"
+    },
+    "dane_code": {
+      "type": "string",
+      "title": "Dane Code",
+      "description": "Official DANE code"
+    },
+    "distance_km": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Distance Km",
+      "description": "Distance from provided coordinates when searching nearby"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "department",
+    "lat",
+    "lng",
+    "dane_code"
+  ],
+  "title": "MunicipalityResponse",
+  "description": "Single municipality with location and climate metadata."
+}
+=== MunicipalityListResponse ===
+{
+  "properties": {
+    "municipalities": {
+      "items": {
+        "$ref": "#/components/schemas/MunicipalityResponse"
+      },
+      "type": "array",
+      "title": "Municipalities",
+      "description": "Municipality entries"
+    },
+    "count": {
+      "type": "integer",
+      "title": "Count",
+      "description": "Total number of municipalities returned"
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipalities",
+    "count"
+  ],
+  "title": "MunicipalityListResponse",
+  "description": "Response for municipality catalog listings."
+}
+=== DepartmentListResponse ===
+{
+  "properties": {
+    "departments": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Departments",
+      "description": "Department names (backwards compatible)"
+    },
+    "departments_detailed": {
+      "items": {
+        "$ref": "#/components/schemas/DepartmentResponse"
+      },
+      "type": "array",
+      "title": "Departments Detailed",
+      "description": "Departments with DANE codes and counts"
+    },
+    "count": {
+      "type": "integer",
+      "title": "Count",
+      "description": "Total number of departments",
+      "default": 0
+    }
+  },
+  "type": "object",
+  "title": "DepartmentListResponse",
+  "description": "List of departments available in the catalog."
+}
+=== DepartmentResponse ===
+{
+  "properties": {
+    "dane_code": {
+      "type": "string",
+      "title": "Dane Code",
+      "description": "Department DANE code (2 digits)"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Department name"
+    },
+    "municipality_count": {
+      "type": "integer",
+      "title": "Municipality Count",
+      "description": "Number of municipalities in this department"
+    }
+  },
+  "type": "object",
+  "required": [
+    "dane_code",
+    "name",
+    "municipality_count"
+  ],
+  "title": "DepartmentResponse",
+  "description": "Department with DANE code and municipality count."
+}
+=== MunicipalitySearchResponse ===
+{
+  "properties": {
+    "query": {
+      "type": "string",
+      "title": "Query",
+      "description": "Search query"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/components/schemas/MunicipalitySearchResult"
+      },
+      "type": "array",
+      "title": "Results"
+    },
+    "count": {
+      "type": "integer",
+      "title": "Count"
+    }
+  },
+  "type": "object",
+  "required": [
+    "query",
+    "results",
+    "count"
+  ],
+  "title": "MunicipalitySearchResponse",
+  "description": "Response for municipality/department autocomplete search."
+}
+=== MunicipalitySearchResult ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "DANE code (municipality 5 digits or department 2 digits)"
+    },
+    "municipality_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (same as id when type is municipality)"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Display name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "municipality",
+        "department"
+      ],
+      "title": "Type",
+      "description": "Entity type"
+    },
+    "department_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Department Id",
+      "description": "Department DANE code when type is municipality"
+    },
+    "department_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Department Name",
+      "description": "Department name when type is municipality"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "type"
+  ],
+  "title": "MunicipalitySearchResult",
+  "description": "Single result for municipality/department autocomplete."
+}
+=== WeatherResponse ===
+{
+  "properties": {
+    "temperature": {
+      "type": "number",
+      "title": "Temperature",
+      "description": "Current air temperature in Celsius"
+    },
+    "condition": {
+      "type": "string",
+      "title": "Condition",
+      "description": "Human-readable weather condition"
+    },
+    "humidity": {
+      "type": "number",
+      "title": "Humidity",
+      "description": "Relative humidity percentage"
+    },
+    "precipitation": {
+      "type": "number",
+      "title": "Precipitation",
+      "description": "Current precipitation in millimeters"
+    },
+    "icon": {
+      "type": "string",
+      "title": "Icon",
+      "description": "Frontend icon token"
+    },
+    "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "Upstream provider",
+      "default": "open-meteo"
+    },
+    "fetched_at": {
+      "type": "string",
+      "title": "Fetched At",
+      "description": "UTC timestamp when weather was fetched"
+    }
+  },
+  "type": "object",
+  "required": [
+    "temperature",
+    "condition",
+    "humidity",
+    "precipitation",
+    "icon",
+    "fetched_at"
+  ],
+  "title": "WeatherResponse"
+}
+=== CropListResponse ===
+{
+  "properties": {
+    "crops": {
+      "items": {
+        "$ref": "#/components/schemas/CropResponse"
+      },
+      "type": "array",
+      "title": "Crops",
+      "description": "Crop profiles"
+    },
+    "count": {
+      "type": "integer",
+      "title": "Count",
+      "description": "Total number of crops"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crops",
+    "count"
+  ],
+  "title": "CropListResponse",
+  "description": "List of full crop profiles."
+}
+=== CropResponse ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Crop identifier"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Crop common name"
+    },
+    "scientific_name": {
+      "type": "string",
+      "title": "Scientific Name",
+      "description": "Scientific name"
+    },
+    "image": {
+      "type": "string",
+      "title": "Image",
+      "description": "URL or path to crop image"
+    },
+    "success_rate": {
+      "type": "integer",
+      "title": "Success Rate",
+      "description": "Historical success rate (0-100)"
+    },
+    "recommendation": {
+      "type": "string",
+      "title": "Recommendation",
+      "description": "Short recommendation summary"
+    },
+    "short_reason": {
+      "type": "string",
+      "title": "Short Reason",
+      "description": "One-line reason for the recommendation"
+    },
+    "reason": {
+      "type": "string",
+      "title": "Reason",
+      "description": "Longer explanation of why the crop is recommended"
+    },
+    "days_to_harvest": {
+      "type": "integer",
+      "title": "Days To Harvest",
+      "description": "Typical days to harvest"
+    },
+    "soil_type": {
+      "type": "string",
+      "title": "Soil Type",
+      "description": "Recommended soil type"
+    },
+    "ideal_temperature": {
+      "type": "string",
+      "title": "Ideal Temperature",
+      "description": "Ideal temperature range"
+    },
+    "humidity": {
+      "type": "string",
+      "title": "Humidity",
+      "description": "Ideal humidity range"
+    },
+    "precipitation": {
+      "type": "string",
+      "title": "Precipitation",
+      "description": "Ideal precipitation range"
+    },
+    "altitude": {
+      "type": "string",
+      "title": "Altitude",
+      "description": "Ideal altitude range"
+    },
+    "irrigation": {
+      "type": "string",
+      "title": "Irrigation",
+      "description": "Irrigation recommendation"
+    },
+    "substrates": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Substrates",
+      "description": "Recommended substrates or growing media"
+    },
+    "planting_months": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "title": "Planting Months",
+      "description": "Recommended planting months (1-12)"
+    },
+    "harvest_months": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "title": "Harvest Months",
+      "description": "Typical harvest months (1-12)"
+    },
+    "stages": {
+      "items": {
+        "$ref": "#/components/schemas/GrowthStage"
+      },
+      "type": "array",
+      "title": "Stages",
+      "description": "Crop growth stages"
+    },
+    "tips": {
+      "items": {
+        "$ref": "#/components/schemas/Tip"
+      },
+      "type": "array",
+      "title": "Tips",
+      "description": "Agronomic tips"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "scientific_name",
+    "image",
+    "success_rate",
+    "recommendation",
+    "short_reason",
+    "reason",
+    "days_to_harvest",
+    "soil_type",
+    "ideal_temperature",
+    "humidity",
+    "precipitation",
+    "altitude",
+    "irrigation",
+    "substrates",
+    "planting_months",
+    "harvest_months",
+    "stages",
+    "tips"
+  ],
+  "title": "CropResponse",
+  "description": "Full crop profile returned by the catalog endpoints."
+}
+=== CropResponseLite ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Crop identifier"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Crop common name"
+    },
+    "image": {
+      "type": "string",
+      "title": "Image",
+      "description": "URL or path to crop image"
+    },
+    "recommendation": {
+      "type": "string",
+      "title": "Recommendation",
+      "description": "Short recommendation summary"
+    },
+    "success_rate": {
+      "type": "integer",
+      "title": "Success Rate",
+      "description": "Historical success rate (0-100)"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "image",
+    "recommendation",
+    "success_rate"
+  ],
+  "title": "CropResponseLite",
+  "description": "Lightweight crop entry for lists and cards."
+}
+=== ZoningRequest ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id",
+      "description": "Crop identifier"
+    },
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (5 digits)"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "municipality_id"
+  ],
+  "title": "ZoningRequest"
+}
+=== ZoningResponse ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+    },
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id"
+    },
+    "suitability": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "title": "Suitability"
+    },
+    "confidence": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    },
+    "factors": {
+      "$ref": "#/components/schemas/ZoningFactors"
+    },
+    "method": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Method",
+      "description": "Prediction method: primary_model, fallback, unavailable"
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Probabilities",
+      "description": "Per-class probabilities when available"
+    },
+    "warnings": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Warnings",
+      "description": "Data quality warnings"
+    },
+    "cache_hit": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Cache Hit",
+      "description": "Whether this result came from cache"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "municipality_id",
+    "suitability",
+    "confidence",
+    "model_version",
+    "factors"
+  ],
+  "title": "ZoningResponse"
+}
+=== ZoningBatchRequest ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (5 digits)"
+    },
+    "crop_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Crop Ids",
+      "description": "Optional list of crop IDs. If omitted, all ML-supported crops are evaluated."
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id"
+  ],
+  "title": "ZoningBatchRequest"
+}
+=== ZoningBatchResponse ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id"
+    },
+    "municipality_name": {
+      "type": "string",
+      "title": "Municipality Name"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/components/schemas/ZoningBatchCropResult"
+      },
+      "type": "array",
+      "title": "Results"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id",
+    "municipality_name",
+    "results",
+    "model_version"
+  ],
+  "title": "ZoningBatchResponse",
+  "description": "Batch zoning response for all crops in a municipality."
+}
+=== CalendarRequest ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id",
+      "description": "Crop identifier"
+    },
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (5 digits)"
+    },
+    "month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Month",
+      "description": "Target month"
+    },
+    "year": {
+      "type": "integer",
+      "maximum": 2100.0,
+      "minimum": 2000.0,
+      "title": "Year",
+      "description": "Target year"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "municipality_id",
+    "month",
+    "year"
+  ],
+  "title": "CalendarRequest"
+}
+=== CalendarResponse ===
+{
+  "properties": {
+    "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+    },
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id"
+    },
+    "month": {
+      "type": "integer",
+      "title": "Month"
+    },
+    "year": {
+      "type": "integer",
+      "title": "Year"
+    },
+    "days": {
+      "items": {
+        "$ref": "#/components/schemas/CalendarDay"
+      },
+      "type": "array",
+      "title": "Days"
+    },
+    "ideal_count": {
+      "type": "integer",
+      "title": "Ideal Count"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    }
+  },
+  "type": "object",
+  "required": [
+    "crop_id",
+    "municipality_id",
+    "month",
+    "year",
+    "days",
+    "ideal_count",
+    "model_version"
+  ],
+  "title": "CalendarResponse"
+}
+=== CalendarBatchRequest ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (5 digits)"
+    },
+    "crop_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Crop Ids",
+      "description": "Optional list of crop IDs. If omitted, all ML-supported crops are evaluated."
+    },
+    "horizon_months": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Horizon Months",
+      "description": "Forecast horizon in months",
+      "default": 12
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id"
+  ],
+  "title": "CalendarBatchRequest"
+}
+=== CalendarBatchResponse ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id"
+    },
+    "municipality_name": {
+      "type": "string",
+      "title": "Municipality Name"
+    },
+    "horizon_months": {
+      "type": "integer",
+      "title": "Horizon Months"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/components/schemas/CalendarCropResult"
+      },
+      "type": "array",
+      "title": "Results"
+    },
+    "model_version": {
+      "type": "string",
+      "title": "Model Version"
+    },
+    "explanation": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Explanation",
+      "description": "LLM-generated explanation (null if LLM unavailable)"
+    },
+    "llm_status": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Llm Status",
+      "description": "LLM generation status: success, llm_unavailable"
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id",
+    "municipality_name",
+    "horizon_months",
+    "results",
+    "model_version"
+  ],
+  "title": "CalendarBatchResponse",
+  "description": "Batch calendar response for multiple crops in a municipality."
+}
+=== RecommendationRequest ===
+{
+  "properties": {
+    "municipality_id": {
+      "type": "string",
+      "title": "Municipality Id",
+      "description": "Municipality DANE code (5 digits)"
+    }
+  },
+  "type": "object",
+  "required": [
+    "municipality_id"
+  ],
+  "title": "RecommendationRequest"
+}
+=== RecommendationResponse ===
+{
+  "properties": {
+    "top_crop": {
+      "$ref": "#/components/schemas/TopCropResponse",
+      "description": "Highest ranked crop for the municipality"
+    },
+    "other_crops": {
+      "items": {
+        "$ref": "#/components/schemas/CropResponseLite"
+      },
+      "type": "array",
+      "title": "Other Crops",
+      "description": "Alternative crops ranked 2-5"
+    },
+    "next_planting_season": {
+      "$ref": "#/components/schemas/NextPlantingSeason",
+      "description": "Crops that can be planted in the upcoming month"
+    }
+  },
+  "type": "object",
+  "required": [
+    "top_crop",
+    "other_crops",
+    "next_planting_season"
+  ],
+  "title": "RecommendationResponse"
+}
+=== TopCropResponse ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Crop identifier"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Crop common name"
+    },
+    "scientific_name": {
+      "type": "string",
+      "title": "Scientific Name",
+      "description": "Scientific name"
+    },
+    "image": {
+      "type": "string",
+      "title": "Image",
+      "description": "URL or path to crop image"
+    },
+    "success_rate": {
+      "type": "integer",
+      "title": "Success Rate",
+      "description": "Historical success rate (0-100)"
+    },
+    "recommendation": {
+      "type": "string",
+      "title": "Recommendation",
+      "description": "Short recommendation summary"
+    },
+    "short_reason": {
+      "type": "string",
+      "title": "Short Reason",
+      "description": "One-line reason for the recommendation"
+    },
+    "reason": {
+      "type": "string",
+      "title": "Reason",
+      "description": "Longer explanation of why the crop is recommended"
+    },
+    "days_to_harvest": {
+      "type": "integer",
+      "title": "Days To Harvest",
+      "description": "Typical days to harvest"
+    },
+    "soil_type": {
+      "type": "string",
+      "title": "Soil Type",
+      "description": "Recommended soil type"
+    },
+    "ideal_temperature": {
+      "type": "string",
+      "title": "Ideal Temperature",
+      "description": "Ideal temperature range"
+    },
+    "humidity": {
+      "type": "string",
+      "title": "Humidity",
+      "description": "Ideal humidity range"
+    },
+    "precipitation": {
+      "type": "string",
+      "title": "Precipitation",
+      "description": "Ideal precipitation range"
+    },
+    "altitude": {
+      "type": "string",
+      "title": "Altitude",
+      "description": "Ideal altitude range"
+    },
+    "irrigation": {
+      "type": "string",
+      "title": "Irrigation",
+      "description": "Irrigation recommendation"
+    },
+    "substrates": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Substrates",
+      "description": "Recommended substrates or growing media"
+    },
+    "planting_months": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "title": "Planting Months",
+      "description": "Recommended planting months (1-12)"
+    },
+    "harvest_months": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array",
+      "title": "Harvest Months",
+      "description": "Typical harvest months (1-12)"
+    },
+    "stages": {
+      "items": {
+        "$ref": "#/components/schemas/GrowthStage"
+      },
+      "type": "array",
+      "title": "Stages",
+      "description": "Crop growth stages"
+    },
+    "tips": {
+      "items": {
+        "$ref": "#/components/schemas/Tip"
+      },
+      "type": "array",
+      "title": "Tips",
+      "description": "Agronomic tips"
+    },
+    "suitability": {
+      "type": "string",
+      "title": "Suitability",
+      "description": "Suitability level: high, medium, low, none"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "scientific_name",
+    "image",
+    "success_rate",
+    "recommendation",
+    "short_reason",
+    "reason",
+    "days_to_harvest",
+    "soil_type",
+    "ideal_temperature",
+    "humidity",
+    "precipitation",
+    "altitude",
+    "irrigation",
+    "substrates",
+    "planting_months",
+    "harvest_months",
+    "stages",
+    "tips",
+    "suitability"
+  ],
+  "title": "TopCropResponse",
+  "description": "Highest ranked crop in a recommendation, including suitability."
+}
+=== NextPlantingSeason ===
+{
+  "properties": {
+    "month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Month",
+      "description": "Month of the next planting season"
+    },
+    "month_name": {
+      "type": "string",
+      "title": "Month Name",
+      "description": "Spanish name of the month"
+    },
+    "crops": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "title": "Crops",
+      "description": "Crop IDs recommended for planting in that month"
+    }
+  },
+  "type": "object",
+  "required": [
+    "month",
+    "month_name",
+    "crops"
+  ],
+  "title": "NextPlantingSeason"
+}
+=== AlertResponse ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Id",
+      "description": "Alert identifier"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "danger"
+      ],
+      "title": "Level",
+      "description": "Severity level"
+    },
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Short alert title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Detailed recommendation for the farmer"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "level",
+    "title",
+    "description"
+  ],
+  "title": "AlertResponse"
+}
+=== ForecastDayResponse ===
+{
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "temp_min": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Min",
+      "description": "Minimum temperature (░C)"
+    },
+    "temp_max": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Max",
+      "description": "Maximum temperature (░C)"
+    },
+    "temp_mean": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Temp Mean",
+      "description": "Mean temperature (░C)"
+    },
+    "precipitation": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Precipitation",
+      "description": "Daily precipitation (mm)"
+    },
+    "humidity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Humidity",
+      "description": "Relative humidity (%)"
+    },
+    "uv_index": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Uv Index",
+      "description": "Maximum UV index"
+    },
+    "wind_speed": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Wind Speed",
+      "description": "Maximum wind speed (km/h)"
+    }
+  },
+  "type": "object",
+  "required": [
+    "date"
+  ],
+  "title": "ForecastDayResponse"
+}
+=== HealthResponse ===
+{
+  "properties": {
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "description": "Service health status"
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "API semantic version"
+    },
+    "models_loaded": {
+      "type": "boolean",
+      "title": "Models Loaded",
+      "description": "Whether production ML models are currently loaded"
+    }
+  },
+  "type": "object",
+  "required": [
+    "status",
+    "version",
+    "models_loaded"
+  ],
+  "title": "HealthResponse",
+  "description": "Basic readiness endpoint used by local tooling and containers."
+}

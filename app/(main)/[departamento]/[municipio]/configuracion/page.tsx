@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { SettingsControls } from '@/components/settings-controls'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
+import { BackendStatus } from '@/components/backend-status'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useLocation } from '@/context/LocationContext'
@@ -20,6 +21,11 @@ export default function ConfiguracionPage() {
       </div>
 
       <SettingsControls />
+
+      <section className='flex flex-col gap-4'>
+        <h2 className='text-lg font-semibold'>Backend</h2>
+        <BackendStatus />
+      </section>
 
       <section className='flex flex-col gap-4'>
         <h2 className='text-lg font-semibold'>Información</h2>

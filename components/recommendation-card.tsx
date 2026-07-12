@@ -1,5 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
+import { CropImage } from "@/components/crop-image"
 import { Sparkles, ArrowRight, CalendarDays } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -52,7 +52,7 @@ export function RecommendationCard({ crop, href, plantingWindowLabel, title = "H
           </Button>
         </div>
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted md:aspect-auto md:h-full md:min-h-64">
-          <Image
+          <CropImage
             src={crop.image || "/placeholder.svg"}
             alt={crop.name}
             fill

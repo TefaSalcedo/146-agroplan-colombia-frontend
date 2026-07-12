@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import dynamic from "next/dynamic"
+import { CropImage } from "@/components/crop-image"
 import { Skeleton } from "@/components/ui/skeleton"
 import { suitabilityColors } from "@/lib/constants"
 import type { Municipality, RecommendationLevel } from "@/types"
@@ -100,10 +101,15 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center p-3">
-          <div
-            className="size-12 sm:size-14 rounded-full bg-cover bg-center shadow-inner"
-            style={{ backgroundImage: `url(${crop.image})` }}
-          />
+          <div className="relative size-12 sm:size-14 overflow-hidden rounded-full shadow-inner">
+            <CropImage
+              src={crop.image || "/placeholder.svg"}
+              alt={crop.name}
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
       <div>

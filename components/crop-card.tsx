@@ -1,6 +1,6 @@
 import Link from "next/link"
-import Image from "next/image"
 import { RecommendationBadge } from "@/components/recommendation-badge"
+import { CropImage } from "@/components/crop-image"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
@@ -22,7 +22,7 @@ export function CropCard({ id, name, image, recommendation, successRate, href, s
     <Link href={targetHref} className={cn("group block focus:outline-none", className)}>
       <Card className="overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring active:scale-95">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-          <Image
+          <CropImage
             src={image || "/placeholder.svg"}
             alt={name}
             fill

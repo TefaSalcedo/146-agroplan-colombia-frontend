@@ -54,6 +54,8 @@ export interface Municipality {
   id: string
   name: string
   department: string
+  departmentId?: string
+  daneCode?: string
   lat: number
   lng: number
   altitude: number

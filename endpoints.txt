@@ -1,0 +1,492 @@
+﻿=== GET /api/v1/municipalities/search ===
+{
+  "tags": [
+    "municipalities"
+  ],
+  "summary": "Search municipalities and departments by name",
+  "description": "Autocomplete endpoint for the new single selector.\n\nReturns both municipalities and departments matching the query. The frontend can use the `type` field to render the appropriate option.\n\nUse cases:\n- User types 2+ letters and selects a municipality or department.\n- Department selections can be expanded to their municipalities on the frontend.",
+  "operationId": "search_municipalities_api_v1_municipalities_search_get",
+  "parameters": [
+    {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 100,
+        "description": "Search text (minimum 2 characters)",
+        "title": "Q"
+      },
+      "description": "Search text (minimum 2 characters)"
+    },
+    {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+        "type": "integer",
+        "maximum": 50,
+        "minimum": 1,
+        "description": "Maximum number of results",
+        "default": 20,
+        "title": "Limit"
+      },
+      "description": "Maximum number of results"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/MunicipalitySearchResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Query must be at least 2 characters.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/zoning/predict ===
+{
+  "tags": [
+    "zoning"
+  ],
+  "summary": "Predict zoning suitability",
+  "description": "Returns crop suitability for a municipality.\n\nWhen ML models are loaded, uses LightGBM with 60 features. If critical features are missing, falls back to k-NN agroclimatic analogs. If no valid profile exists, returns 422.",
+  "operationId": "predict_zoning_api_v1_zoning_predict_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/ZoningRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ZoningResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Crop or municipality ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Critical features missing and no fallback available.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/zoning/recommendations ===
+{
+  "tags": [
+    "zoning"
+  ],
+  "summary": "Get zoning recommendations for all crops",
+  "description": "Evaluates all ML-supported crops for a municipality and returns them ranked.\n\nEach crop indicates whether it used the primary model, a fallback, or was unavailable. No crops are filtered by threshold; the frontend decides what to display.",
+  "operationId": "get_zoning_recommendations_api_v1_zoning_recommendations_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/ZoningBatchRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ZoningBatchResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Municipality ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== GET /api/v1/zoning/map/{crop_id} ===
+{
+  "tags": [
+    "zoning"
+  ],
+  "summary": "Get zoning map for a crop",
+  "description": "Evaluates all municipalities for a crop and returns suitability scores.\n\nUses the primary LightGBM zoning model when artifacts are loaded; falls back to k-NN agroclimatic analogs when critical features are missing. The full payload is cached. Returns all municipalities; the frontend joins results with DANE geometry for rendering.",
+  "operationId": "get_zoning_map_api_v1_zoning_map__crop_id__get",
+  "parameters": [
+    {
+      "name": "crop_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+        "type": "string",
+        "description": "Crop identifier (e.g. aguacate)",
+        "title": "Crop Id"
+      },
+      "description": "Crop identifier (e.g. aguacate)"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ZoningMapResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Crop ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/zoning/mock/predict/batch ===
+{
+  "tags": [
+    "zoning"
+  ],
+  "summary": "[MOCK] Predict zoning suitability for all municipalities (not for MVP)",
+  "description": "ÔÜá´©Å MOCK ENDPOINT ÔÇö NOT INTENDED FOR MVP PRODUCTION USE.\n\nLegacy mock endpoint that returns crop suitability predictions for every municipality using static heuristics instead of the production LightGBM model.\n\nUse cases:\n- Render a nationwide crop suitability map using the mock predictor.\n- Compare viability across regions without issuing hundreds of single requests.\n\nFor real predictions, use POST /zoning/predict or POST /zoning/recommendations.",
+  "operationId": "predict_zoning_mock_batch_api_v1_zoning_mock_predict_batch_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/ZoningMockBatchRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ZoningMockBatchResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Crop ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/calendars/predict ===
+{
+  "tags": [
+    "calendars"
+  ],
+  "summary": "[MOCK] Predict planting calendar legacy single-month (not for MVP)",
+  "description": "ÔÜá´©Å MOCK ENDPOINT ÔÇö NOT INTENDED FOR MVP PRODUCTION USE.\n\nBuilds day-level planting ratings using static crop calendar data instead of the production yield ensemble and climate signals.\n\nThis endpoint is preserved for backwards compatibility. For real multi-crop, multi-month predictions use /calendars/predict-batch.",
+  "operationId": "predict_calendar_api_v1_calendars_predict_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/CalendarRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/CalendarResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Crop or municipality ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/calendars/predict-batch ===
+{
+  "tags": [
+    "calendars"
+  ],
+  "summary": "Predict planting calendars for multiple crops",
+  "description": "Builds 12-month planting calendar predictions for multiple crops in a municipality.\n\nUses XGBoost/LightGBM ensemble (0.65/0.35) when yield models are loaded. Combines EVA, EcoCrop, FAO and yield signals. Returns top 3 harvest months with computed planting windows. Climate data uses Open-Meteo forecast when available; otherwise reports missing values with source tracking.",
+  "operationId": "predict_calendar_batch_api_v1_calendars_predict_batch_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/CalendarBatchRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/CalendarBatchResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Municipality ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== POST /api/v1/recommendations ===
+{
+  "tags": [
+    "recommendations"
+  ],
+  "summary": "[MOCK] Get crop recommendations (not for MVP)",
+  "description": "ÔÜá´©Å MOCK ENDPOINT ÔÇö NOT INTENDED FOR MVP PRODUCTION USE.\n\nRanks crops for a municipality using the legacy mock predictor and static crop metadata. This endpoint returns sample recommendations that do not reflect the production LightGBM zoning model or the XGBoost/LightGBM yield ensemble.\n\nUse cases:\n- Show a best-crop recommendation card.\n- Offer alternatives and the next planting season preview.\n\nFor real zoning predictions, use POST /zoning/predict or POST /zoning/recommendations.",
+  "operationId": "get_recommendations_api_v1_recommendations_post",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/RecommendationRequest"
+        }
+      }
+    },
+    "required": true
+  },
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/RecommendationResponse"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Municipality ID not found.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}
+=== GET /api/v1/forecast/daily/{municipality_id} ===
+{
+  "tags": [
+    "forecast"
+  ],
+  "summary": "Get daily forecast",
+  "description": "Returns stored daily climate forecast values for a municipality.\n\nUse cases:\n- Build short-term forecast charts.\n- Feed rule-based alerting or planning logic.",
+  "operationId": "get_daily_forecast_api_v1_forecast_daily__municipality_id__get",
+  "parameters": [
+    {
+      "name": "municipality_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+        "type": "string",
+        "description": "AgroPlan municipality ID",
+        "title": "Municipality Id"
+      },
+      "description": "AgroPlan municipality ID"
+    },
+    {
+      "name": "days",
+      "in": "query",
+      "required": false,
+      "schema": {
+        "type": "integer",
+        "maximum": 90,
+        "minimum": 1,
+        "description": "Number of days to return (1-90)",
+        "default": 7,
+        "title": "Days"
+      },
+      "description": "Number of days to return (1-90)"
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ForecastDayResponse"
+            },
+            "title": "Response Get Daily Forecast Api V1 Forecast Daily  Municipality Id  Get"
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Municipality ID does not exist.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ErrorResponse"
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "Validation Error",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+          }
+        }
+      }
+    }
+  }
+}

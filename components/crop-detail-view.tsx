@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -92,7 +92,7 @@ export function CropDetailView({ id }: CropDetailViewProps) {
         <div className="md:col-span-1">
           <Card className="h-full overflow-hidden p-0">
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-              <Image
+              <CropImage
                 src={crop.image || "/placeholder.svg"}
                 alt={crop.name}
                 fill

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
+import { CropImage } from "@/components/crop-image"
 import dynamic from "next/dynamic"
 import {
   ArrowLeft,
@@ -63,7 +63,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   const router = useRouter()
   const { crop, loading: cropLoading, error: cropError } = useCrop(cropId)
   const { municipalities, loading: municipalitiesLoading } = useMunicipalities()
-  const { predictBatch, loading: zoningLoading, error: zoningError } = useZoning()
+  const { getMap, loading: zoningLoading, error: zoningError } = useZoning()
 
   const [suitabilityMap, setSuitabilityMap] = useState<Record<string, Suitability>>({})
   const [confidenceMap, setConfidenceMap] = useState<Record<string, number>>({})
@@ -76,13 +76,13 @@ export function CropMapView({ cropId }: CropMapViewProps) {
     if (!cropId || municipalities.length === 0) return
 
     const loadPredictions = async () => {
-      const result = await predictBatch({ crop_id: cropId })
+      const result = await getMap(cropId)
       if (!result) return
 
       const suit: Record<string, Suitability> = {}
       const conf: Record<string, number> = {}
 
-      result.predictions.forEach((p) => {
+      result.results.forEach((p) => {
         suit[p.municipalityId] = p.suitability
         conf[p.municipalityId] = p.confidence
       })
@@ -92,7 +92,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
     }
 
     loadPredictions()
-  }, [cropId, municipalities, predictBatch])
+  }, [cropId, municipalities, getMap])
 
   const cropFacts = useMemo(() => {
     if (!crop) return []
@@ -177,7 +177,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
         <div className="hidden w-[300px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-r bg-background p-4 2xl:flex 2xl:w-[360px] 2xl:p-6">
           <Card className="overflow-hidden p-0">
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-              <Image
+              <CropImage
                 src={crop.image || "/placeholder.svg"}
                 alt={crop.name}
                 fill
@@ -459,7 +459,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
           <div className="flex-1 overflow-y-auto px-4 pb-20 flex flex-col gap-4">
             <div className="flex items-start gap-4 mb-2 mt-2">
               <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-                <Image
+                <CropImage
                   src={crop.image || "/placeholder.svg"}
                   alt={crop.name}
                   fill

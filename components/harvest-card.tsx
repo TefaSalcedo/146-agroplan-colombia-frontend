@@ -1,5 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
+import { CropImage } from "@/components/crop-image"
 import { Wheat } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,7 +36,7 @@ export function HarvestCard({
     <Link href={targetHref} className={cn("group block w-56 shrink-0 focus:outline-none", className)}>
       <Card className="flex h-full flex-col overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring active:scale-95">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-          <Image
+          <CropImage
             src={image || "/placeholder.svg"}
             alt={name}
             fill

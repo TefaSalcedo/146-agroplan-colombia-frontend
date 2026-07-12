@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Sprout, Wheat, AlertCircle, Calendar, Leaf } from 'lucide-react'
 import { LocationCard } from '@/components/location-card'
 import { WeatherCard } from '@/components/weather-card'
@@ -17,7 +16,6 @@ import { DailyTipCard } from '@/components/daily-tip-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useWeather, useForecast, useRecommendations, useAlerts, useCrops } from '@/hooks'
 import { useLocation } from '@/context/LocationContext'
 import { buildLocationPath } from '@/lib/routing'
@@ -115,15 +113,13 @@ export default function InicioPage() {
 
   const municipalityId = selectedLocation?.id || ''
 
-  const { weather, loading: weatherLoading, error: weatherError } = useWeather(municipalityId)
-  const { forecast, loading: forecastLoading, error: forecastError } = useForecast(municipalityId, 4)
-  const { recommendations, loading: recommendationsLoading, error: recommendationsError } =
-    useRecommendations(municipalityId)
-  const { alerts, loading: alertsLoading, error: alertsError } = useAlerts(municipalityId)
-  const { crops: allCrops, loading: cropsLoading, error: cropsError } = useCrops()
+  const { weather, loading: weatherLoading } = useWeather(municipalityId)
+  const { forecast, loading: forecastLoading } = useForecast(municipalityId, 4)
+  const { recommendations, loading: recommendationsLoading } = useRecommendations(municipalityId)
+  const { alerts, loading: alertsLoading } = useAlerts(municipalityId)
+  const { crops: allCrops, loading: cropsLoading } = useCrops()
 
   const loading = weatherLoading || forecastLoading || recommendationsLoading || alertsLoading || cropsLoading
-  const error = weatherError || forecastError || recommendationsError || alertsError || cropsError
 
   useEffect(() => {
     setMounted(true)
@@ -152,27 +148,6 @@ export default function InicioPage() {
 
   if (loading) {
     return <DashboardSkeleton />
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-        <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <AlertCircle className="size-8" />
-        </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-lg font-semibold text-destructive">Error de conexión</h2>
-          <p className="text-muted-foreground max-w-md">{error}</p>
-        </div>
-        <Button
-          nativeButton={false}
-          render={<Link href="/" />}
-          size="lg"
-        >
-          Volver al inicio
-        </Button>
-      </div>
-    )
   }
 
   const displayLocation = {
