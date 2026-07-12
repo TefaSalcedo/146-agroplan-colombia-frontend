@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -92,6 +93,15 @@ export function AIRecommendationCard({
       <div className="relative flex flex-col gap-4">
         <div>
           <div className="flex items-center gap-2">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <Image
+                src="/ai%20images/agroplan.webp"
+                alt="Asistente IA de Agroplan"
+                width={32}
+                height={32}
+                className="size-8 rounded-xl object-cover"
+              />
+            </div>
             <h2 className="text-lg font-bold">Recomendación Inteligente IA</h2>
             <Badge variant="secondary" className="text-xs">
               IA

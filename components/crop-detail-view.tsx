@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import Image from "next/image"
 import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
 import {
@@ -251,7 +252,18 @@ export function CropDetailView({ id }: CropDetailViewProps) {
       {/* API-based Calendar */}
       {selectedLocation && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-base font-semibold">Calendario inteligente de siembra y cosecha</h2>
+          <div className="flex items-center gap-2">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Image
+                src="/ai%20images/agroplan.webp"
+                alt="Asistente IA de Agroplan"
+                width={28}
+                height={28}
+                className="size-7 rounded-lg object-cover"
+              />
+            </div>
+            <h2 className="text-base font-semibold">Calendario inteligente de siembra y cosecha</h2>
+          </div>
           <CropCalendarVisualization
             calendarData={cropResult ? { municipalityId: selectedLocation.id, municipalityName: selectedLocation.name, horizonMonths: 12, results: [cropResult], modelVersion: "yield-ensemble-v1" } : null}
             cropImage={crop.image}

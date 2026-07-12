@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Sprout, Wheat, Calendar, TrendingUp, Clock } from "lucide-react"
@@ -141,7 +142,16 @@ export function CropCalendarVisualization({ calendarData, cropImage, cropName, l
       {/* AI Explanation */}
       {cropResult.explanation?.text && (
         <Card className="relative flex flex-col gap-4 overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-background to-background p-6">
-          <div>
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+              <Image
+                src="/ai%20images/agroplan.webp"
+                alt="Asistente IA de Agroplan"
+                width={32}
+                height={32}
+                className="size-8 rounded-xl object-cover"
+              />
+            </div>
             <h3 className="text-base font-semibold">Análisis inteligente</h3>
           </div>
           <p className="text-justify text-sm leading-loose text-foreground print:text-base print:leading-loose">

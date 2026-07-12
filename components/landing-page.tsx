@@ -27,6 +27,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"
+import Image from "next/image"
 import { useCrops, useDepartments, useMunicipalities } from "@/hooks"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
 import { ApiError } from "@/lib/api-client/client"
@@ -398,6 +399,14 @@ export function LandingPage() {
       <div className="relative flex min-h-svh flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 text-center">
+          <Image
+            src="/ai%20images/agroplan.webp"
+            alt="Agroplan"
+            width={80}
+            height={80}
+            className="mx-auto mb-4 size-20 rounded-2xl object-cover shadow-2xl ring-2 ring-white/30"
+            priority
+          />
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Planifica mejor. Cosecha más.
           </h1>

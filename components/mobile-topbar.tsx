@@ -25,7 +25,7 @@ export function MobileTopbar() {
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur md:hidden">
         <Link href="/" className="flex items-center gap-3 transition-transform duration-200 hover:scale-105">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary">
-            <Image src="/logo.webp" alt="AgroPlan" width={32} height={32} className="size-8 rounded-xl object-cover" />
+            <Image src="/logo.webp" alt="Agroplan" width={32} height={32} className="size-8 rounded-xl object-cover" />
           </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold">AgroPlan Colombia</p>
