@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react"
-import { fetchCrops, fetchCrop, fetchCropsLite, fetchCropRecommendations } from "@/lib/api-client/crops"
+import {
+  fetchCrops,
+  fetchCrop,
+  fetchCropsLite,
+  fetchCropRecommendations,
+  fetchCropNationalGuide,
+} from "@/lib/api-client/crops"
 import type { Crop } from "@/types"
-import type { CropLite, CropRecommendationResponse } from "@/lib/api-client/types"
+import type {
+  CropLite,
+  CropNationalGuideResponse,
+  CropRecommendationResponse,
+} from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
 
 export function useCrops() {
@@ -99,9 +109,36 @@ export function useCropRecommendations(cropId: string, municipalityId: string) {
       } finally {
         setLoading(false)
       }
+
     }
     loadRecommendations()
   }, [cropId, municipalityId])
 
   return { recommendation, loading, error }
+}
+
+export function useCropNationalGuide(cropId: string) {
+  const [guide, setGuide] = useState<CropNationalGuideResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadGuide = async () => {
+      if (!cropId) return
+      setLoading(true)
+      setError(null)
+      try {
+        setGuide(await fetchCropNationalGuide(cropId))
+      } catch (err) {
+        setGuide(null)
+        setError(err instanceof ApiError ? err.message : "Error loading national crop guide")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGuide()
+  }, [cropId])
+
+  return { guide, loading, error }
 }

@@ -14,27 +14,29 @@ import {
   CalendarDays,
   Info,
   Loader2,
-  CheckCircle2,
   XCircle,
   AlertCircle,
   MapPin,
+  Sparkles,
+  Sprout,
+  Layers,
+  Waves,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SuitabilityBadge } from "@/components/recommendation-badge"
-import { useCrop, useMunicipalities, useZoning, useZoningRecommendations } from "@/hooks"
-import { suitabilityColors } from "@/lib/constants"
+import { useCrop, useCropNationalGuide, useMunicipalities, useZoning } from "@/hooks"
+import { mapSuitabilityColors } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import type { Municipality, Suitability } from "@/types"
-import type { ZoningBatchCropResult } from "@/lib/api-client/types"
+import type { Suitability } from "@/types"
+import type { ZoningMapMunicipalityResult } from "@/lib/api-client/types"
 
 interface CropNationwideMapProps {
-  municipalities: Municipality[]
-  suitabilityMap: Record<string, Suitability>
+  results: ZoningMapMunicipalityResult[]
+  departmentsByMunicipality: Record<string, string>
   selectedId: string | null
-  onSelect: (municipality: Municipality) => void
-  cropImage?: string
+  onSelect: (municipality: ZoningMapMunicipalityResult & { department: string }) => void
 }
 
 const CropNationwideMap = dynamic<CropNationwideMapProps>(
@@ -58,45 +60,31 @@ function successRateFromSuitability(suitability: Suitability, confidence: number
 export function CropMapView({ cropId }: CropMapViewProps) {
   const router = useRouter()
   const { crop, loading: cropLoading, error: cropError } = useCrop(cropId)
-  const { municipalities, loading: municipalitiesLoading } = useMunicipalities()
+  const { municipalities } = useMunicipalities()
   const { getMap, loading: zoningLoading, error: zoningError } = useZoning()
+  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropId)
 
-  const [suitabilityMap, setSuitabilityMap] = useState<Record<string, Suitability>>({})
-  const [confidenceMap, setConfidenceMap] = useState<Record<string, number>>({})
-  const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null)
+  const [zoningResults, setZoningResults] = useState<ZoningMapMunicipalityResult[]>([])
+  const [selectedMunicipality, setSelectedMunicipality] = useState<
+    (ZoningMapMunicipalityResult & { department: string }) | null
+  >(null)
 
-  const selectedMunicipalityId = selectedMunicipality?.id ?? ""
-  const {
-    zoningData,
-    loading: zoningRecommendationsLoading,
-  } = useZoningRecommendations(selectedMunicipalityId)
-
-  const selectedZoningDetail: ZoningBatchCropResult | null = useMemo(() => {
-    if (!zoningData || !crop) return null
-    return zoningData.results.find((r) => r.cropId === cropId) ?? null
-  }, [zoningData, crop, cropId])
+  const departmentsByMunicipality = useMemo(
+    () => Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.department])),
+    [municipalities],
+  )
 
   useEffect(() => {
-    if (!cropId || municipalities.length === 0) return
+    if (!cropId) return
 
     const loadPredictions = async () => {
       const result = await getMap(cropId)
       if (!result) return
-
-      const suit: Record<string, Suitability> = {}
-      const conf: Record<string, number> = {}
-
-      result.results.forEach((p) => {
-        suit[p.municipalityId] = p.suitability
-        conf[p.municipalityId] = p.confidence
-      })
-
-      setSuitabilityMap(suit)
-      setConfidenceMap(conf)
+      setZoningResults(result.results)
     }
 
     loadPredictions()
-  }, [cropId, municipalities, getMap])
+  }, [cropId, getMap])
 
   const cropFacts = useMemo(() => {
     if (!crop) return []
@@ -105,24 +93,25 @@ export function CropMapView({ cropId }: CropMapViewProps) {
       { icon: Droplets, label: "Humedad", value: crop.humidity },
       { icon: CloudRain, label: "Precipitación", value: crop.precipitation },
       { icon: Mountain, label: "Altitud", value: crop.altitude },
+      { icon: Layers, label: "Tipo de suelo", value: crop.soilType },
+      { icon: Waves, label: "Riego", value: crop.irrigation },
     ]
   }, [crop])
 
   const selectedSuitability = selectedMunicipality
-    ? suitabilityMap[selectedMunicipality.id] ?? "none"
+    ? selectedMunicipality.suitability
     : null
 
   const selectedSuccessRate = selectedMunicipality
     ? successRateFromSuitability(
         selectedSuitability ?? "none",
-        confidenceMap[selectedMunicipality.id] ?? 0.7
+        selectedMunicipality.confidence,
       )
     : null
 
-  const loading = cropLoading || municipalitiesLoading || zoningLoading
   const error = cropError || zoningError
 
-  const showMapLoader = municipalitiesLoading || zoningLoading
+  const showMapLoader = zoningLoading
 
   if (cropLoading) {
     return (
@@ -165,6 +154,9 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             <CropImage
               src={crop.image}
               alt={crop.name}
+              fill={false}
+              width={128}
+              height={128}
               className="size-24 rounded-2xl object-cover shadow-lg md:size-32"
             />
           </div>
@@ -188,26 +180,26 @@ export function CropMapView({ cropId }: CropMapViewProps) {
 
       {/* Map Section */}
       <Card className="overflow-hidden border-2 p-0">
-        <div className="relative min-h-[50vh] md:min-h-[60vh]">
+        <div className="relative h-[60vh] min-h-[480px]">
           {/* Map Header Overlay */}
           <div className="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 bg-gradient-to-b from-black/80 via-black/60 to-transparent p-4 text-white md:flex-row md:items-center md:justify-between md:p-6">
             <div className="space-y-1">
               <h2 className="text-lg font-bold md:text-xl">Mapa de aptitud</h2>
               <p className="text-sm text-white/90 md:text-base">
-                Toca un municipio para ver el porcentaje de éxito estimado
+                Acerca el mapa para separar municipios y selecciona uno para ver su aptitud
               </p>
             </div>
             <div className="flex flex-wrap gap-4 text-sm md:flex-nowrap md:justify-end">
               <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: suitabilityColors.high }} />
+                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.high }} />
                 <span className="font-medium">Alta aptitud</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: suitabilityColors.medium }} />
+                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.medium }} />
                 <span className="font-medium">Aptitud media</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: suitabilityColors.low }} />
+                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.low }} />
                 <span className="font-medium">Aptitud baja</span>
               </div>
             </div>
@@ -223,11 +215,10 @@ export function CropMapView({ cropId }: CropMapViewProps) {
               </div>
             )}
             <CropNationwideMap
-              municipalities={municipalities}
-              suitabilityMap={suitabilityMap}
-              selectedId={selectedMunicipality?.id ?? null}
+              results={zoningResults}
+              departmentsByMunicipality={departmentsByMunicipality}
+              selectedId={selectedMunicipality?.municipalityId ?? null}
               onSelect={setSelectedMunicipality}
-              cropImage={crop.image}
             />
           </div>
 
@@ -236,7 +227,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             <div className="absolute inset-x-4 bottom-4 z-10 max-h-[70vh] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
               <div className="space-y-4">
                 <div>
-                  <p className="text-xl font-bold leading-tight">{selectedMunicipality.name}</p>
+                  <p className="text-xl font-bold leading-tight">{selectedMunicipality.municipalityName}</p>
                   <p className="text-base text-muted-foreground">{selectedMunicipality.department}</p>
                 </div>
 
@@ -251,78 +242,14 @@ export function CropMapView({ cropId }: CropMapViewProps) {
                   </div>
                 </div>
 
-                {zoningRecommendationsLoading && (
-                  <p className="text-sm text-muted-foreground">Cargando detalles de zonificación...</p>
-                )}
-
-                {!zoningRecommendationsLoading && selectedZoningDetail && (
-                  <div className="space-y-3">
-                    {selectedZoningDetail.factors && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase text-muted-foreground">Condiciones</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className={cn(
-                            "rounded-lg p-2 text-center text-xs",
-                            selectedZoningDetail.factors.temperatureMatch
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
-                          )}>
-                            <p className="font-medium">Temperatura</p>
-                            <p>{selectedZoningDetail.factors.temperatureMatch ? "Adecuada" : "No adecuada"}</p>
-                          </div>
-                          <div className={cn(
-                            "rounded-lg p-2 text-center text-xs",
-                            selectedZoningDetail.factors.precipitationMatch
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
-                          )}>
-                            <p className="font-medium">Precipitación</p>
-                            <p>{selectedZoningDetail.factors.precipitationMatch ? "Adecuada" : "No adecuada"}</p>
-                          </div>
-                          <div className={cn(
-                            "rounded-lg p-2 text-center text-xs",
-                            selectedZoningDetail.factors.soilMatch
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
-                          )}>
-                            <p className="font-medium">Suelo</p>
-                            <p>{selectedZoningDetail.factors.soilMatch ? "Adecuado" : "No adecuado"}</p>
-                          </div>
-                          <div className={cn(
-                            "rounded-lg p-2 text-center text-xs",
-                            selectedZoningDetail.factors.altitudeMatch
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
-                          )}>
-                            <p className="font-medium">Altitud</p>
-                            <p>{selectedZoningDetail.factors.altitudeMatch ? "Adecuada" : "No adecuada"}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedZoningDetail.warnings && selectedZoningDetail.warnings.length > 0 && (
-                      <div className="rounded-lg bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                          <div>
-                            <p className="font-semibold text-amber-900 dark:text-amber-100">Observaciones</p>
-                            <ul className="mt-1 list-disc space-y-1 pl-4 text-muted-foreground">
-                              {selectedZoningDetail.warnings.map((warning, i) => (
-                                <li key={i}>{warning}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedZoningDetail.method && (
-                      <p className="text-xs text-muted-foreground">
-                        Método: <span className="font-medium">{selectedZoningDetail.method}</span>
-                      </p>
-                    )}
-                  </div>
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Confianza del modelo</p>
+                  <p className="mt-1 text-lg font-bold">{Math.round(selectedMunicipality.confidence * 100)}%</p>
+                </div>
+                {selectedMunicipality.method && (
+                  <p className="text-xs text-muted-foreground">
+                    Método: <span className="font-medium">{selectedMunicipality.method}</span>
+                  </p>
                 )}
 
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -461,32 +388,82 @@ export function CropMapView({ cropId }: CropMapViewProps) {
         </Card>
       </div>
 
-      {/* Additional Tips Section */}
-      <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background p-6">
+      <Card className="p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sprout className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">Manejo del cultivo</h2>
+            <p className="text-sm text-muted-foreground">Información técnica del perfil agrícola</p>
+          </div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Sustratos recomendados</h3>
+            <div className="flex flex-wrap gap-2">
+              {crop.substrates.map((substrate) => (
+                <span key={substrate} className="rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
+                  {substrate}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Etapas de desarrollo</h3>
+            <ul className="space-y-2 text-sm">
+              {crop.stages.map((stage) => (
+                <li key={stage.label}>
+                  <p className="font-medium">{stage.label}</p>
+                  <p className="text-muted-foreground">{stage.description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Consejos del cultivo</h3>
+            <ul className="space-y-2 text-sm">
+              {crop.tips.map((tip) => (
+                <li key={tip.title}>
+                  <p className="font-medium">{tip.title}</p>
+                  <p className="text-muted-foreground">{tip.description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="border-primary/20 bg-primary/5 p-6">
         <div className="flex items-start gap-4">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <CheckCircle2 className="size-6" />
+            <Sparkles className="size-6" />
           </div>
           <div className="flex-1 space-y-2">
-            <h3 className="text-lg font-bold">Recomendaciones para el éxito</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>Verifica el pH del suelo antes de sembrar</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>Asegura un buen sistema de riego</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>Usa semillas certificadas de buena calidad</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>Monitorea el clima regularmente</span>
-              </li>
-            </ul>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-bold">Recomendaciones nacionales</h2>
+              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                Recomendación de IA
+              </span>
+            </div>
+            {guideLoading && <p className="text-sm text-muted-foreground">Generando guía nacional...</p>}
+            {guideError && <p className="text-sm text-muted-foreground">{guideError}</p>}
+            {nationalGuide && (
+              <div className="space-y-5">
+                <p className="text-sm text-muted-foreground">{nationalGuide.summary}</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {nationalGuide.sections.map((section) => (
+                    <div key={section.title} className="rounded-xl border border-primary/15 bg-card/70 p-4">
+                      <h3 className="font-semibold">{section.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.content}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Esta guía fue generada por IA para orientación general. Valida las decisiones de manejo con asistencia técnica local.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </Card>
