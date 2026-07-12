@@ -5,25 +5,28 @@ import { usePathname } from "next/navigation"
 import { FileText, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { useLocation } from "@/context/LocationContext"
 
 export function CropDownloadButtons({ cropName }: { cropName: string }) {
   const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
+  const { selectedLocation } = useLocation()
 
   async function handlePdfDownload() {
     setIsLoading(true)
     try {
+      if (!selectedLocation) {
+        throw new Error('Selecciona un municipio antes de generar el PDF')
+      }
+
       const timestamp = new Date().toISOString().split('T')[0]
       const filename = `${cropName.toLowerCase().replace(/\s+/g, '-')}-${timestamp}.pdf`
       const pagePath = pathname || '/cultivos'
 
-      const storedLocation = typeof window !== 'undefined' ? sessionStorage.getItem('selectedLocation') : null
-      const location = storedLocation ? JSON.parse(storedLocation) : undefined
-
       const response = await fetch('/api/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page: pagePath, filename, location }),
+        body: JSON.stringify({ page: pagePath, filename, location: selectedLocation }),
       })
 
       if (!response.ok) {
