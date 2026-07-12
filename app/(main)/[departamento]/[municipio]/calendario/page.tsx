@@ -18,8 +18,7 @@ import type { CalendarBatchResponse } from "@/lib/api-client/types"
 
 export default function CalendarioPage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const { selectedLocation } = useLocation()
+  const { selectedLocation, hasHydrated } = useLocation()
 
   const municipalityId = selectedLocation?.id || ""
 
@@ -33,12 +32,10 @@ export default function CalendarioPage() {
   const [batchResponse, setBatchResponse] = useState<CalendarBatchResponse | null>(null)
 
   useEffect(() => {
-    setMounted(true)
-
-    if (!selectedLocation && mounted) {
-      router.push('/')
+    if (hasHydrated && !selectedLocation) {
+      router.replace('/')
     }
-  }, [selectedLocation, mounted, router])
+  }, [hasHydrated, selectedLocation, router])
 
   useEffect(() => {
     const recommendedIds = recommendations?.topCrop
@@ -62,8 +59,8 @@ export default function CalendarioPage() {
   const loading = recommendationsLoading || calendarLoading
   const error = recommendationsError || calendarError
 
-  if (!mounted || !selectedLocation) {
-    return null
+  if (!hasHydrated || !selectedLocation) {
+    return <PageLoading title="Calendario de siembra y cosecha" />
   }
 
   if (loading) {

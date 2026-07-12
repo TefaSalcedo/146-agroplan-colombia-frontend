@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   ArrowLeft,
   Clock,
@@ -60,9 +61,10 @@ export function CropDetailView({ id, initialCrop }: CropDetailViewProps) {
   const loading = initialCrop ? false : cropQuery.loading
   const error = initialCrop ? null : cropQuery.error
   const { selectedLocation } = useLocation()
+  const pathname = usePathname()
   const cropsHref = selectedLocation
     ? buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
-    : '..'
+    : pathname.replace(/\/[^/]+$/, '') || '/'
   const {
     recommendation,
     loading: recommendationLoading,

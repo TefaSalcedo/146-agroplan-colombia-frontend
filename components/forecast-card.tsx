@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Droplets, Sun, Cloud, CloudRain, CloudSun, CloudFog, ChevronDown, ChevronUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -44,8 +44,39 @@ interface ForecastCardProps {
 
 export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const DEFAULT_DAYS = 4
   const MAX_DAYS = 7
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1280px)")
+
+    const handleChange = () => {
+      setIsDesktop(mediaQuery.matches)
+    }
+
+    handleChange()
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange)
+
+      return () => {
+        mediaQuery.removeEventListener("change", handleChange)
+      }
+    }
+
+    mediaQuery.addListener(handleChange)
+
+    return () => {
+      mediaQuery.removeListener(handleChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isDesktop) {
+      setIsExpanded(false)
+    }
+  }, [isDesktop])
 
   if (loading) {
     return (
@@ -73,8 +104,12 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
       return dayDate >= today
     })
 
-  const displayDays = isExpanded ? filteredDays.slice(0, MAX_DAYS) : filteredDays.slice(0, DEFAULT_DAYS)
-  const canExpand = filteredDays.length > DEFAULT_DAYS
+  const displayDays = isDesktop
+    ? filteredDays.slice(0, DEFAULT_DAYS)
+    : isExpanded
+      ? filteredDays.slice(0, MAX_DAYS)
+      : filteredDays.slice(0, DEFAULT_DAYS)
+  const canExpand = !isDesktop && filteredDays.length > DEFAULT_DAYS
 
   if (filteredDays.length === 0) {
     return (
@@ -93,7 +128,7 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
           <div>
             <p className="text-sm font-semibold">Pronóstico</p>
             <p className="text-xs text-muted-foreground">
-              {isExpanded ? `Próximos ${displayDays.length} días` : "Pronóstico diario"}
+              {isDesktop || isExpanded ? `Próximos ${displayDays.length} días` : "Pronóstico diario"}
             </p>
           </div>
           {canExpand && (
@@ -101,7 +136,7 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 gap-1 text-xs"
+              className="h-8 gap-1 text-xs xl:hidden"
             >
               {isExpanded ? (
                 <>

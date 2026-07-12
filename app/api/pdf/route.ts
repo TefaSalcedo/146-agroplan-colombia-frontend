@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
   }
 
   const host = request.headers.get('host') || 'localhost:3000'
-  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const forwardedProtocol = request.headers.get('x-forwarded-proto')?.split(',')[0].trim()
+  const protocol = forwardedProtocol || new URL(request.url).protocol.replace(':', '')
   const url = `${protocol}://${host}${page}`
 
   console.log(`[PDF API] Starting PDF generation for page: ${page}`)

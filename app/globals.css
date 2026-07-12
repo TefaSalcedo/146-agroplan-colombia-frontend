@@ -241,3 +241,9 @@
 .concurso-shell .border-white\/30 {
   border-color: var(--border) !important;
 }
+
+@media (max-width: 1279px) {
+  .concurso-shell [data-slot="card"] {
+    padding: 1rem;
+  }
+}
