@@ -506,6 +506,13 @@ export function AppSidebar() {
                 <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
               </div>
             </Link>
+            <Link
+              href="/configuracion"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+            >
+              <Settings className="size-5 shrink-0" />
+              Configuración
+            </Link>
           </>
         )}
       </nav>

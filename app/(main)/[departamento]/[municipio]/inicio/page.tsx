@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sprout, Calendar, MapPin, CloudSun } from 'lucide-react'
+import { Sprout, Calendar, MapPin, CloudSun, AlertTriangle } from 'lucide-react'
 import { LocationCard } from '@/components/location-card'
 import { WeatherCard } from '@/components/weather-card'
 import { ForecastCard } from '@/components/forecast-card'
@@ -116,11 +116,11 @@ export default function InicioPage() {
   const { predictBatch, loading: calendarLoading } = useCalendars()
   const { weather, loading: weatherLoading } = useWeather(municipalityId)
   const { forecast, loading: forecastLoading } = useForecast(municipalityId, 4)
-  const { alerts, loading: alertsLoading } = useAlerts(municipalityId)
+  const { alerts, loading: alertsLoading, error: alertsError } = useAlerts(municipalityId)
 
   const [batchResponse, setBatchResponse] = useState<CalendarBatchResponse | null>(null)
 
-  const loading = recommendationsLoading || cropsLoading || calendarLoading || weatherLoading || forecastLoading || alertsLoading
+  const loading = recommendationsLoading || cropsLoading || calendarLoading || weatherLoading || forecastLoading
 
   useEffect(() => {
     setMounted(true)
@@ -242,9 +242,62 @@ export default function InicioPage() {
           <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} />
         </section>
 
-        {/* 3. Siembra y cosechas */}
-        <section aria-labelledby="sowing-title" className="flex flex-col gap-4">
+        {/* 3. Clima futuro y alertas */}
+        <section aria-labelledby="climate-alerts-title" className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+              <AlertTriangle className="size-5" />
+            </div>
+            <div>
+              <h2 id="climate-alerts-title" className="text-lg font-semibold">
+                Clima futuro y alertas
+              </h2>
+              <p className="text-sm text-muted-foreground">Pronóstico y alertas para tu municipio</p>
+            </div>
+          </div>
+
+          {/* Roja: endpoint de alertas + datos reales */}
+          <div className="flex flex-col gap-3">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30">
+              <p className="text-xs font-medium text-red-700 dark:text-red-300">Endpoint de alertas</p>
+              <code className="break-all text-sm text-red-800 dark:text-red-200">
+                {`http://192.168.5.117:8000/api/v1/alerts/${municipalityId}`}
+              </code>
+            </div>
+
+            {alertsLoading ? (
+              <p className="text-sm text-muted-foreground">Cargando alertas...</p>
+            ) : alertsError ? (
+              <p className="text-sm text-destructive">Error: {alertsError}</p>
+            ) : alerts.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {alerts.map((alert) => (
+                  <ClimateAlertCard key={alert.id} alert={alert} />
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* Amarilla: endpoint de pronóstico + datos reales */}
+            <div className="flex flex-col gap-2">
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-900 dark:bg-yellow-950/30">
+                <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">Endpoint de pronóstico</p>
+                <code className="break-all text-sm text-yellow-800 dark:text-yellow-200">
+                  {`/api/v1/forecast/daily/{municipality_id}`}
+                </code>
+              </div>
+              <ForecastCard forecast={forecast} loading={forecastLoading} />
+            </div>
+
+            {/* Gris / blanco: espacio reservado */}
+            <div className="min-h-[200px] rounded-lg border border-dashed border-muted-foreground/20 bg-white dark:bg-background" />
+          </div>
+        </section>
+
+        {/* 4. Siembra y cosechas */}
+        <section aria-labelledby="sowing-title" className="flex flex-col gap-4">
+          {/* <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Sprout className="size-5" />
             </div>
@@ -256,11 +309,11 @@ export default function InicioPage() {
                 Cultivos recomendados para tu calendario agrícola
               </p>
             </div>
-          </div>
+          </div> */}
 
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Siembra */}
-            <div className="flex flex-col gap-3">
+            {/* <div className="flex flex-col gap-3">
               <p className="text-sm font-medium text-muted-foreground">Para sembrar ahora</p>
               {topCrop && (
                 <RecommendationCard
@@ -288,10 +341,10 @@ export default function InicioPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Cosechas */}
-            {visibleHarvestCrops.length > 0 && (
+            {/* {visibleHarvestCrops.length > 0 && (
               <div className="flex flex-col gap-3">
                 <p className="text-sm font-medium text-muted-foreground">Próximas cosechas</p>
                 <div className="grid grid-cols-1 gap-3">
@@ -314,40 +367,15 @@ export default function InicioPage() {
                   })}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
-          <DashboardActionCard
+          {/* <DashboardActionCard
             icon={Sprout}
             title="Ver todos los cultivos"
             description="Explora todos los cultivos recomendados para tu zona"
             href={cropsBasePath}
-          />
-        </section>
-
-        {/* 4. Pronóstico y alertas */}
-        <section aria-labelledby="forecast-title" className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
-              <CloudSun className="size-5" />
-            </div>
-            <div>
-              <h2 id="forecast-title" className="text-lg font-semibold">
-                Clima futuro y alertas
-              </h2>
-              <p className="text-sm text-muted-foreground">Pronóstico y alertas para tu municipio</p>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <ForecastCard forecast={forecast} loading={forecastLoading} />
-            {alerts && alerts.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <p className="text-sm font-medium text-muted-foreground">Alertas climáticas</p>
-                {alerts.map((alert) => <ClimateAlertCard key={alert.id} alert={alert} />)}
-              </div>
-            )}
-          </div>
+          /> */}
         </section>
 
         {/* 5. Mini calendario agrícola */}
@@ -366,7 +394,7 @@ export default function InicioPage() {
                 </p>
               </div>
             </div>
-            <DashboardActionCard
+            {/* <DashboardActionCard
               icon={Calendar}
               title="Ver calendario"
               description="Ver completo"
@@ -374,7 +402,7 @@ export default function InicioPage() {
               tone="accent"
               linkLabel="Ver calendario"
               className="hidden sm:flex"
-            />
+            /> */}
           </div>
           <AgriculturalCalendar batchResponse={batchResponse} mode="compact" />
           <AgriculturalCalendarLegend />
@@ -391,41 +419,6 @@ export default function InicioPage() {
         </section>
 
         {/* 6. Cultivos recomendados para tu zona */}
-        <section aria-labelledby="zone-title" className="flex flex-col gap-4">
-          <div>
-            <h2 id="zone-title" className="text-lg font-semibold">
-              Cultivos que podrás sembrar en tu zona
-            </h2>
-            <p className="text-sm text-muted-foreground">Otros cultivos compatibles con tu municipio</p>
-          </div>
-
-          {visibleZoneCrops.length > 0 && (
-            <div className="grid gap-3 lg:grid-cols-[1fr_220px] xl:grid-cols-[1fr_260px]">
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {visibleZoneCrops.map((crop) => (
-                  <CropCard
-                    key={crop.id}
-                    id={crop.id}
-                    name={crop.name}
-                    image={crop.image}
-                    recommendation={crop.recommendation}
-                    successRate={crop.successRate}
-                    href={`${cropsBasePath}/${crop.id}`}
-                    className="h-full"
-                  />
-                ))}
-              </div>
-              <DashboardActionCard
-                icon={Calendar}
-                title="Ver calendario"
-                description="¿Quieres ver cuándo sembrar cada cultivo?"
-                href={calendarBasePath}
-                tone="accent"
-                linkLabel="Ver calendario"
-              />
-            </div>
-          )}
-        </section>
       </div>
     </div>
   )
