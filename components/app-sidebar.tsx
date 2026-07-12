@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname, useParams, useSearchParams } from "next/navigation"
+import { usePathname, useParams, useSearchParams, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Collapsible } from "@base-ui/react/collapsible"
 import {
@@ -20,7 +20,6 @@ import {
   Sun,
   Thermometer,
   Trophy,
-  CalendarDays,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -34,6 +33,7 @@ import { concursoSections, getConcursoSection, type ConcursoSection } from "@/li
 import { ApiError } from "@/lib/api-client/client"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
 import { isWithinColombia } from "@/lib/location-utils"
+import { CropMapSidebar } from "@/components/crop-map-sidebar"
 
 function formatMetric(value: number | null | undefined, suffix: string) {
   if (value == null || Number.isNaN(value)) {
@@ -216,6 +216,7 @@ function LocationPanelContent({
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { selectedLocation, setSelectedLocation } = useLocation()
   const [mounted, setMounted] = useState(false)
@@ -361,13 +362,15 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2" aria-label="Navegación principal">
-        <Link
-          href="/"
-          className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-        >
-          <ArrowLeft className="size-5 shrink-0 transition-transform duration-200" />
-          Volver al home
-        </Link>
+        {!isMapaRoute && (
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+          >
+            <ArrowLeft className="size-5 shrink-0 transition-transform duration-200" />
+            Volver al home
+          </Link>
+        )}
 
         {isCompetitionRoute && (
           <>
@@ -420,59 +423,14 @@ export function AppSidebar() {
         )}
 
         {isMapaRoute && (
-          <>
-            <div className="flex items-center gap-3 rounded-2xl px-4 py-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Sprout className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-sidebar-foreground">
-                  {mapaCrop ? mapaCrop.name : params.id ? "Cargando cultivo..." : "Cultivo"}
-                </p>
-                {mapaCrop && <p className="truncate text-xs text-muted-foreground">{mapaCrop.scientificName}</p>}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => document.getElementById("crop-calendar-section")?.scrollIntoView({ behavior: "smooth" })}
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-left text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-            >
-              <CalendarDays className="size-5 shrink-0" />
-              Información del cultivo calendario
-            </button>
-            <button
-              type="button"
-              onClick={() => document.getElementById("crop-temperature-section")?.scrollIntoView({ behavior: "smooth" })}
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-left text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-            >
-              <Thermometer className="size-5 shrink-0" />
-              Información del cultivo temperatura
-            </button>
-            {configHref ? (
-              <Link
-                href={configHref}
-                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-              >
-                <Settings className="size-5 shrink-0" />
-                Configuración
-              </Link>
-            ) : (
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground">
-                <Settings className="size-5 shrink-0" />
-                Configuración
-              </div>
-            )}
-            <Link
-              href="/concurso"
-              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
-            >
-              <Trophy className="size-5 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <span className="block">Datos al ecosistema 2026</span>
-                <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
-              </div>
-            </Link>
-          </>
+          <CropMapSidebar
+            crop={mapaCrop}
+            crops={catalogCrops}
+            selectedCropId={params.id ?? ""}
+            onCropChange={(cropId) => router.push(`/mapa/${encodeURIComponent(cropId)}`)}
+            backHref="/"
+            contestHref="/concurso"
+          />
         )}
 
         {isMunicipioRoute && (

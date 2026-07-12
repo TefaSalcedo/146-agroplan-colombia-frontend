@@ -108,6 +108,12 @@ export function useAiInsights(municipalityId: string) {
       setRetryAttempt(0)
     } catch (err) {
       clearTimeout(timeoutId)
+
+      // Ignore cancellations caused by navigation or component unmount.
+      if (controller.signal.aborted && abortControllerRef.current !== controller) {
+        return
+      }
+
       console.error(`[useAiInsights] Error fetching AI insights on attempt ${attempt + 1}:`, err)
 
       const isRetryable =
@@ -149,7 +155,9 @@ export function useAiInsights(municipalityId: string) {
     return () => {
       clearRetryTimeout()
       if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
+        const controller = abortControllerRef.current
+        abortControllerRef.current = null
+        controller.abort()
       }
     }
   }, [municipalityId, loadInsights, clearRetryTimeout])

@@ -407,11 +407,11 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>Generado con {insights.model}</span>
           <span>·</span>
-          <span>{insights.latencyMs}ms</span>
+          <span>{insights.latencyMs != null ? `${insights.latencyMs}ms` : "—"}</span>
           <span>·</span>
-          <span>{insights.tokensTotal.toLocaleString()} tokens</span>
+          <span>{insights.tokensTotal != null ? `${insights.tokensTotal.toLocaleString()} tokens` : "Tokens no disponibles"}</span>
           <span>·</span>
-          <span>{new Date(insights.generatedAt).toLocaleString("es-CO")}</span>
+          <span>{insights.generatedAt ? new Date(insights.generatedAt).toLocaleString("es-CO") : "Fecha no disponible"}</span>
         </div>
       </div>
     </Card>

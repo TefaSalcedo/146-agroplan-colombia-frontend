@@ -85,11 +85,15 @@ export interface CropNationalGuideResponse {
   cropName: string
   summary: string
   sections: CropNationalGuideSection[]
-  generatedAt: string
-  expiresAt: string
+  generatedAt: string | null
+  expiresAt: string | null
   cached: boolean
-  provider: string
-  model: string
+  provider: string | null
+  model: string | null
+  tokensIn?: number | null
+  tokensOut?: number | null
+  tokensTotal?: number | null
+  latencyMs?: number | null
   status: string
   error: string | null
 }
@@ -148,7 +152,8 @@ export interface ZoningBatchCropResult {
 export interface ClimateBasedRecommendation {
   cropId: string
   cropName: string
-  score: number
+  /** KNN escort value used as the unique suitability indicator for climate-based recommendations. */
+  escort?: number | null
   source: string
 }
 
@@ -215,10 +220,10 @@ export interface AiInsightsResponse {
   cached: boolean
   provider: string
   model: string
-  tokensIn: number
-  tokensOut: number
-  tokensTotal: number
-  latencyMs: number
+  tokensIn?: number | null
+  tokensOut?: number | null
+  tokensTotal?: number | null
+  latencyMs?: number | null
   status: "success" | "error"
   error: string | null
 }
@@ -338,8 +343,12 @@ export interface NextPlantingSeason {
 export interface RecommendationResponse {
   topCrop: Crop & { suitability: "high" | "medium" | "low" | "none" }
   otherCrops: CropResponseLite[]
+  /** Crops derived from data-based results (zoning model). Available even when both sources are present. */
+  dataBasedCrops: CropResponseLite[]
+  /** Crops derived from climate-based recommendations (KNN model). Available even when both sources are present. */
+  climateBasedCrops: CropResponseLite[]
   nextPlantingSeason: NextPlantingSeason
-  source: "data" | "climate" | "fallback"
+  source: "data" | "climate" | "mixed" | "fallback"
   sourceDescription: string
   whyItMatters: string
   modelVersion: string

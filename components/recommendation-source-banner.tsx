@@ -1,9 +1,9 @@
-import { Database, Cloud, AlertCircle } from "lucide-react"
+import { Database, Cloud, AlertCircle, Layers } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 interface RecommendationSourceBannerProps {
-  source: "data" | "climate" | "fallback" | undefined
+  source: "data" | "climate" | "mixed" | "fallback" | undefined
   sourceDescription: string
   whyItMatters: string
   modelVersion: string
@@ -26,6 +26,14 @@ const sourceConfig = {
     title: "Recomendación basada en el clima actual",
     border: "border-l-sky-500",
     bg: "bg-sky-50/50",
+  },
+  mixed: {
+    badge: "Datos + clima",
+    badgeClass: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    icon: Layers,
+    title: "Recomendación combinada: histórica y climática",
+    border: "border-l-emerald-500",
+    bg: "bg-emerald-50/50",
   },
   fallback: {
     badge: "Recomendación general",

@@ -11,6 +11,7 @@ import { MonthlyForecastCard } from '@/components/monthly-forecast-card'
 import { ClimateAlertCard } from '@/components/climate-alert-card'
 import { SatelliteCropMap } from '@/components/satellite-crop-map'
 import { DashboardActionCard } from '@/components/dashboard-action-card'
+import { RecommendationSourceBanner } from '@/components/recommendation-source-banner'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { AgriculturalCalendar, AgriculturalCalendarLegend } from '@/components/agricultural-calendar'
@@ -203,10 +204,19 @@ export default function InicioPage() {
                 ¿Qué puedes sembrar aquí?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Cultivos recomendados para {selectedLocation.name} con su probabilidad de éxito
+                Cultivos recomendados para {selectedLocation.name} con su confidence o escort correspondiente
               </p>
             </div>
           </div>
+          {recommendations?.source && (
+            <RecommendationSourceBanner
+              source={recommendations.source}
+              sourceDescription={recommendations.sourceDescription}
+              whyItMatters={recommendations.whyItMatters}
+              modelVersion={recommendations.modelVersion}
+              method={recommendations.method}
+            />
+          )}
           <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} />
         </section>
 

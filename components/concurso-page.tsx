@@ -215,7 +215,7 @@ export function ConcursoPage() {
                     <div className="mb-4 flex items-start justify-between">
                       <h4 className="text-lg font-semibold text-white">{source.name}</h4>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-green-400">{source.records?.toLocaleString()}</div>
+                        <div className="text-xl font-bold text-green-400">{source.records != null ? source.records.toLocaleString() : "No disponible"}</div>
                         <div className="text-xs text-white/70">registros</div>
                       </div>
                     </div>
@@ -256,7 +256,7 @@ export function ConcursoPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-green-400">{dataset.records?.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-green-400">{dataset.records != null ? dataset.records.toLocaleString() : "No disponible"}</div>
                         <div className="text-sm text-white/70">registros</div>
                       </div>
                     </div>

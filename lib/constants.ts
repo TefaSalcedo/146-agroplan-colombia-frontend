@@ -39,10 +39,10 @@ export const suitabilityColors: Record<string, string> = {
 }
 
 export const mapSuitabilityColors: Record<string, string> = {
-  high: "#2DC4B2",
-  medium: "#F1F075",
-  low: "#F28CB1",
-  none: "#B8B8B8",
+  high: "#4a9d5b",
+  medium: "#e0b955",
+  low: "#d98d54",
+  none: "#b8b8b0",
 }
 
 export function getSuitabilityLabel(s: string): string {
