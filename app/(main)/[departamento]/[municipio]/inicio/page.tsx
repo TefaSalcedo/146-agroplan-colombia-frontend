@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Sprout, Wheat, AlertCircle, Calendar, Leaf } from 'lucide-react'
 import { LocationCard } from '@/components/location-card'
 import { WeatherCard } from '@/components/weather-card'
@@ -16,6 +17,7 @@ import { DailyTipCard } from '@/components/daily-tip-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { useWeather, useForecast, useRecommendations, useAlerts, useCrops } from '@/hooks'
 import { useLocation } from '@/context/LocationContext'
 import { buildLocationPath } from '@/lib/routing'
@@ -26,6 +28,7 @@ import {
   getMonthName,
   getPlantingWindowLabel,
 } from '@/lib/calendar'
+import { getClimateTips } from '@/lib/climate-tip'
 import type { Crop, RecommendationLevel } from '@/types'
 import type { CropLite } from '@/lib/api-client/types'
 
@@ -153,8 +156,21 @@ export default function InicioPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-destructive">Error: {error}</p>
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+        <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <AlertCircle className="size-8" />
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="text-lg font-semibold text-destructive">Error de conexión</h2>
+          <p className="text-muted-foreground max-w-md">{error}</p>
+        </div>
+        <Button
+          nativeButton={false}
+          render={<Link href="/" />}
+          size="lg"
+        >
+          Volver al inicio
+        </Button>
       </div>
     )
   }
@@ -184,6 +200,21 @@ export default function InicioPage() {
   const topCropPlantingWindow = topCrop ? getPlantingWindowLabel(topCrop.plantingMonths, today) : undefined
 
   const dailyTip = topCrop?.tips?.[0]?.description ?? 'Mantén el suelo húmedo y protegido. Evita la exposición directa en las horas de más sol.'
+
+  const MAX_SOWING_CARDS = 3
+  const MAX_ZONE_CARDS = 3
+  const MAX_HARVEST_CARDS = 2
+
+  const visibleSowingCrops = sowingCarouselCrops.slice(0, MAX_SOWING_CARDS)
+  const sowingFillCount = Math.max(0, MAX_SOWING_CARDS - visibleSowingCrops.length)
+
+  const visibleZoneCrops = zoneCrops.slice(0, MAX_ZONE_CARDS)
+  const zoneFillCount = Math.max(0, MAX_ZONE_CARDS - visibleZoneCrops.length)
+
+  const visibleHarvestCrops = harvestCrops.slice(0, MAX_HARVEST_CARDS)
+  const harvestFillCount = Math.max(0, MAX_HARVEST_CARDS - visibleHarvestCrops.length)
+
+  const climateTips = getClimateTips(weather)
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -242,33 +273,45 @@ export default function InicioPage() {
               title={topCropTitle}
               plantingWindowLabel={topCropPlantingWindow}
             />
-          ) : null}
+          ) : (
+            <DailyTipCard
+              title="Consejo del clima"
+              description={climateTips[0]}
+              className="h-full"
+            />
+          )}
 
-          {sowingCarouselCrops.length > 0 ? (
-            <div className="grid gap-3 lg:grid-cols-[1fr_220px] xl:grid-cols-[1fr_260px]">
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
-                {sowingCarouselCrops.map((crop) => (
-                  <div key={crop.id} className="w-44 shrink-0 snap-start sm:w-48">
-                    <CropCard
-                      id={crop.id}
-                      name={crop.name}
-                      image={crop.image}
-                      recommendation={crop.recommendation}
-                      successRate={crop.successRate}
-                      statusLabel={getPlantingStatus(crop.plantingMonths, today).label}
-                      href={`${cropsBasePath}/${crop.id}`}
-                    />
-                  </div>
-                ))}
-              </div>
-              <DashboardActionCard
-                icon={Leaf}
-                title="Ver todos los cultivos"
-                description="Explora todos los cultivos recomendados para tu zona"
-                href={cropsBasePath}
-              />
+          <div className="grid gap-3 lg:grid-cols-[1fr_220px] xl:grid-cols-[1fr_260px]">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {visibleSowingCrops.map((crop) => (
+                <CropCard
+                  key={crop.id}
+                  id={crop.id}
+                  name={crop.name}
+                  image={crop.image}
+                  recommendation={crop.recommendation}
+                  successRate={crop.successRate}
+                  statusLabel={getPlantingStatus(crop.plantingMonths, today).label}
+                  href={`${cropsBasePath}/${crop.id}`}
+                  className="h-full"
+                />
+              ))}
+              {Array.from({ length: sowingFillCount }, (_, i) => (
+                <DailyTipCard
+                  key={`sowing-tip-${i}`}
+                  title="Consejo del clima"
+                  description={climateTips[i % climateTips.length]}
+                  className="h-full"
+                />
+              ))}
             </div>
-          ) : null}
+            <DashboardActionCard
+              icon={Leaf}
+              title="Ver todos los cultivos"
+              description="Explora todos los cultivos recomendados para tu zona"
+              href={cropsBasePath}
+            />
+          </div>
         </section>
 
         {/* 4. Alertas + Cosecha */}
@@ -297,6 +340,11 @@ export default function InicioPage() {
                 />
               )}
             </div>
+            <DailyTipCard
+              title="Consejo del clima"
+              description={climateTips[1] ?? climateTips[0]}
+              className="h-full"
+            />
           </section>
 
           {/* Cosecha */}
@@ -313,25 +361,33 @@ export default function InicioPage() {
               </div>
             </div>
 
-            {harvestCrops.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
-                {harvestCrops.map((crop) => {
+            {visibleHarvestCrops.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {visibleHarvestCrops.map((crop) => {
                   const status = getHarvestStatus(crop.harvestMonths, crop.daysToHarvest, today)
                   return (
-                    <div key={crop.id} className="w-52 shrink-0 snap-start">
-                      <HarvestCard
-                        id={crop.id}
-                        name={crop.name}
-                        image={crop.image}
-                        estimatedMonth={getMonthName(status.targetMonth)}
-                        daysRemaining={status.daysUntil}
-                        maturity={estimateMaturity(status.daysUntil, crop.daysToHarvest)}
-                        statusLabel={status.label}
-                        href={`${cropsBasePath}/${crop.id}`}
-                      />
-                    </div>
+                    <HarvestCard
+                      key={crop.id}
+                      id={crop.id}
+                      name={crop.name}
+                      image={crop.image}
+                      estimatedMonth={getMonthName(status.targetMonth)}
+                      daysRemaining={status.daysUntil}
+                      maturity={estimateMaturity(status.daysUntil, crop.daysToHarvest)}
+                      statusLabel={status.label}
+                      href={`${cropsBasePath}/${crop.id}`}
+                      className="h-full w-full"
+                    />
                   )
                 })}
+                {Array.from({ length: harvestFillCount }, (_, i) => (
+                  <DailyTipCard
+                    key={`harvest-tip-${i}`}
+                    title="Consejo del clima"
+                    description={climateTips[(i + 2) % climateTips.length]}
+                    className="h-full"
+                  />
+                ))}
               </div>
             ) : (
               <Card className="flex items-center gap-4 p-5">
@@ -358,44 +414,38 @@ export default function InicioPage() {
             <p className="text-sm text-muted-foreground">Otros cultivos compatibles con tu municipio</p>
           </div>
 
-          {zoneCrops.length > 0 ? (
-            <div className="grid gap-3 lg:grid-cols-[1fr_220px] xl:grid-cols-[1fr_260px]">
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
-                {zoneCrops.map((crop) => (
-                  <div key={crop.id} className="w-44 shrink-0 snap-start sm:w-48">
-                    <CropCard
-                      id={crop.id}
-                      name={crop.name}
-                      image={crop.image}
-                      recommendation={crop.recommendation}
-                      successRate={crop.successRate}
-                      href={`${cropsBasePath}/${crop.id}`}
-                    />
-                  </div>
-                ))}
-              </div>
-              <DashboardActionCard
-                icon={Calendar}
-                title="Ver calendario"
-                description="¿Quieres ver cuándo sembrar cada cultivo?"
-                href={calendarBasePath}
-                tone="accent"
-                linkLabel="Ver calendario"
-              />
+          <div className="grid gap-3 lg:grid-cols-[1fr_220px] xl:grid-cols-[1fr_260px]">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {visibleZoneCrops.map((crop) => (
+                <CropCard
+                  key={crop.id}
+                  id={crop.id}
+                  name={crop.name}
+                  image={crop.image}
+                  recommendation={crop.recommendation}
+                  successRate={crop.successRate}
+                  href={`${cropsBasePath}/${crop.id}`}
+                  className="h-full"
+                />
+              ))}
+              {Array.from({ length: zoneFillCount }, (_, i) => (
+                <DailyTipCard
+                  key={`zone-tip-${i}`}
+                  title="Consejo del clima"
+                  description={climateTips[(i + 3) % climateTips.length]}
+                  className="h-full"
+                />
+              ))}
             </div>
-          ) : (
-            <Card className="flex items-center gap-4 p-5">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                <Sprout className="size-7" />
-              </div>
-              <div>
-                <p className="font-medium">No hay cultivos adicionales</p>
-                <p className="text-sm text-muted-foreground text-pretty">
-                  Todos los cultivos recomendados ya aparecen en las secciones de siembra o cosecha.
-                </p>
-              </div>
-            </Card>
-          )}
+            <DashboardActionCard
+              icon={Calendar}
+              title="Ver calendario"
+              description="¿Quieres ver cuándo sembrar cada cultivo?"
+              href={calendarBasePath}
+              tone="accent"
+              linkLabel="Ver calendario"
+            />
+          </div>
         </section>
 
         {/* 6. Consejo del día */}

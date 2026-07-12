@@ -17,7 +17,12 @@ export function useAlerts(municipalityId: string) {
         const data = await fetchAlerts(municipalityId)
         setAlerts(data)
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Error loading alerts")
+        const message = err instanceof ApiError
+          ? err.status === 404 || err.status === 500
+            ? "No se pudo obtener las alertas. El servicio puede no estar disponible temporalmente."
+            : err.message
+          : "Error de conexión al obtener las alertas"
+        setError(message)
       } finally {
         setLoading(false)
       }

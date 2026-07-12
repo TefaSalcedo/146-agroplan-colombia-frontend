@@ -17,7 +17,12 @@ export function useWeather(municipalityId: string) {
       setWeather(data)
     } catch (err) {
       setWeather(null)
-      setError(err instanceof ApiError ? err.message : "Error loading weather")
+      const message = err instanceof ApiError
+        ? err.status === 404 || err.status === 500
+          ? "No se pudo obtener el clima. El servicio puede no estar disponible temporalmente."
+          : err.message
+        : "Error de conexión al obtener el clima"
+      setError(message)
     } finally {
       setLoading(false)
     }

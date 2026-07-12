@@ -15,6 +15,7 @@ interface HarvestCardProps {
   maturity: number
   statusLabel: string
   href?: string
+  className?: string
 }
 
 export function HarvestCard({
@@ -26,12 +27,13 @@ export function HarvestCard({
   maturity,
   statusLabel,
   href,
+  className,
 }: HarvestCardProps) {
   const targetHref = href ?? `/cultivos/${id}`
   const isReady = maturity >= 100
 
   return (
-    <Link href={targetHref} className="group block w-56 shrink-0 focus:outline-none">
+    <Link href={targetHref} className={cn("group block w-56 shrink-0 focus:outline-none", className)}>
       <Card className="flex h-full flex-col overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring active:scale-95">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           <Image

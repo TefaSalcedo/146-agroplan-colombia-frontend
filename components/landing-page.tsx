@@ -31,7 +31,7 @@ import { ApiError } from "@/lib/api-client/client"
 import { useLocation } from "@/context/LocationContext"
 import { isWithinColombia } from "@/lib/location-utils"
 import { buildLocationPath } from "@/lib/routing"
-import { GeoButton, MunicipalityAutocomplete, MapModal } from "@/components/location"
+import { GeoButton, MunicipalityAutocomplete } from "@/components/location"
 import { Municipality } from "@/types"
 
 gsap.registerPlugin(useGSAP)
@@ -61,8 +61,6 @@ export function LandingPage() {
   const [isLoadingGeo, setIsLoadingGeo] = useState(false)
   const [isLoadingManual, setIsLoadingManual] = useState(false)
   const [showManualSelects, setShowManualSelects] = useState(false)
-  const [mapOpen, setMapOpen] = useState(false)
-  const [selectedMapMunicipality, setSelectedMapMunicipality] = useState<Municipality | null>(null)
 
   const { crops, loading: cropsLoading } = useCrops()
   const { departments, loading: departmentsLoading } = useDepartments()
@@ -150,13 +148,6 @@ export function LandingPage() {
     }
     setSelectedMunic(municipality.id)
     setSelectedDept(municipality.department)
-  }
-
-  const handleConfirmMapSelection = () => {
-    if (selectedMapMunicipality) {
-      setSelectedMunic(selectedMapMunicipality.id)
-      setSelectedDept(selectedMapMunicipality.department)
-    }
   }
 
   const handleContinueWithSelection = async () => {
@@ -587,24 +578,6 @@ export function LandingPage() {
                   )}
 
                   {/* Map trigger */}
-                  <button
-                    type="button"
-                    onClick={() => setMapOpen(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <MapPin className="size-4" />
-                    Elegir en el mapa
-                  </button>
-
-                  <MapModal
-                    municipalities={allMunicipalities}
-                    selected={selectedMapMunicipality}
-                    onSelect={setSelectedMapMunicipality}
-                    onConfirm={handleConfirmMapSelection}
-                    open={mapOpen}
-                    onOpenChange={setMapOpen}
-                  />
-
                   <Button
                     onClick={handleContinueWithSelection}
                     disabled={!selectedMunic || isLoadingManual}

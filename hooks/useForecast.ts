@@ -17,7 +17,12 @@ export function useForecast(municipalityId: string, days: number = 7) {
         const data = await fetchDailyForecast(municipalityId, days)
         setForecast(data)
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Error loading forecast")
+        const message = err instanceof ApiError
+          ? err.status === 404 || err.status === 500
+            ? "No se pudo obtener el pronóstico. El servicio puede no estar disponible temporalmente."
+            : err.message
+          : "Error de conexión al obtener el pronóstico"
+        setError(message)
       } finally {
         setLoading(false)
       }

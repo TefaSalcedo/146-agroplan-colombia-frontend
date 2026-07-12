@@ -63,13 +63,13 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-background p-6 shadow-lg">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-              <MapPin className="size-5 text-primary" />
+      <div className="w-full max-w-2xl rounded-2xl bg-background p-6 shadow-lg sm:p-8 md:p-10">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 sm:size-14">
+              <MapPin className="size-6 text-primary sm:size-7" />
             </div>
-            <h2 className="text-xl font-bold">Cambiar ubicación</h2>
+            <h2 className="text-2xl font-bold sm:text-3xl">Cambiar ubicación</h2>
           </div>
           <button
             onClick={onClose}
@@ -81,14 +81,14 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
         </div>
 
         {selectedLocation && (
-          <p className="mb-6 text-sm text-muted-foreground">
+          <p className="mb-8 text-base text-muted-foreground sm:text-lg">
             Ubicación actual: <span className="font-semibold text-foreground">{selectedLocation.name}, {selectedLocation.department}</span>
           </p>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-6 sm:space-y-8">
           <div>
-            <label className="mb-2 block text-sm font-medium">Departamento</label>
+            <label className="mb-3 block text-base font-medium sm:mb-4 sm:text-lg">Departamento</label>
             <Select
               value={selectedDept}
               onValueChange={(dept) => {
@@ -98,12 +98,12 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
               disabled={deptsLoading}
               items={Object.fromEntries(departments.map((d) => [d, d]))}
             >
-              <SelectTrigger className="transition-colors hover:border-primary hover:bg-accent">
+              <SelectTrigger className="h-12 text-base transition-colors hover:border-primary hover:bg-accent sm:h-14 sm:text-lg">
                 <SelectValue placeholder="Selecciona un departamento" />
               </SelectTrigger>
               <SelectContent>
                 {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
+                  <SelectItem key={dept} value={dept} className="py-3 sm:py-4">
                     {dept}
                   </SelectItem>
                 ))}
@@ -113,19 +113,19 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
 
           {selectedDept && (
             <div>
-              <label className="mb-2 block text-sm font-medium">Municipio</label>
+              <label className="mb-3 block text-base font-medium sm:mb-4 sm:text-lg">Municipio</label>
               <Select
                 value={selectedMunic}
                 onValueChange={(value) => setSelectedMunic(value)}
                 disabled={municsLoading || filteredMunicipalities.length === 0}
                 items={Object.fromEntries(filteredMunicipalities.map((m) => [m.id, m.name]))}
               >
-                <SelectTrigger className="transition-colors hover:border-primary hover:bg-accent">
+                <SelectTrigger className="h-12 text-base transition-colors hover:border-primary hover:bg-accent sm:h-14 sm:text-lg">
                   <SelectValue placeholder="Selecciona un municipio" />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredMunicipalities.map((munic) => (
-                    <SelectItem key={munic.id} value={munic.id}>
+                    <SelectItem key={munic.id} value={munic.id} className="py-3 sm:py-4">
                       {munic.name}
                     </SelectItem>
                   ))}
@@ -134,18 +134,18 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-6 sm:gap-6 sm:pt-8">
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 transition-all hover:bg-muted"
+              className="flex-1 h-12 text-base transition-all hover:bg-muted sm:h-14 sm:text-lg"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleContinue}
               disabled={!selectedMunic || isUpdating}
-              className="flex-1 transition-all hover:shadow-md disabled:opacity-50"
+              className="flex-1 h-12 text-base transition-all hover:shadow-md disabled:opacity-50 sm:h-14 sm:text-lg"
             >
               {isUpdating ? 'Actualizando...' : 'Actualizar'}
             </Button>

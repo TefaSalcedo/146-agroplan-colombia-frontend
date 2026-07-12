@@ -84,7 +84,7 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-white/30"
+            className="text-white/15"
           />
           <circle
             cx="50"
@@ -149,7 +149,7 @@ export function SatelliteCropMap({
     <div className="relative h-[420px] overflow-hidden rounded-3xl border border-border sm:h-[520px]">
       <Map
         center={[location.lng, location.lat]}
-        zoom={12}
+        zoom={15}
         scrollZoom
         styles={mapStyles}
         className="h-full w-full"
@@ -159,7 +159,7 @@ export function SatelliteCropMap({
       </Map>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-5">
-        <div className="pointer-events-auto self-start rounded-2xl bg-black/40 px-4 py-2 text-white backdrop-blur-md">
+        <div className="pointer-events-auto self-start rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-white shadow-lg backdrop-blur-xl">
           <p className="text-sm font-semibold drop-shadow-md">{location.name}</p>
           <p className="text-xs text-white/80 drop-shadow-md">
             {location.department}, Colombia
@@ -167,8 +167,8 @@ export function SatelliteCropMap({
         </div>
 
         {displayedCrops.length > 0 && (
-          <div className="pointer-events-auto self-center rounded-3xl border border-white/20 bg-black/35 p-4 shadow-2xl backdrop-blur-md sm:self-end sm:p-5">
-            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-white/90">
+          <div className="pointer-events-auto self-center rounded-3xl border border-white/20 bg-black/25 p-4 shadow-2xl backdrop-blur-xl sm:self-end sm:p-5">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-white/95 drop-shadow">
               Cultivos recomendados
             </p>
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
