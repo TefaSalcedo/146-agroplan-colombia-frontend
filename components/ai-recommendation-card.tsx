@@ -4,6 +4,7 @@ import { Sparkles, Sprout, Lightbulb, ClipboardCheck, AlertCircle } from "lucide
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AIBotIllustration } from "@/components/crop-illustrations"
 import type { CropRecommendationResponse } from "@/lib/api-client/types"
 
 interface ParsedRecommendation {
@@ -89,8 +90,8 @@ export function AIRecommendationCard({
 
   return (
     <Card className="relative overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6">
-      <div className="absolute right-0 top-0 p-4 opacity-10">
-        <Sparkles className="size-24 text-primary" />
+      <div className="pointer-events-none absolute -right-2 -top-2 w-44 opacity-90 sm:w-52">
+        <AIBotIllustration className="h-full w-full text-primary" />
       </div>
 
       <div className="relative flex flex-col gap-4">
