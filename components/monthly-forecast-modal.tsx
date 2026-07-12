@@ -56,21 +56,19 @@ interface MonthlyForecastModalProps {
 }
 
 export function MonthlyForecastModal({ open, onOpenChange, forecast, loading }: MonthlyForecastModalProps) {
-  console.log("[MonthlyForecastModal] open:", open, "forecast:", forecast, "loading:", loading)
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Pronóstico mensual completo</DialogTitle>
           <DialogDescription>
-            Pronóstico estacional detallado para los próximos 12 meses
+            Pronóstico estacional detallado para los próximos meses
           </DialogDescription>
         </DialogHeader>
 
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {Array.from({ length: 12 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />
             ))}
           </div>

@@ -15,7 +15,7 @@ export async function fetchDailyForecast(
 
 export async function fetchMonthlyForecast(
   municipalityId: string,
-  months = 4
+  months = 6
 ): Promise<MonthlyForecastResponse> {
   const params = new URLSearchParams()
   if (months) params.append("months", months.toString())

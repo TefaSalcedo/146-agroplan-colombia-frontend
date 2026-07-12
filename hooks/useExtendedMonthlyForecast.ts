@@ -3,7 +3,7 @@ import { fetchMonthlyForecast } from "@/lib/api-client/forecast"
 import type { MonthlyForecastResponse } from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
 
-export function useExtendedMonthlyForecast(municipalityId: string, months = 12, enabled = false) {
+export function useExtendedMonthlyForecast(municipalityId: string, months = 6, enabled = false) {
   const [forecast, setForecast] = useState<MonthlyForecastResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

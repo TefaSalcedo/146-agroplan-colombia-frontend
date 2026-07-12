@@ -74,8 +74,8 @@ export default function InicioPage() {
   const { crops: allCrops, loading: cropsLoading } = useCrops()
   const { predictBatch, loading: calendarLoading } = useCalendars()
   const { weather, loading: weatherLoading } = useWeather(municipalityId)
-  const { forecast, loading: forecastLoading } = useForecast(municipalityId, 4)
-  const { forecast: monthlyForecast, loading: monthlyForecastLoading } = useMonthlyForecast(municipalityId, 4)
+  const { forecast, loading: forecastLoading } = useForecast(municipalityId, 7)
+  const { forecast: monthlyForecast, loading: monthlyForecastLoading } = useMonthlyForecast(municipalityId, 6)
   const { alerts, loading: alertsLoading, error: alertsError } = useAlerts(municipalityId)
 
   const [batchResponse, setBatchResponse] = useState<CalendarBatchResponse | null>(null)

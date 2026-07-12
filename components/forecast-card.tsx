@@ -1,6 +1,8 @@
-import { Droplets, Sun, Cloud, CloudRain, CloudSun, CloudFog } from "lucide-react"
+import { useState } from "react"
+import { Droplets, Sun, Cloud, CloudRain, CloudSun, CloudFog, ChevronDown, ChevronUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import type { ForecastDayResponse } from "@/lib/api-client/types"
 
 const WEEK_DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
@@ -40,6 +42,10 @@ interface ForecastCardProps {
 }
 
 export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const DEFAULT_DAYS = 4
+  const MAX_DAYS = 7
+
   if (loading) {
     return (
       <Card className="flex h-full flex-col gap-4 p-5">
@@ -48,7 +54,7 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
           <Skeleton className="h-3 w-48" />
         </div>
         <div className="flex flex-1 flex-col gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: DEFAULT_DAYS }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
@@ -59,15 +65,17 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
-  const days = forecast
+  const filteredDays = forecast
     .filter((day) => {
       const dayDate = new Date(day.date)
       dayDate.setHours(0, 0, 0, 0)
       return dayDate >= today
     })
-    .slice(0, 4)
 
-  if (days.length === 0) {
+  const displayDays = isExpanded ? filteredDays.slice(0, MAX_DAYS) : filteredDays.slice(0, DEFAULT_DAYS)
+  const canExpand = filteredDays.length > DEFAULT_DAYS
+
+  if (filteredDays.length === 0) {
     return (
       <Card className="flex h-full flex-col justify-center gap-2 p-5 text-center">
         <p className="text-sm font-medium text-muted-foreground">Pronóstico no disponible</p>
@@ -80,13 +88,37 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
 
   return (
     <Card className="flex h-full flex-col gap-4 p-5">
-        <div>
-          <p className="text-sm font-semibold">Pronóstico</p>
-          <p className="text-xs text-muted-foreground">Próximos 4 días</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Pronóstico</p>
+            <p className="text-xs text-muted-foreground">
+              {isExpanded ? `Próximos ${displayDays.length} días` : `Próximos ${DEFAULT_DAYS} días`}
+            </p>
+          </div>
+          {canExpand && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 gap-1 text-xs"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="size-4" />
+                  Ver menos
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="size-4" />
+                  Ver más
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
-      <div className="flex flex-1 flex-col gap-3">
-        {days.map((day) => {
+      <div className="flex flex-1 flex-col gap-2">
+        {displayDays.map((day, index) => {
           const Icon = getWeatherIcon(day)
           const label = formatDayLabel(day.date)
           const tempMin = day.tempMin ?? "--"
@@ -97,25 +129,35 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
           return (
             <div
               key={day.date}
-              className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2.5 transition-colors hover:bg-muted"
+              className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10 px-4 py-3 transition-all hover:from-muted/50 hover:to-muted/30"
             >
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent-foreground">
+                <div className={`flex size-11 items-center justify-center rounded-xl ${
+                  precipitation >= 50 
+                    ? 'bg-blue-500/10 text-blue-600' 
+                    : precipitation >= 20 
+                    ? 'bg-amber-500/10 text-amber-600'
+                    : humidity >= 80
+                    ? 'bg-slate-500/10 text-slate-600'
+                    : 'bg-orange-500/10 text-orange-600'
+                }`}>
                   <Icon className="size-5" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{label}</p>
+                <div className="flex flex-col">
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
                   <p className="text-xs text-muted-foreground">{humidity}% humedad</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold tabular-nums">
-                  {tempMax}° / {tempMin}°
-                </p>
-                <p className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                  <Droplets className="size-3" />
-                  {precipitation}mm
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-sm font-bold tabular-nums text-foreground">
+                    {tempMax}° <span className="font-normal text-muted-foreground">/ {tempMin}°</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-2.5 py-1">
+                  <Droplets className="size-3.5 text-blue-600" />
+                  <span className="text-xs font-semibold text-blue-700">{precipitation}mm</span>
+                </div>
               </div>
             </div>
           )

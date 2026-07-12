@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Droplets,
   Sun,
@@ -5,9 +6,12 @@ import {
   Cloud,
   CloudSun,
   CloudFog,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import type { ForecastTrend, MonthlyForecastResponse } from "@/lib/api-client/types"
 
 interface TrendMeta {
@@ -49,6 +53,10 @@ interface MonthlyForecastCardProps {
 }
 
 export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const DEFAULT_MONTHS = 4
+  const MAX_MONTHS = 6
+
   if (loading) {
     return (
       <Card className="flex h-full flex-col gap-4 p-5">
@@ -57,7 +65,7 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
           <Skeleton className="h-3 w-48" />
         </div>
         <div className="flex flex-1 flex-col gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: DEFAULT_MONTHS }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
@@ -76,44 +84,80 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
     )
   }
 
+  const displayMonths = isExpanded ? forecast.forecasts.slice(0, MAX_MONTHS) : forecast.forecasts.slice(0, DEFAULT_MONTHS)
+  const canExpand = forecast.forecasts.length > DEFAULT_MONTHS
+
   return (
     <Card className="flex h-full flex-col gap-4 p-5 hover:bg-accent/50 transition-colors">
-        <div>
-          <p className="text-sm font-semibold">Pronóstico mensual</p>
-          <p className="text-xs text-muted-foreground">Próximos {forecast.months} meses</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Pronóstico mensual</p>
+            <p className="text-xs text-muted-foreground">
+              {isExpanded ? `Próximos ${displayMonths.length} meses` : `Próximos ${DEFAULT_MONTHS} meses`}
+            </p>
+          </div>
+          {canExpand && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 gap-1 text-xs"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="size-4" />
+                  Ver menos
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="size-4" />
+                  Ver más
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
-      <div className="flex flex-1 flex-col gap-3">
-        {forecast.forecasts.map((month) => {
+      <div className="flex flex-1 flex-col gap-2">
+        {displayMonths.map((month) => {
           const trendMeta = getTrendMeta(month.trend)
           const WeatherIcon = getWeatherIcon(month.precipitation)
 
           return (
             <div
               key={month.forecastMonth}
-              className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2.5 transition-colors hover:bg-muted"
+              className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10 px-4 py-3 transition-all hover:from-muted/50 hover:to-muted/30"
             >
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-accent/10 text-accent-foreground">
+                <div className={`flex size-11 items-center justify-center rounded-xl ${
+                  month.precipitation >= 100
+                    ? 'bg-blue-500/10 text-blue-600'
+                    : month.precipitation >= 50
+                    ? 'bg-cyan-500/10 text-cyan-600'
+                    : month.precipitation >= 20
+                    ? 'bg-emerald-500/10 text-emerald-600'
+                    : 'bg-orange-500/10 text-orange-600'
+                }`}>
                   <WeatherIcon className="size-5" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{month.monthName}</p>
-                  <p className={`text-xs ${trendMeta.color}`}>{trendMeta.label}</p>
+                <div className="flex flex-col">
+                  <p className="text-sm font-semibold text-foreground">{month.monthName}</p>
+                  <p className={`text-xs font-medium ${trendMeta.color}`}>{trendMeta.label}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold tabular-nums">
-                  {month.tempMean.toFixed(1)}°
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    ({formatAnomaly(month.tempAnomaly)}°)
-                  </span>
-                </p>
-                <p className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                  <Droplets className="size-3" />
-                  {month.precipitation.toFixed(1)}mm
-                  <span className="ml-1">({formatAnomaly(month.precipitationAnomaly)}mm)</span>
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-sm font-bold tabular-nums text-foreground">
+                    {month.tempMean.toFixed(1)}°
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      ({formatAnomaly(month.tempAnomaly)}°)
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-2.5 py-1">
+                  <Droplets className="size-3.5 text-blue-600" />
+                  <span className="text-xs font-semibold text-blue-700">{month.precipitation.toFixed(1)}mm</span>
+                </div>
               </div>
             </div>
           )
