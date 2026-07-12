@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
-import { fetchCrops, fetchCrop, fetchCropsLite } from "@/lib/api-client/crops"
+import { fetchCrops, fetchCrop, fetchCropsLite, fetchCropRecommendations } from "@/lib/api-client/crops"
 import type { Crop } from "@/types"
-import type { CropLite } from "@/lib/api-client/types"
+import type { CropLite, CropRecommendationResponse } from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
 
 export function useCrops() {
@@ -78,4 +78,30 @@ export function useCropsLite() {
   }, [])
 
   return { crops, loading, error, reload: loadCrops }
+}
+
+export function useCropRecommendations(cropId: string, municipalityId: string) {
+  const [recommendation, setRecommendation] = useState<CropRecommendationResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      if (!cropId || !municipalityId) return
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await fetchCropRecommendations(cropId, municipalityId)
+        setRecommendation(data)
+      } catch (err) {
+        setRecommendation(null)
+        setError(err instanceof ApiError ? err.message : "Error loading crop recommendations")
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadRecommendations()
+  }, [cropId, municipalityId])
+
+  return { recommendation, loading, error }
 }

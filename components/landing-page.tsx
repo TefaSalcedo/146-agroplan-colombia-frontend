@@ -33,7 +33,7 @@ import { ApiError } from "@/lib/api-client/client"
 import { useLocation } from "@/context/LocationContext"
 import { isWithinColombia } from "@/lib/location-utils"
 import { buildLocationPath } from "@/lib/routing"
-import { GeoButton, MunicipalityAutocomplete } from "@/components/location"
+import { GeoButton, MunicipalitySearchAutocomplete } from "@/components/location"
 import { Municipality } from "@/types"
 
 gsap.registerPlugin(useGSAP)
@@ -60,14 +60,15 @@ export function LandingPage() {
   // Location selection state
   const [selectedDept, setSelectedDept] = useState("")
   const [selectedMunic, setSelectedMunic] = useState("")
+  const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null)
   const [isLoadingGeo, setIsLoadingGeo] = useState(false)
   const [isLoadingManual, setIsLoadingManual] = useState(false)
   const [showManualSelects, setShowManualSelects] = useState(false)
+  const [nearbySuggestion, setNearbySuggestion] = useState<Municipality | null>(null)
 
   const { crops, loading: cropsLoading } = useCrops()
   const { departments, loading: departmentsLoading } = useDepartments()
   const { municipalities: deptMunicipios, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
-  const { municipalities: allMunicipalities, loading: allMunicipalitiesLoading } = useMunicipalities()
 
   // Pre-fill the location form when a location was previously selected
   // so the user sees their current department/municipio when returning home.
@@ -75,6 +76,7 @@ export function LandingPage() {
     if (!selectedLocation) return
     setSelectedDept(selectedLocation.department)
     setSelectedMunic(selectedLocation.id)
+    setSelectedMunicipality(selectedLocation)
   }, [selectedLocation])
 
   const handleContinueWithCrop = () => {
@@ -84,6 +86,7 @@ export function LandingPage() {
 
   const handleUseCurrentLocation = async () => {
     setIsLoadingGeo(true)
+    setNearbySuggestion(null)
 
     if (!("geolocation" in navigator)) {
       alert("Tu navegador no soporta geolocalización. Por favor selecciona tu ubicación manualmente.")
@@ -104,6 +107,9 @@ export function LandingPage() {
 
           const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude, 20)
           setSelectedLocation(nearbyMunicipality)
+          setSelectedMunicipality(nearbyMunicipality)
+          setSelectedMunic(nearbyMunicipality.id)
+          setSelectedDept(nearbyMunicipality.department)
           router.push(buildLocationPath(nearbyMunicipality.department, nearbyMunicipality.name, "inicio"))
         } catch (error) {
           const message = error instanceof ApiError && error.status && [400, 404].includes(error.status)
@@ -144,12 +150,57 @@ export function LandingPage() {
   }
 
   const handleSelectMunicipalityFromSearch = (municipality: Municipality | null) => {
+    setNearbySuggestion(null)
     if (!municipality) {
       setSelectedMunic("")
+      setSelectedMunicipality(null)
       return
     }
     setSelectedMunic(municipality.id)
     setSelectedDept(municipality.department)
+    setSelectedMunicipality(municipality)
+  }
+
+  const handleRequestNearbyFromSearch = async () => {
+    setIsLoadingGeo(true)
+    try {
+      if (!("geolocation" in navigator)) {
+        alert("Tu navegador no soporta geolocalización.")
+        return
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000,
+        })
+      })
+
+      const { latitude, longitude } = position.coords
+      if (!isWithinColombia(latitude, longitude)) {
+        alert("Tu ubicación parece estar fuera de Colombia.")
+        return
+      }
+
+      const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude, 20)
+      setNearbySuggestion(nearbyMunicipality)
+    } catch (error) {
+      const message = error instanceof ApiError && error.status && [400, 404].includes(error.status)
+        ? "No encontramos un municipio cercano cubierto por AgroPlan."
+        : "No pudimos obtener tu ubicación."
+      alert(message)
+    } finally {
+      setIsLoadingGeo(false)
+    }
+  }
+
+  const handleAcceptNearbySuggestion = () => {
+    if (!nearbySuggestion) return
+    setSelectedMunicipality(nearbySuggestion)
+    setSelectedMunic(nearbySuggestion.id)
+    setSelectedDept(nearbySuggestion.department)
+    setNearbySuggestion(null)
   }
 
   const handleContinueWithSelection = async () => {
@@ -169,8 +220,6 @@ export function LandingPage() {
       setIsLoadingManual(false)
     }
   }
-
-  const selectedMunicipality = allMunicipalities.find((m) => m.id === selectedMunic) ?? null
 
   useGSAP(
     (context, contextSafe) => {
@@ -483,14 +532,42 @@ export function LandingPage() {
                       <Search className="size-4 text-muted-foreground" />
                       Buscar municipio
                     </label>
-                    <MunicipalityAutocomplete
-                      municipalities={allMunicipalities}
+                    <MunicipalitySearchAutocomplete
                       value={selectedMunic}
+                      selectedMunicipality={selectedMunicipality ?? undefined}
                       onSelect={handleSelectMunicipalityFromSearch}
-                      loading={allMunicipalitiesLoading}
-                      placeholder="Buscar municipio o vereda..."
+                      placeholder="Buscar municipio o departamento..."
+                      noResultsHint={
+                        <span className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/50 p-3">
+                          <span>No encontramos tu municipio.</span>
+                          <button
+                            type="button"
+                            onClick={handleRequestNearbyFromSearch}
+                            disabled={isLoadingGeo}
+                            className="flex items-center gap-1.5 text-primary hover:underline disabled:pointer-events-none disabled:opacity-60"
+                          >
+                            <MapPin className="size-3.5" />
+                            {isLoadingGeo ? "Buscando municipio más cercano..." : "Usar municipio más cercano a mi ubicación"}
+                          </button>
+                        </span>
+                      }
                     />
-                    {selectedMunicipality && (
+                    {nearbySuggestion && (
+                      <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm">
+                        <p className="font-medium text-foreground">Municipio más cercano encontrado</p>
+                        <p className="text-muted-foreground">
+                          {nearbySuggestion.name}, {nearbySuggestion.department}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleAcceptNearbySuggestion}
+                          className="mt-2 text-xs font-semibold text-primary hover:underline"
+                        >
+                          Seleccionar este municipio
+                        </button>
+                      </div>
+                    )}
+                    {selectedMunicipality && !nearbySuggestion && (
                       <p className="text-xs text-primary">
                         {selectedMunicipality.name}, {selectedMunicipality.department}
                       </p>

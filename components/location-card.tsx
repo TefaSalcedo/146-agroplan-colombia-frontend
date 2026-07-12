@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import type { Location } from "@/types"
+import type { Location, Municipality } from "@/types"
 
 const RURAL_IMAGE = "/ai images/Image-rural.webp"
 const URBAN_IMAGE = "/ai images/Image-urban.webp"
@@ -45,26 +45,41 @@ function getLocationImage(location: Location): string {
   return isCapitalCity(location.municipality) ? URBAN_IMAGE : RURAL_IMAGE
 }
 
-export function LocationCard({ location }: { location: Location }) {
+function formatNumber(value: number | undefined, suffix = ""): string | null {
+  if (value === undefined || value === null || Number.isNaN(value)) return null
+  return `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 }).format(value)}${suffix}`
+}
+
+interface LocationCardProps {
+  location: Location
+  municipality?: Municipality | null
+}
+
+export function LocationCard({ location, municipality }: LocationCardProps) {
   const imageUrl = getLocationImage(location)
 
   return (
     <Card
-      className="group relative flex flex-row items-center gap-4 overflow-hidden p-5"
+      className="group relative flex h-full min-h-[9rem] flex-col justify-end overflow-hidden"
       style={{
         backgroundImage: `url(${encodeURI(imageUrl)})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 transition-opacity group-hover:opacity-90" />
-      <div className="relative flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm">
-        <MapPin className="size-7" />
-      </div>
-      <div className="relative min-w-0 flex-1">
-        <p className="text-sm text-white/80">Estás en</p>
-        <p className="truncate text-xl font-bold text-white">{location.municipality}</p>
-        <p className="text-sm text-white/80">{location.department}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20 transition-opacity group-hover:opacity-95" />
+
+      <div className="relative flex flex-col gap-3 p-5">
+        <div className="flex items-start gap-4">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur-sm">
+            <MapPin className="size-7" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-white/80">Estás en</p>
+            <p className="truncate text-xl font-bold text-white">{location.municipality}</p>
+            <p className="text-sm text-white/80">{location.department}</p>
+          </div>
+        </div>
       </div>
     </Card>
   )

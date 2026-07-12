@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { CropImage } from "@/components/crop-image"
-import { Sparkles, ArrowRight, CalendarDays } from "lucide-react"
+import { Sparkles, ArrowRight, CalendarDays, Database, Cloud } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,17 +12,47 @@ interface RecommendationCardProps {
   href?: string
   plantingWindowLabel?: string
   title?: string
+  source?: "data" | "climate" | "fallback"
 }
 
-export function RecommendationCard({ crop, href, plantingWindowLabel, title = "Hoy puedes sembrar" }: RecommendationCardProps) {
+export function RecommendationCard({ crop, href, plantingWindowLabel, title = "Hoy puedes sembrar", source }: RecommendationCardProps) {
+  const getSourceInfo = () => {
+    switch (source) {
+      case "data":
+        return {
+          icon: <Database className="size-3.5" />,
+          label: "Basado en datos",
+          variant: "default" as const,
+        }
+      case "climate":
+        return {
+          icon: <Cloud className="size-3.5" />,
+          label: "Predicción climática",
+          variant: "secondary" as const,
+        }
+      default:
+        return null
+    }
+  }
+
+  const sourceInfo = getSourceInfo()
+
   return (
     <Card className="overflow-hidden p-0">
       <div className="grid gap-0 md:grid-cols-2">
         <div className="flex flex-col gap-5 p-6 md:p-8">
-          <Badge className="w-fit gap-1.5 bg-primary text-primary-foreground">
-            <Sparkles className="size-3.5" />
-            Recomendado hoy
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="w-fit gap-1.5 bg-primary text-primary-foreground">
+              <Sparkles className="size-3.5" />
+              Recomendado hoy
+            </Badge>
+            {sourceInfo && (
+              <Badge variant={sourceInfo.variant} className="w-fit gap-1.5">
+                {sourceInfo.icon}
+                {sourceInfo.label}
+              </Badge>
+            )}
+          </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
             <h2 className="text-3xl font-bold tracking-tight text-balance md:text-4xl">{crop.name}</h2>

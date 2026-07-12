@@ -1,144 +1,88 @@
-"use client"
-
-import { useRef } from "react"
-import { Sun, Cloud, CloudRain, CloudSun, Droplets, CloudDrizzle, Moon } from "lucide-react"
+import { Cloud, CloudRain, Sun, CloudSun, CloudFog, Droplets, Wind, Thermometer } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { useGSAP } from "@gsap/react"
-import gsap from "gsap"
-import type { Weather } from "@/types"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { WeatherResponse } from "@/lib/api-client/types"
 
-const iconMap = {
+const ICONS: Record<string, typeof Sun> = {
   sun: Sun,
   cloud: Cloud,
   rain: CloudRain,
   partly: CloudSun,
+  fog: CloudFog,
 }
 
-function isNightTime(): boolean {
-  const hour = new Date().getHours()
-  return hour < 6 || hour >= 18
+interface WeatherCardProps {
+  weather: WeatherResponse | null
+  loading?: boolean
 }
 
-export function WeatherCard({ weather }: { weather: Weather | null }) {
-  const iconRef = useRef<HTMLDivElement>(null)
-  const rainRef = useRef<HTMLDivElement>(null)
-
-  useGSAP(() => {
-    if (!iconRef.current) return
-
-    const icon = iconRef.current
-    const ctx = gsap.context(() => {
-      const iconType = weather?.icon ?? "partly"
-      const night = isNightTime()
-
-      gsap.killTweensOf(icon)
-
-      if (iconType === "sun" && !night) {
-        gsap.to(icon, {
-          rotation: 360,
-          duration: 12,
-          repeat: -1,
-          ease: "none",
-        })
-      } else if (iconType === "cloud" || iconType === "partly" || (iconType === "sun" && night)) {
-        gsap.to(icon, {
-          y: -4,
-          duration: 2,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-        })
-        gsap.to(icon, {
-          rotation: 4,
-          duration: 2.5,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-        })
-      } else if (iconType === "rain") {
-        gsap.to(icon, {
-          y: 2,
-          duration: 0.8,
-          repeat: -1,
-          yoyo: true,
-          ease: "power1.inOut",
-        })
-      }
-
-      if (rainRef.current && iconType === "rain") {
-        const drops = rainRef.current.querySelectorAll(".rain-drop")
-        gsap.fromTo(
-          drops,
-          { y: -6, opacity: 0 },
-          {
-            y: 12,
-            opacity: 1,
-            duration: 0.6,
-            stagger: 0.15,
-            repeat: -1,
-            ease: "power1.in",
-          },
-        )
-      }
-    }, iconRef)
-
-    return () => ctx.revert()
-  }, [weather])
-
-  if (!weather) {
+export function WeatherCard({ weather, loading }: WeatherCardProps) {
+  if (loading) {
     return (
-      <Card className="flex flex-col justify-between gap-4 p-5">
-        <div className="flex items-start justify-between">
+      <Card className="flex h-full flex-col gap-4 p-5">
+        <Skeleton className="h-5 w-32" />
+        <div className="flex flex-1 items-center gap-4">
+          <Skeleton className="size-16 rounded-2xl" />
           <div className="space-y-2">
-            <div className="h-4 w-28 animate-pulse rounded bg-muted" />
-            <div className="h-10 w-28 animate-pulse rounded bg-muted" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-4 w-40" />
           </div>
-          <div className="flex size-14 animate-pulse items-center justify-center rounded-2xl bg-muted" />
-        </div>
-        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-        <div className="flex items-center gap-4">
-          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
         </div>
       </Card>
     )
   }
 
-  const night = isNightTime()
-  const iconKey = weather.icon === "sun" && night ? "moon" : weather.icon
-  const Icon = iconKey === "moon" ? Moon : (iconMap[weather.icon] ?? CloudSun)
+  if (!weather) {
+    return (
+      <Card className="flex h-full flex-col items-center justify-center gap-2 p-5 text-center">
+        <Cloud className="size-10 text-muted-foreground" />
+        <p className="text-sm font-medium text-muted-foreground">Clima no disponible</p>
+      </Card>
+    )
+  }
+
+  const Icon = ICONS[weather.icon] ?? Cloud
+  const hasPrecipitation = weather.precipitation > 0
 
   return (
-    <Card className="flex flex-col gap-4 p-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Clima actual</p>
-          <p className="text-4xl font-bold tabular-nums tracking-tight">{weather.temperature}°C</p>
+    <Card className="flex h-full flex-col gap-3 overflow-hidden p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">Clima actual</p>
+        <span className="text-xs text-muted-foreground capitalize">{weather.source}</span>
+      </div>
+
+      <div className="flex flex-1 items-center gap-4">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="size-9" />
         </div>
-        <div
-          ref={iconRef}
-          className="relative flex size-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground"
-        >
-          <Icon className="size-7" />
-          {weather.icon === "rain" && (
-            <div ref={rainRef} className="pointer-events-none absolute bottom-2 flex gap-0.5">
-              <span className="rain-drop size-0.5 rounded-full bg-accent-foreground/70" />
-              <span className="rain-drop size-0.5 rounded-full bg-accent-foreground/70" />
-              <span className="rain-drop size-0.5 rounded-full bg-accent-foreground/70" />
-            </div>
-          )}
+        <div>
+          <p className="text-3xl font-bold tracking-tight">{Math.round(weather.temperature)}°C</p>
+          <p className="text-sm font-medium text-muted-foreground">{weather.condition}</p>
         </div>
       </div>
-      <p className="text-sm font-medium">{weather.condition}</p>
-      <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <Droplets className="size-4" />
-          {weather.humidity}% humedad
-        </span>
-        <span className="flex items-center gap-1.5">
-          <CloudDrizzle className="size-4" />
-          {weather.precipitation}% lluvia
-        </span>
+
+      <div className="grid grid-cols-3 gap-2 pt-1">
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2">
+          <Droplets className="size-4 text-blue-500" />
+          <div>
+            <p className="text-[10px] uppercase text-muted-foreground">Humedad</p>
+            <p className="text-sm font-semibold">{weather.humidity}%</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2">
+          <Wind className="size-4 text-slate-500" />
+          <div>
+            <p className="text-[10px] uppercase text-muted-foreground">Precipitación</p>
+            <p className="text-sm font-semibold">{weather.precipitation}mm</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2">
+          <Thermometer className="size-4 text-orange-500" />
+          <div>
+            <p className="text-[10px] uppercase text-muted-foreground">Sensación</p>
+            <p className="text-sm font-semibold">{Math.round(weather.temperature)}°</p>
+          </div>
+        </div>
       </div>
     </Card>
   )

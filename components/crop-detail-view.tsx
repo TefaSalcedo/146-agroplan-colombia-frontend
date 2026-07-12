@@ -4,8 +4,6 @@ import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
 import {
   ArrowLeft,
-  Sprout,
-  Wheat,
   Clock,
   Layers,
   Thermometer,
@@ -13,18 +11,16 @@ import {
   CloudRain,
   Mountain,
   Waves,
-  Lightbulb,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { SuccessIndicator } from "@/components/success-indicator"
-import { RecommendationBadge } from "@/components/recommendation-badge"
-import { Timeline } from "@/components/timeline"
 import { MonthStrip } from "@/components/month-strip"
-import { CropDownloadButtons } from "@/components/crop-download-buttons"
 import { PageLoading } from "@/components/page-loading"
-import { useCrop } from "@/hooks"
+import { useCrop, useCropRecommendations, useCropCalendar } from "@/hooks"
+import { useLocation } from "@/context/LocationContext"
+import { AIRecommendationCard } from "@/components/ai-recommendation-card"
+import { CropCalendarVisualization } from "@/components/crop-calendar-visualization"
 
 const factIcons = {
   soil: Layers,
@@ -41,10 +37,22 @@ interface CropDetailViewProps {
 
 export function CropDetailView({ id }: CropDetailViewProps) {
   const { crop, loading, error } = useCrop(id)
+  const { selectedLocation } = useLocation()
+  const {
+    recommendation,
+    loading: recommendationLoading,
+    error: recommendationError,
+  } = useCropRecommendations(id, selectedLocation?.id ?? "")
+  const {
+    cropResult,
+    loading: calendarLoading,
+  } = useCropCalendar(id, selectedLocation?.id ?? "")
 
   if (loading) {
     return <PageLoading title="Cargando cultivo" />
   }
+
+  const totalLoading = loading || calendarLoading
 
   if (error || !crop) {
     return (
@@ -105,35 +113,36 @@ export function CropDetailView({ id }: CropDetailViewProps) {
         </div>
         <div className="md:col-span-2 flex flex-col justify-center gap-3">
           <div>
-            <RecommendationBadge level={crop.recommendation} />
-          </div>
-          <div>
             <h1 className="text-2xl font-bold text-balance md:text-3xl">{crop.name}</h1>
             <p className="text-sm italic text-muted-foreground">{crop.scientificName}</p>
           </div>
-          <SuccessIndicator value={crop.successRate} />
         </div>
       </div>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold">¿Por qué te lo recomendamos?</h2>
-        <Card className="p-4">
-          <p className="text-sm leading-relaxed text-muted-foreground text-pretty">{crop.reason}</p>
-        </Card>
-      </section>
+      {selectedLocation && (
+        <AIRecommendationCard
+          cropId={id}
+          cropName={crop.name}
+          municipalityId={selectedLocation.id}
+          municipalityName={selectedLocation.name}
+          recommendation={recommendation}
+          loading={recommendationLoading}
+          error={recommendationError}
+        />
+      )}
 
       <section className="grid gap-3 md:grid-cols-2">
         <Card className="flex flex-col gap-3 p-4">
           <div className="flex items-center gap-2">
-            <Sprout className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold">Calendario de siembra</h2>
+            <Layers className="size-4 text-primary" />
+            <h2 className="text-sm font-semibold">Calendario de siembra (general)</h2>
           </div>
           <MonthStrip activeMonths={crop.plantingMonths} tone="primary" />
         </Card>
         <Card className="flex flex-col gap-3 p-4">
           <div className="flex items-center gap-2">
-            <Wheat className="size-4 text-accent-foreground" />
-            <h2 className="text-sm font-semibold">Calendario de cosecha</h2>
+            <Waves className="size-4 text-accent-foreground" />
+            <h2 className="text-sm font-semibold">Calendario de cosecha (general)</h2>
           </div>
           <MonthStrip activeMonths={crop.harvestMonths} tone="accent" />
         </Card>
@@ -185,32 +194,16 @@ export function CropDetailView({ id }: CropDetailViewProps) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Ciclo del cultivo</h2>
-        <Card className="p-4">
-          <Timeline stages={crop.stages} />
-        </Card>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Consejos importantes</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {crop.tips.map((tip) => (
-            <Card key={tip.title} className="flex flex-col gap-2 p-4">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                <Lightbulb className="size-5" />
-              </div>
-              <p className="font-semibold">{tip.title}</p>
-              <p className="text-sm text-muted-foreground text-pretty">{tip.description}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Descargar información</h2>
-        <CropDownloadButtons cropName={crop.name} />
-      </section>
+      {/* API-based Calendar */}
+      {selectedLocation && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-base font-semibold">Calendario inteligente de siembra y cosecha</h2>
+          <CropCalendarVisualization
+            calendarData={cropResult ? { municipalityId: selectedLocation.id, municipalityName: selectedLocation.name, horizonMonths: 12, results: [cropResult], modelVersion: "yield-ensemble-v1" } : null}
+            loading={calendarLoading}
+          />
+        </section>
+      )}
     </div>
   )
 }

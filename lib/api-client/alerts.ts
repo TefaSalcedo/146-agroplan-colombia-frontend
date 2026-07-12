@@ -1,8 +1,9 @@
 import { fetchApi } from "./client"
-import type { AlertResponse } from "./types"
+import type { AlertsResponse, AlertResponse } from "./types"
 
 export async function fetchAlerts(municipalityId: string): Promise<AlertResponse[]> {
-  return fetchApi<AlertResponse[]>(`/alerts/${municipalityId}`)
+  const response = await fetchApi<AlertsResponse>(`/alerts/${municipalityId}`)
+  return response.alerts
 }
 
 export const alertsApi = {

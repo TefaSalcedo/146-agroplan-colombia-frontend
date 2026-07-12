@@ -33,6 +33,10 @@ function successRateFromSuitability(
   return Math.round(base * (0.95 + confidence * 0.05) * 100)
 }
 
+function successRateFromClimateScore(score: number): number {
+  return Math.round(score * 100)
+}
+
 function recommendationLevelFromSuitability(suitability: Suitability): RecommendationLevel {
   if (suitability === "none") return "low"
   return suitability
@@ -62,21 +66,54 @@ function buildRecommendationResponse(
     cropMap.set(crop.id, crop)
   }
 
-  const ranked = zoning.results
-    .map((result) => {
-      const crop = cropMap.get(result.cropId)
-      if (!crop) return null
-      return {
-        result,
-        crop,
-        score: suitabilityScore(result.suitability),
-      }
-    })
-    .filter((item): item is RankedCrop => item !== null)
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score
-      return b.result.confidence - a.result.confidence
-    })
+  // Prioritize results (data-based) over climate_based_recommendations (predictions)
+  const useResults = zoning.results && zoning.results.length > 0
+  
+  let ranked: RankedCrop[] = []
+  
+  if (useResults) {
+    // Use data-based results from zoning model
+    ranked = zoning.results
+      .flatMap((result) => {
+        const crop = cropMap.get(result.cropId)
+        if (!crop) return []
+        return [{
+          result,
+          crop,
+          score: suitabilityScore(result.suitability),
+        }]
+      })
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score
+        return b.result.confidence - a.result.confidence
+      })
+  } else {
+    // Fallback to climate-based recommendations
+    ranked = zoning.climateBasedRecommendations
+      .flatMap((result) => {
+        const crop = cropMap.get(result.cropId)
+        if (!crop) return []
+        return [{
+          result: {
+            cropId: result.cropId,
+            cropName: result.cropName,
+            suitability: (result.score >= 0.7 ? "high" : result.score >= 0.4 ? "medium" : "low") as Suitability,
+            confidence: result.score,
+            modelVersion: zoning.modelVersion,
+            method: result.source,
+            factors: {
+              temperatureMatch: true,
+              precipitationMatch: true,
+              soilMatch: true,
+              altitudeMatch: true,
+            },
+          },
+          crop,
+          score: result.score,
+        }]
+      })
+      .sort((a, b) => b.score - a.score)
+  }
 
   const top = ranked[0]
   const alternatives = ranked.slice(1, 5)
@@ -88,7 +125,9 @@ function buildRecommendationResponse(
         ...top.crop,
         suitability: topSuitability,
         recommendation: recommendationLevelFromSuitability(topSuitability),
-        successRate: successRateFromSuitability(topSuitability, topConfidence),
+        successRate: useResults 
+          ? successRateFromSuitability(topSuitability, topConfidence)
+          : successRateFromClimateScore(topConfidence),
       }
     : crops[0]
       ? {
@@ -110,12 +149,22 @@ function buildRecommendationResponse(
       name: item.crop.name,
       image: item.crop.image,
       recommendation: recommendationLevelFromSuitability(suitability),
-      successRate: successRateFromSuitability(suitability, item.result.confidence),
+      successRate: useResults
+        ? successRateFromSuitability(suitability, item.result.confidence)
+        : successRateFromClimateScore(item.result.confidence),
     }
   })
 
   const topPlantingMonths = topCrop.plantingMonths.length > 0 ? topCrop.plantingMonths : [8]
   const month = nextPlantingMonth(topPlantingMonths)
+
+  // Determine recommendation source
+  let source: "data" | "climate" | "fallback" = "fallback"
+  if (useResults) {
+    source = "data"
+  } else if (zoning.climateBasedRecommendations && zoning.climateBasedRecommendations.length > 0) {
+    source = "climate"
+  }
 
   return {
     topCrop,
@@ -125,6 +174,7 @@ function buildRecommendationResponse(
       monthName: MONTHS_LONG[month - 1] ?? MONTHS_LONG[7],
       crops: [topCrop.id, ...otherCrops.slice(0, 2).map((c) => c.id)],
     },
+    source,
   }
 }
 

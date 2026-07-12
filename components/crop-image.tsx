@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import { API_BASE_URL } from '@/lib/api-client/client'
 
 const FALLBACK_SRC = '/placeholder.svg'
 
@@ -23,9 +22,11 @@ function resolveImageSrc(src: string | undefined): string {
   if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//')) {
     return src
   }
-  if (src.startsWith('/crops/') || src.startsWith('crops/')) {
-    const cleanPath = src.replace(/^\/+/, '')
-    return `${API_BASE_URL}/${cleanPath}`
+  if (src.startsWith('/crops/')) {
+    return src
+  }
+  if (src.startsWith('crops/')) {
+    return `/${src}`
   }
   return src
 }

@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Database, Cloud } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { CropCard } from '@/components/crop-card'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { PageLoading } from '@/components/page-loading'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { useRecommendations } from '@/hooks'
 import { useLocation } from '@/context/LocationContext'
 import { buildLocationPath } from '@/lib/routing'
@@ -63,10 +66,27 @@ export default function CultivosPage() {
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex items-start justify-between gap-4'>
-        <PageHeader
-          title='Cultivos'
-          subtitle={`Cultivos recomendados para ${selectedLocation.name}, ${selectedLocation.department}`}
-        />
+        <div className='flex flex-col gap-2'>
+          <PageHeader
+            title='Cultivos'
+            subtitle={`Cultivos recomendados para ${selectedLocation.name}, ${selectedLocation.department}`}
+          />
+          {recommendations?.source && (
+            <div className='flex items-center gap-2'>
+              {recommendations.source === 'data' ? (
+                <Badge variant='default' className='w-fit gap-1.5 text-xs'>
+                  <Database className='size-3' />
+                  Basado en datos históricos
+                </Badge>
+              ) : recommendations.source === 'climate' ? (
+                <Badge variant='secondary' className='w-fit gap-1.5 text-xs'>
+                  <Cloud className='size-3' />
+                  Predicción climática
+                </Badge>
+              ) : null}
+            </div>
+          )}
+        </div>
         <DownloadPdfButton pageName='Cultivos-AgroPlan' />
       </div>
       <div

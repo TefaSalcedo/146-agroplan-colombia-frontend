@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { ForecastDayResponse } from "@/lib/api-client/types"
 
 const WEEK_DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
-const WEEK_DAYS_LONG = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
 function getWeatherIcon(day: ForecastDayResponse) {
   const precipitation = day.precipitation ?? 0
@@ -17,7 +16,7 @@ function getWeatherIcon(day: ForecastDayResponse) {
   return Sun
 }
 
-function formatDayLabel(dateString: string, index: number): string {
+function formatDayLabel(dateString: string): string {
   const date = new Date(dateString)
   const today = new Date()
   const tomorrow = new Date(today)
@@ -32,7 +31,7 @@ function formatDayLabel(dateString: string, index: number): string {
   if (isSameDay(date, tomorrow)) return "Mañana"
 
   const dayIndex = date.getDay()
-  return WEEK_DAYS[dayIndex] ?? WEEK_DAYS_LONG[dayIndex]
+  return WEEK_DAYS[dayIndex] ?? ""
 }
 
 interface ForecastCardProps {
@@ -40,7 +39,7 @@ interface ForecastCardProps {
   loading?: boolean
 }
 
-export function ForecastCard({ forecast, loading }: ForecastCardProps) {
+export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
   if (loading) {
     return (
       <Card className="flex h-full flex-col gap-4 p-5">
@@ -78,9 +77,9 @@ export function ForecastCard({ forecast, loading }: ForecastCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col gap-3">
-        {days.map((day, index) => {
+        {days.map((day) => {
           const Icon = getWeatherIcon(day)
-          const label = formatDayLabel(day.date, index)
+          const label = formatDayLabel(day.date)
           const tempMin = day.tempMin ?? "--"
           const tempMax = day.tempMax ?? "--"
           const precipitation = day.precipitation ?? 0
@@ -97,9 +96,7 @@ export function ForecastCard({ forecast, loading }: ForecastCardProps) {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{label}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {humidity}% humedad
-                  </p>
+                  <p className="text-xs text-muted-foreground">{humidity}% humedad</p>
                 </div>
               </div>
               <div className="text-right">
@@ -108,7 +105,7 @@ export function ForecastCard({ forecast, loading }: ForecastCardProps) {
                 </p>
                 <p className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
                   <Droplets className="size-3" />
-                  {precipitation}%
+                  {precipitation}mm
                 </p>
               </div>
             </div>

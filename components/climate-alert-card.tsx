@@ -1,15 +1,19 @@
 import { Info, AlertTriangle, CloudLightning } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
-import type { ClimateAlert } from "@/types"
+import type { AlertResponse } from "@/lib/api-client/types"
 
 const config = {
   info: { icon: Info, tone: "text-primary bg-primary/10" },
-  warning: { icon: AlertTriangle, tone: "text-accent-foreground bg-accent" },
+  warning: { icon: AlertTriangle, tone: "text-amber-700 bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300" },
   danger: { icon: CloudLightning, tone: "text-destructive bg-destructive/10" },
 }
 
-export function ClimateAlertCard({ alert }: { alert: ClimateAlert }) {
+interface ClimateAlertCardProps {
+  alert: AlertResponse
+}
+
+export function ClimateAlertCard({ alert }: ClimateAlertCardProps) {
   const { icon: Icon, tone } = config[alert.level] || config.info
   return (
     <Card className="flex flex-row items-start gap-3 p-4">

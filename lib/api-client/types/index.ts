@@ -33,6 +33,11 @@ export interface MunicipalityDTO {
   altitude: number
   avgTemperature?: number
   precipitation?: number
+  area?: number
+  areaKm2?: number
+  regionNatural?: string
+  thermalFloor?: string
+  climateZone?: string
   distanceKm?: number
 }
 
@@ -274,6 +279,7 @@ export interface RecommendationResponse {
   topCrop: Crop & { suitability: "high" | "medium" | "low" | "none" }
   otherCrops: CropResponseLite[]
   nextPlantingSeason: NextPlantingSeason
+  source: "data" | "climate" | "fallback"
 }
 
 // ==================== Alerts ====================
@@ -283,6 +289,11 @@ export interface AlertResponse {
   level: "info" | "warning" | "danger"
   title: string
   description: string
+}
+
+export interface AlertsResponse {
+  municipalityId: string
+  alerts: AlertResponse[]
 }
 
 // ==================== Forecast ====================
@@ -296,6 +307,11 @@ export interface ForecastDayResponse {
   humidity: number | null
   uvIndex: number | null
   windSpeed: number | null
+}
+
+export interface ForecastResponse {
+  municipalityId: string
+  forecast: ForecastDayResponse[]
 }
 
 // ==================== Health ====================

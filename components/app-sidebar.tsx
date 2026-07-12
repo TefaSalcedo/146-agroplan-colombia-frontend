@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Cloud,
   Droplets,
   Home,
   Loader2,
@@ -28,7 +29,7 @@ import { buildNavHref, buildLocationPath } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
-import { useCropsLite, useCrop, useDepartments, useForecast, useMunicipalities, useWeather } from "@/hooks"
+import { useCropsLite, useCrop, useDepartments, useMunicipalities, useWeather } from "@/hooks"
 import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
 import { ApiError } from "@/lib/api-client/client"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
@@ -227,12 +228,10 @@ export function AppSidebar() {
   const params = useParams<{ id?: string }>()
   const { crop: mapaCrop } = useCrop(params.id ?? "")
 
-  const municipalityId = selectedLocation?.id ?? ""
   const { departments, loading: departmentsLoading } = useDepartments()
   const { municipalities, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
-  const { weather, loading: weatherLoading } = useWeather(municipalityId)
-  const { forecast, loading: forecastLoading } = useForecast(municipalityId, 1)
   const { crops: catalogCrops } = useCropsLite()
+  const { weather } = useWeather(selectedLocation?.id ?? "")
 
   useEffect(() => {
     setMounted(true)
@@ -327,16 +326,13 @@ export function AppSidebar() {
   if (!mounted) return null
 
   const isDark = theme === "dark"
-  const uvIndex = forecast[0]?.uvIndex
   const isCompetitionRoute = pathname.startsWith("/concurso")
   const isMapaRoute = pathname.startsWith("/mapa")
   const isMunicipioRoute = !isCompetitionRoute && !isMapaRoute
   const activeConcursoSection = getConcursoSection(searchParams.get("section"))
   const firstCrop = catalogCrops[0]
   const concursoMapaHref = firstCrop ? `/mapa/${encodeURIComponent(firstCrop.id)}` : null
-  const configHref = selectedLocation
-    ? buildLocationPath(selectedLocation.department, selectedLocation.name, "configuracion")
-    : null
+  const configHref = "/configuracion"
 
   return (
     <aside className="sticky top-0 hidden h-svh shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar self-start md:flex md:w-80">
@@ -516,74 +512,76 @@ export function AppSidebar() {
 
       <div className="flex-1" />
 
-      <div className="px-3 pb-4">
-        <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ubicación</p>
-        <div className="rounded-3xl border border-border bg-sidebar-accent/30 p-4">
-          <div className="mb-4 flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <MapPin className="size-5" />
+      {isMunicipioRoute && (
+        <div className="px-3 pb-4">
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ubicación</p>
+          <div className="rounded-3xl border border-border bg-sidebar-accent/30 p-4">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <MapPin className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Ubicación actual</p>
+                <p className="truncate font-semibold text-sidebar-foreground">
+                  {selectedLocation?.name ?? "Selecciona tu municipio"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {selectedLocation?.department ?? "Usa tu ubicación o el selector manual"}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Ubicación actual</p>
-              <p className="truncate font-semibold text-sidebar-foreground">
-                {selectedLocation?.name ?? "Selecciona tu municipio"}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {selectedLocation?.department ?? "Usa tu ubicación o el selector manual"}
-              </p>
-            </div>
-          </div>
 
-          <div className="mb-4 grid grid-cols-3 gap-2">
-            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
-              <div className="mb-1 flex items-center gap-1 text-primary">
-                <Thermometer className="size-3.5" />
-                <span className="text-[11px] font-medium">Temp.</span>
+            <div className="mb-4 grid grid-cols-3 gap-2">
+              <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+                <div className="mb-1 flex items-center gap-1 text-primary">
+                  <Thermometer className="size-3.5" />
+                  <span className="text-[11px] font-medium">Temp.</span>
+                </div>
+                <p className="text-sm font-semibold">
+                  {formatMetric(weather?.temperature, "°C")}
+                </p>
               </div>
-              <p className="text-sm font-semibold">
-                {weatherLoading ? "..." : formatMetric(weather?.temperature, "°C")}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
-              <div className="mb-1 flex items-center gap-1 text-primary">
-                <Droplets className="size-3.5" />
-                <span className="text-[11px] font-medium">Humedad</span>
+              <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+                <div className="mb-1 flex items-center gap-1 text-primary">
+                  <Droplets className="size-3.5" />
+                  <span className="text-[11px] font-medium">Lluvia</span>
+                </div>
+                <p className="text-sm font-semibold">
+                  {formatMetric(weather?.precipitation, "mm")}
+                </p>
               </div>
-              <p className="text-sm font-semibold">
-                {weatherLoading ? "..." : formatMetric(weather?.humidity, "%")}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
-              <div className="mb-1 flex items-center gap-1 text-primary">
-                <Sun className="size-3.5" />
-                <span className="text-[11px] font-medium">UV</span>
+              <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">
+                <div className="mb-1 flex items-center gap-1 text-primary">
+                  <Cloud className="size-3.5" />
+                  <span className="text-[11px] font-medium">Humedad</span>
+                </div>
+                <p className="text-sm font-semibold">
+                  {formatMetric(weather?.humidity, "%")}
+                </p>
               </div>
-              <p className="text-sm font-semibold">
-                {forecastLoading ? "..." : formatMetric(uvIndex, "")}
-              </p>
             </div>
-          </div>
 
-          <Collapsible.Root open={isLocationPanelOpen} onOpenChange={setIsLocationPanelOpen}>
-            <LocationPanelContent
-              handleUseCurrentLocation={handleUseCurrentLocation}
-              isLoadingGeo={isLoadingGeo}
-              selectedDept={selectedDept}
-              setSelectedDept={setSelectedDept}
-              selectedMunic={selectedMunic}
-              setSelectedMunic={setSelectedMunic}
-              departments={departments}
-              departmentsLoading={departmentsLoading}
-              municipalities={municipalities}
-              municipalitiesLoading={municipalitiesLoading}
-              handleContinueWithSelection={handleContinueWithSelection}
-              isLoadingManual={isLoadingManual}
-              isOpen={isLocationPanelOpen}
-              onToggle={() => setIsLocationPanelOpen(!isLocationPanelOpen)}
-            />
-          </Collapsible.Root>
+            <Collapsible.Root open={isLocationPanelOpen} onOpenChange={setIsLocationPanelOpen}>
+              <LocationPanelContent
+                handleUseCurrentLocation={handleUseCurrentLocation}
+                isLoadingGeo={isLoadingGeo}
+                selectedDept={selectedDept}
+                setSelectedDept={setSelectedDept}
+                selectedMunic={selectedMunic}
+                setSelectedMunic={setSelectedMunic}
+                departments={departments}
+                departmentsLoading={departmentsLoading}
+                municipalities={municipalities}
+                municipalitiesLoading={municipalitiesLoading}
+                handleContinueWithSelection={handleContinueWithSelection}
+                isLoadingManual={isLoadingManual}
+                isOpen={isLocationPanelOpen}
+                onToggle={() => setIsLocationPanelOpen(!isLocationPanelOpen)}
+              />
+            </Collapsible.Root>
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   )
 }

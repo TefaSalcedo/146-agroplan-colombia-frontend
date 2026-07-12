@@ -105,7 +105,7 @@ export function ConcursoPage() {
                   <Card key={model.name} className="border-white/20 bg-white/10 p-6">
                     <div className="mb-4 flex items-start justify-between">
                       <h4 className="text-xl font-semibold text-white">{model.name}</h4>
-                      <span className="rounded-full bg-orange-400/20 px-3 py-1 text-sm text-orange-300">{model.type}</span>
+                      <span className="rounded-full bg-primary/20 px-3 py-1 text-sm text-primary">{model.type}</span>
                     </div>
                     <p className="mb-2 text-sm text-white/70">{model.framework}</p>
                     <p className="mb-4 text-white/80">{model.description}</p>

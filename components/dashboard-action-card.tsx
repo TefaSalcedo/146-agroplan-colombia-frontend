@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, LucideIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 interface DashboardActionCardProps {
   icon: LucideIcon
@@ -9,6 +10,7 @@ interface DashboardActionCardProps {
   href: string
   tone?: "primary" | "accent"
   linkLabel?: string
+  className?: string
 }
 
 export function DashboardActionCard({
@@ -18,6 +20,7 @@ export function DashboardActionCard({
   href,
   tone = "primary",
   linkLabel = "Ver todos",
+  className,
 }: DashboardActionCardProps) {
   const toneClasses =
     tone === "accent"
@@ -25,7 +28,7 @@ export function DashboardActionCard({
       : "bg-primary/10 text-primary"
 
   return (
-    <Link href={href} className="group block h-full focus:outline-none">
+    <Link href={href} className={cn("group block h-full focus:outline-none", className)}>
       <Card className="flex h-full flex-col items-center justify-center gap-3 p-5 text-center transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-ring active:scale-95">
         <div className={`flex size-12 items-center justify-center rounded-2xl ${toneClasses}`}>
           <Icon className="size-6" />

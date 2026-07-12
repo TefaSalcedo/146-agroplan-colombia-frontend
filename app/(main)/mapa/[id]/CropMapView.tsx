@@ -23,10 +23,11 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SuitabilityBadge } from "@/components/recommendation-badge"
-import { useCrop, useMunicipalities, useZoning } from "@/hooks"
+import { useCrop, useMunicipalities, useZoning, useZoningRecommendations } from "@/hooks"
 import { suitabilityColors } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import type { Municipality, Suitability } from "@/types"
+import type { ZoningBatchCropResult } from "@/lib/api-client/types"
 
 interface CropNationwideMapProps {
   municipalities: Municipality[]
@@ -63,6 +64,17 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   const [suitabilityMap, setSuitabilityMap] = useState<Record<string, Suitability>>({})
   const [confidenceMap, setConfidenceMap] = useState<Record<string, number>>({})
   const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null)
+
+  const selectedMunicipalityId = selectedMunicipality?.id ?? ""
+  const {
+    zoningData,
+    loading: zoningRecommendationsLoading,
+  } = useZoningRecommendations(selectedMunicipalityId)
+
+  const selectedZoningDetail: ZoningBatchCropResult | null = useMemo(() => {
+    if (!zoningData || !crop) return null
+    return zoningData.results.find((r) => r.cropId === cropId) ?? null
+  }, [zoningData, crop, cropId])
 
   useEffect(() => {
     if (!cropId || municipalities.length === 0) return
@@ -220,23 +232,99 @@ export function CropMapView({ cropId }: CropMapViewProps) {
           </div>
 
           {/* Selected Municipality Card */}
-          {selectedMunicipality && selectedSuitability && (
-            <div className="absolute inset-x-4 bottom-4 z-10 rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-80">
-              <div className="space-y-3">
+          {selectedMunicipality && selectedSuitability && crop && (
+            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[70vh] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
+              <div className="space-y-4">
                 <div>
                   <p className="text-xl font-bold leading-tight">{selectedMunicipality.name}</p>
                   <p className="text-base text-muted-foreground">{selectedMunicipality.department}</p>
                 </div>
+
                 <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-semibold uppercase text-muted-foreground">Aptitud</span>
                     <SuitabilityBadge level={selectedSuitability} />
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs font-semibold uppercase text-muted-foreground">Éxito</span>
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Éxito estimado</span>
                     <span className="text-2xl font-bold text-primary">{selectedSuccessRate}%</span>
                   </div>
                 </div>
+
+                {zoningRecommendationsLoading && (
+                  <p className="text-sm text-muted-foreground">Cargando detalles de zonificación...</p>
+                )}
+
+                {!zoningRecommendationsLoading && selectedZoningDetail && (
+                  <div className="space-y-3">
+                    {selectedZoningDetail.factors && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">Condiciones</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className={cn(
+                            "rounded-lg p-2 text-center text-xs",
+                            selectedZoningDetail.factors.temperatureMatch
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
+                          )}>
+                            <p className="font-medium">Temperatura</p>
+                            <p>{selectedZoningDetail.factors.temperatureMatch ? "Adecuada" : "No adecuada"}</p>
+                          </div>
+                          <div className={cn(
+                            "rounded-lg p-2 text-center text-xs",
+                            selectedZoningDetail.factors.precipitationMatch
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
+                          )}>
+                            <p className="font-medium">Precipitación</p>
+                            <p>{selectedZoningDetail.factors.precipitationMatch ? "Adecuada" : "No adecuada"}</p>
+                          </div>
+                          <div className={cn(
+                            "rounded-lg p-2 text-center text-xs",
+                            selectedZoningDetail.factors.soilMatch
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
+                          )}>
+                            <p className="font-medium">Suelo</p>
+                            <p>{selectedZoningDetail.factors.soilMatch ? "Adecuado" : "No adecuado"}</p>
+                          </div>
+                          <div className={cn(
+                            "rounded-lg p-2 text-center text-xs",
+                            selectedZoningDetail.factors.altitudeMatch
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200"
+                          )}>
+                            <p className="font-medium">Altitud</p>
+                            <p>{selectedZoningDetail.factors.altitudeMatch ? "Adecuada" : "No adecuada"}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedZoningDetail.warnings && selectedZoningDetail.warnings.length > 0 && (
+                      <div className="rounded-lg bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          <div>
+                            <p className="font-semibold text-amber-900 dark:text-amber-100">Observaciones</p>
+                            <ul className="mt-1 list-disc space-y-1 pl-4 text-muted-foreground">
+                              {selectedZoningDetail.warnings.map((warning, i) => (
+                                <li key={i}>{warning}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedZoningDetail.method && (
+                      <p className="text-xs text-muted-foreground">
+                        Método: <span className="font-medium">{selectedZoningDetail.method}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Probabilidad estimada de éxito para {crop.name.toLowerCase()} en esta zona.
                 </p>

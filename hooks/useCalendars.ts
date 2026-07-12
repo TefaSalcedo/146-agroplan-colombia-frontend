@@ -1,6 +1,11 @@
 import { useCallback, useState } from "react"
-import { predictCalendar } from "@/lib/api-client/calendars"
-import type { CalendarRequest, CalendarResponse } from "@/lib/api-client/types"
+import { predictCalendar, predictCalendarBatch } from "@/lib/api-client/calendars"
+import type {
+  CalendarRequest,
+  CalendarResponse,
+  CalendarBatchRequest,
+  CalendarBatchResponse,
+} from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
 
 export function useCalendars() {
@@ -21,5 +26,21 @@ export function useCalendars() {
     }
   }, [])
 
-  return { predict, loading, error }
+  const predictBatch = useCallback(async (
+    request: CalendarBatchRequest
+  ): Promise<CalendarBatchResponse | null> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await predictCalendarBatch(request)
+      return result
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Error predicting calendars")
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { predict, predictBatch, loading, error }
 }
