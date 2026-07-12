@@ -35,14 +35,20 @@ export async function POST(request: NextRequest) {
     console.log('[PDF API] Browser launched successfully')
 
     const browserPage = await browser.newPage()
+    // Keep responsive layouts in their desktop state while generating the PDF.
+    await browserPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 })
+    await browserPage.emulateMediaType('screen')
     console.log('[PDF API] Created new page')
 
-    // Inject the selected location into sessionStorage so pages like /inicio can render.
+    // Seed Zustand's persisted location before loading the route.
     if (location) {
-      console.log('[PDF API] Injecting location into sessionStorage')
+      console.log('[PDF API] Injecting location into localStorage')
       await browserPage.evaluateOnNewDocument((locationData) => {
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('selectedLocation', JSON.stringify(locationData))
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(
+            'selectedLocation',
+            JSON.stringify({ state: { selectedLocation: locationData }, version: 0 }),
+          )
         }
       }, location)
     }
@@ -59,6 +65,20 @@ export async function POST(request: NextRequest) {
         [data-pdf-hide], [aria-label="Navegación principal"], nav[aria-label="Navegación principal"], .fixed { display: none !important; }
         main { padding-bottom: 0 !important; }
       `,
+    })
+    await browserPage.evaluate(() => {
+      const desktopGridColumns = [
+        ['lg:grid-cols-[320px_1fr]', '360px minmax(0, 1fr)'],
+        ['lg:grid-cols-[1fr_220px]', 'minmax(0, 1fr) 260px'],
+        ['lg:grid-cols-2', 'repeat(2, minmax(0, 1fr))'],
+      ] as const
+
+      document.querySelectorAll<HTMLElement>('[class*="lg:grid-cols"]').forEach((element) => {
+        const match = desktopGridColumns.find(([className]) => element.classList.contains(className))
+        if (match) {
+          element.style.setProperty('grid-template-columns', match[1], 'important')
+        }
+      })
     })
 
     console.log('[PDF API] Generating PDF buffer...')

@@ -335,7 +335,10 @@ export function AppSidebar() {
   const configHref = "/configuracion"
 
   return (
-    <aside className="sticky top-0 hidden h-svh shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar self-start md:flex md:w-80">
+    <aside
+      data-pdf-hide
+      className="sticky top-0 hidden h-svh shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar self-start md:flex md:w-80"
+    >
       <div className="flex items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-3 transition-transform duration-200 hover:scale-105">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary">
