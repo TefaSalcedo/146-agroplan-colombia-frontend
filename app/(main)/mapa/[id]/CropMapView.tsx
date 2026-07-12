@@ -2,35 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { CropImage } from "@/components/crop-image"
 import dynamic from "next/dynamic"
 import {
-  ArrowLeft,
-  Thermometer,
-  Droplets,
-  CloudRain,
-  Mountain,
-  CalendarDays,
-  Info,
-  Loader2,
-  XCircle,
   AlertCircle,
-  MapPin,
+  ArrowLeft,
+  CalendarDays,
+  Droplets,
+  Eye,
+  EyeOff,
+  Leaf,
+  Loader2,
   Sparkles,
   Sprout,
-  Layers,
-  Waves,
+  XCircle,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { SuitabilityBadge } from "@/components/recommendation-badge"
-import { useCrop, useCropNationalGuide, useMunicipalities, useZoning } from "@/hooks"
+import { CropMapSidebar } from "@/components/crop-map-sidebar"
+import { CropConditionsCard } from "@/components/crop-conditions-card"
+import { useCrop, useCropNationalGuide, useCropsLite, useMunicipalities, useZoning } from "@/hooks"
 import { mapSuitabilityColors } from "@/lib/constants"
-import { cn } from "@/lib/utils"
-import type { Suitability } from "@/types"
-import type { ZoningMapMunicipalityResult } from "@/lib/api-client/types"
+import type { CropNationalGuideResponse, ZoningMapMunicipalityResult } from "@/lib/api-client/types"
 
 interface CropNationwideMapProps {
   results: ZoningMapMunicipalityResult[]
@@ -44,30 +37,162 @@ const CropNationwideMap = dynamic<CropNationwideMapProps>(
   {
     ssr: false,
     loading: () => <Skeleton className="h-full w-full rounded-2xl" />,
-  }
+  },
 )
 
 interface CropMapViewProps {
   cropId: string
 }
 
-function successRateFromSuitability(suitability: Suitability, confidence: number): number {
-  const base =
-    suitability === "high" ? 0.9 : suitability === "medium" ? 0.78 : suitability === "low" ? 0.6 : 0.25
-  return Math.round((base * (0.95 + confidence * 0.05)) * 100)
+function NationalGuideSkeleton() {
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 md:p-6">
+      <div className="space-y-5">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-11 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-56" />
+            <Skeleton className="h-4 w-72 max-w-full" />
+          </div>
+        </div>
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function DisabledNationalGuide() {
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Sprout className="size-7" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-lg font-bold">Recomendaciones IA</h2>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Las recomendaciones inteligentes aún no se encuentran disponibles para este cultivo.
+          </p>
+        </div>
+        <div className="grid w-full max-w-xl gap-2 text-left text-sm text-muted-foreground sm:grid-cols-2">
+          {["Manejo", "Fertilización", "Plagas", "Riego", "Cosecha", "Buenas prácticas"].map((item) => (
+            <div key={item} className="flex items-center gap-2 rounded-lg bg-background/70 px-3 py-2">
+              <span className="font-bold text-primary">✓</span>
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function NationalGuideError() {
+  return (
+    <Card className="border-destructive/20 bg-destructive/5 p-6">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
+        <div className="space-y-1">
+          <h2 className="font-semibold">No fue posible obtener las recomendaciones inteligentes.</h2>
+          <p className="text-sm text-muted-foreground">Intenta nuevamente más tarde.</p>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 md:p-6">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Sparkles className="size-6" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-bold">Recomendaciones Inteligentes</h2>
+              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">IA</span>
+            </div>
+            <p className="text-sm text-muted-foreground">Generadas por IA para este cultivo</p>
+          </div>
+        </div>
+
+        {guide.summary && (
+          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+            <p className="text-sm leading-relaxed">{guide.summary}</p>
+          </div>
+        )}
+
+        {guide.sections.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {guide.sections.map((section, index) => {
+              const Icon = section.title.toLowerCase().includes("riego")
+                ? Droplets
+                : section.title.toLowerCase().includes("sembr")
+                  ? CalendarDays
+                  : section.title.toLowerCase().includes("fert")
+                    ? Leaf
+                    : Sprout
+
+              return (
+                <div key={`${section.title}-${index}`} className="rounded-xl border border-primary/15 bg-card/70 p-4 transition-shadow hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{section.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.content}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          Esta guía fue generada por IA para orientación general. Valida las decisiones de manejo con asistencia técnica local.
+        </p>
+      </div>
+    </Card>
+  )
+}
+
+function NationalGuide({ guide, loading, error }: {
+  guide: CropNationalGuideResponse | null
+  loading: boolean
+  error: string | null
+}) {
+  if (loading) return <NationalGuideSkeleton />
+  if (error || guide?.status === "error") return <NationalGuideError />
+  if (guide?.status === "llm_disabled") return <DisabledNationalGuide />
+  if (guide) return <NationalGuideContent guide={guide} />
+  return null
 }
 
 export function CropMapView({ cropId }: CropMapViewProps) {
   const router = useRouter()
   const { crop, loading: cropLoading, error: cropError } = useCrop(cropId)
+  const cropReady = Boolean(crop) && !cropLoading
+  const { crops: catalogCrops } = useCropsLite()
   const { municipalities } = useMunicipalities()
   const { getMap, loading: zoningLoading, error: zoningError } = useZoning()
-  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropId)
+  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropReady ? cropId : "")
 
   const [zoningResults, setZoningResults] = useState<ZoningMapMunicipalityResult[]>([])
   const [selectedMunicipality, setSelectedMunicipality] = useState<
     (ZoningMapMunicipalityResult & { department: string }) | null
   >(null)
+  const [showMapLegend, setShowMapLegend] = useState(true)
+  const [showCropConditions, setShowCropConditions] = useState(false)
 
   const departmentsByMunicipality = useMemo(
     () => Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.department])),
@@ -75,57 +200,30 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   )
 
   useEffect(() => {
-    if (!cropId) return
+    if (!cropId || !cropReady) {
+      setZoningResults([])
+      return
+    }
+
+    let cancelled = false
+    setZoningResults([])
 
     const loadPredictions = async () => {
       const result = await getMap(cropId)
-      if (!result) return
+      if (cancelled || !result) return
       setZoningResults(result.results)
     }
 
     loadPredictions()
-  }, [cropId, getMap])
 
-  const cropFacts = useMemo(() => {
-    if (!crop) return []
-    return [
-      { icon: Thermometer, label: "Temperatura ideal", value: crop.idealTemperature },
-      { icon: Droplets, label: "Humedad", value: crop.humidity },
-      { icon: CloudRain, label: "Precipitación", value: crop.precipitation },
-      { icon: Mountain, label: "Altitud", value: crop.altitude },
-      { icon: Layers, label: "Tipo de suelo", value: crop.soilType },
-      { icon: Waves, label: "Riego", value: crop.irrigation },
-    ]
-  }, [crop])
-
-  const selectedSuitability = selectedMunicipality
-    ? selectedMunicipality.suitability
-    : null
-
-  const selectedSuccessRate = selectedMunicipality
-    ? successRateFromSuitability(
-        selectedSuitability ?? "none",
-        selectedMunicipality.confidence,
-      )
-    : null
+    return () => {
+      cancelled = true
+    }
+  }, [cropId, cropReady, getMap])
 
   const error = cropError || zoningError
 
-  const showMapLoader = zoningLoading
-
-  if (cropLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Loader2 className="size-12 animate-spin text-primary" />
-          <p className="text-lg font-medium">Cargando información del cultivo...</p>
-          <p className="text-sm text-muted-foreground">Por favor espera un momento</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !crop) {
+  if (error) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 text-center">
@@ -133,9 +231,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             <XCircle className="size-16 text-destructive" />
           </div>
           <h1 className="mb-2 text-2xl font-bold">Cultivo no disponible</h1>
-          <p className="mb-6 text-muted-foreground">
-            {error || "No se pudieron cargar los datos de este cultivo."}
-          </p>
+          <p className="mb-6 text-muted-foreground">{error || "No se pudieron cargar los datos de este cultivo."}</p>
           <Button onClick={() => router.push("/")} size="lg" className="w-full">
             <ArrowLeft className="mr-2 size-4" />
             Volver al inicio
@@ -147,67 +243,90 @@ export function CropMapView({ cropId }: CropMapViewProps) {
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      {/* Header Section */}
-      <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary/5 via-background to-primary/5 p-6 md:p-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
-          <div className="flex-shrink-0">
-            <CropImage
-              src={crop.image}
-              alt={crop.name}
-              fill={false}
-              width={128}
-              height={128}
-              className="size-24 rounded-2xl object-cover shadow-lg md:size-32"
-            />
-          </div>
-          <div className="flex-1 space-y-3">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{crop.name}</h1>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground">
-                  <MapPin className="size-4" />
-                  Mapa Nacional
-                </span>
+      <Card className="overflow-hidden rounded-2xl border-2 p-0">
+        <div className="relative h-[60vh]">
+          <div className="absolute right-4 top-4 z-10 flex items-start gap-2">
+            {showMapLegend && (
+              <div className="rounded-xl border border-white/40 bg-background/70 p-3 text-xs text-foreground shadow-xl backdrop-blur-xl">
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <span className="font-semibold">Aptitud</span>
+                  <button
+                    type="button"
+                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                    onClick={() => setShowMapLegend(false)}
+                    aria-label="Ocultar convenciones del mapa"
+                    title="Ocultar convenciones"
+                  >
+                    <EyeOff className="size-4" />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: mapSuitabilityColors.high }} />
+                    <span>Alta aptitud</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: mapSuitabilityColors.medium }} />
+                    <span>Aptitud media</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: mapSuitabilityColors.low }} />
+                    <span>Aptitud baja</span>
+                  </div>
+                </div>
               </div>
-            </div>
-            <p className="text-lg text-muted-foreground md:text-xl">
-              Explora dónde se puede sembrar {crop.name.toLowerCase()} y qué tan favorable es cada zona en Colombia.
-            </p>
-            <p className="text-sm text-muted-foreground italic">{crop.scientificName}</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Map Section */}
-      <Card className="overflow-hidden border-2 p-0">
-        <div className="relative h-[60vh] min-h-[480px]">
-          {/* Map Header Overlay */}
-          <div className="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 bg-gradient-to-b from-black/80 via-black/60 to-transparent p-4 text-white md:flex-row md:items-center md:justify-between md:p-6">
-            <div className="space-y-1">
-              <h2 className="text-lg font-bold md:text-xl">Mapa de aptitud</h2>
-              <p className="text-sm text-white/90 md:text-base">
-                Acerca el mapa para separar municipios y selecciona uno para ver su aptitud
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm md:flex-nowrap md:justify-end">
-              <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.high }} />
-                <span className="font-medium">Alta aptitud</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.medium }} />
-                <span className="font-medium">Aptitud media</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: mapSuitabilityColors.low }} />
-                <span className="font-medium">Aptitud baja</span>
-              </div>
-            </div>
+            )}
+            {!showMapLegend && (
+              <button
+                type="button"
+                className="rounded-xl border border-white/40 bg-background/70 p-2 text-foreground shadow-xl backdrop-blur-xl transition-colors hover:bg-background/85"
+                onClick={() => setShowMapLegend(true)}
+                aria-label="Mostrar convenciones del mapa"
+                title="Mostrar convenciones"
+              >
+                <Eye className="size-4" />
+              </button>
+            )}
           </div>
 
-          {/* Map Content */}
+          {cropReady && crop && (
+            <div className="absolute left-4 top-4 z-10 rounded-xl border border-white/40 bg-background/55 px-3 py-2 text-sm font-semibold text-foreground shadow-lg backdrop-blur-xl">
+              Mapa de aptitud · {crop.name}
+            </div>
+          )}
+
+          {cropReady && crop && (
+            <div className="absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)]">
+            {showCropConditions ? (
+              <div className="relative max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl">
+                <CropConditionsCard crop={crop} glass />
+                <button
+                  type="button"
+                  className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                  onClick={() => setShowCropConditions(false)}
+                  aria-label="Ocultar condiciones ideales"
+                  title="Ocultar condiciones ideales"
+                >
+                  <EyeOff className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded-full border border-white/20 bg-background/20 px-2.5 py-1 text-[10px] text-foreground/60 shadow-sm backdrop-blur-md transition-colors hover:bg-background/40 hover:text-foreground"
+                onClick={() => setShowCropConditions(true)}
+                aria-label="Mostrar condiciones ideales"
+                title="Mostrar condiciones ideales"
+              >
+                <Eye className="size-4" />
+                <span>Ver condiciones ideales</span>
+              </button>
+            )}
+            </div>
+          )}
+
           <div className="relative h-full">
-            {showMapLoader && (
+            {zoningLoading && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">
                 <Loader2 className="size-12 animate-spin text-primary" />
                 <p className="text-base font-medium">Calculando aptitud en Colombia...</p>
@@ -215,52 +334,33 @@ export function CropMapView({ cropId }: CropMapViewProps) {
               </div>
             )}
             <CropNationwideMap
-              results={zoningResults}
+              results={cropReady ? zoningResults : []}
               departmentsByMunicipality={departmentsByMunicipality}
               selectedId={selectedMunicipality?.municipalityId ?? null}
               onSelect={setSelectedMunicipality}
             />
           </div>
 
-          {/* Selected Municipality Card */}
-          {selectedMunicipality && selectedSuitability && crop && (
-            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[70vh] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
+          {selectedMunicipality && cropReady && crop && (
+            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
               <div className="space-y-4">
                 <div>
                   <p className="text-xl font-bold leading-tight">{selectedMunicipality.municipalityName}</p>
                   <p className="text-base text-muted-foreground">{selectedMunicipality.department}</p>
                 </div>
-
-                <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase text-muted-foreground">Aptitud</span>
-                    <SuitabilityBadge level={selectedSuitability} />
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs font-semibold uppercase text-muted-foreground">Éxito estimado</span>
-                    <span className="text-2xl font-bold text-primary">{selectedSuccessRate}%</span>
-                  </div>
-                </div>
-
                 <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">Confianza del modelo</p>
-                  <p className="mt-1 text-lg font-bold">{Math.round(selectedMunicipality.confidence * 100)}%</p>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Confidence del modelo</p>
+                  <p className="mt-1 text-2xl font-bold text-primary">{(selectedMunicipality.confidence * 100).toFixed(2)}%</p>
                 </div>
                 {selectedMunicipality.method && (
                   <p className="text-xs text-muted-foreground">
                     Método: <span className="font-medium">{selectedMunicipality.method}</span>
                   </p>
                 )}
-
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   Probabilidad estimada de éxito para {crop.name.toLowerCase()} en esta zona.
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setSelectedMunicipality(null)}
-                >
+                <Button variant="outline" size="sm" className="w-full" onClick={() => setSelectedMunicipality(null)}>
                   Cerrar
                 </Button>
               </div>
@@ -269,216 +369,21 @@ export function CropMapView({ cropId }: CropMapViewProps) {
         </div>
       </Card>
 
-      {/* Information Sections */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Calendar Section */}
-        <Card id="crop-calendar-section" className="border-2 p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <CalendarDays className="size-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Calendario de siembra</h2>
-                <p className="text-sm text-muted-foreground">Mejores épocas para sembrar</p>
-              </div>
-            </div>
-            <span className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
-              {crop.plantingMonths.length} meses
-            </span>
-          </div>
+      <section aria-label="Recomendaciones inteligentes">
+        {cropReady ? (
+          <NationalGuide guide={nationalGuide} loading={guideLoading} error={guideError} />
+        ) : (
+          <NationalGuideSkeleton />
+        )}
+      </section>
 
-          <div className="space-y-4">
-            {/* Month Grid */}
-            <div className="space-y-2">
-              <div className="grid grid-cols-12 gap-1 text-xs font-bold text-muted-foreground">
-                {["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"].map((m, i) => (
-                  <div key={i} className="text-center py-1">
-                    {m}
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-12 gap-1">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const isActive = crop.plantingMonths.includes(i + 1)
-                  return (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-8 rounded-md transition-all duration-200 hover:scale-105",
-                        isActive
-                          ? "bg-primary shadow-md cursor-pointer"
-                          : "bg-muted/40 cursor-not-allowed"
-                      )}
-                      title={isActive ? `Mes ${i + 1}: Recomendado` : `Mes ${i + 1}: No recomendado`}
-                      role="gridcell"
-                      aria-label={`Mes ${i + 1}: ${isActive ? "Recomendado" : "No recomendado"}`}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-col gap-2 rounded-lg bg-muted/30 p-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex size-4 items-center justify-center rounded bg-primary" />
-                <span className="text-sm font-medium">Época ideal de siembra</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex size-4 items-center justify-center rounded bg-muted/40" />
-                <span className="text-sm font-medium text-muted-foreground">No recomendado</span>
-              </div>
-            </div>
-
-            {/* Info Tip */}
-            <div className="flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-sm dark:bg-blue-950/30">
-              <Info className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-              <p className="text-muted-foreground">
-                Siembra en los meses marcados para mejores resultados. Consulta con un técnico agrícola local para recomendaciones específicas.
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Conditions Section */}
-        <Card id="crop-temperature-section" className="border-2 p-6">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Thermometer className="size-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Condiciones ideales</h2>
-              <p className="text-sm text-muted-foreground">Requisitos del cultivo</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {cropFacts.map((fact) => {
-              const Icon = fact.icon
-              return (
-                <div
-                  key={fact.label}
-                  className="flex items-start gap-4 rounded-lg border border-border/50 bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-6" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-semibold uppercase text-muted-foreground">{fact.label}</p>
-                    <p className="text-lg font-bold">{fact.value}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Additional Info */}
-          <div className="mt-4 rounded-lg bg-amber-50 p-4 text-sm dark:bg-amber-950/30">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-              <div className="space-y-1">
-                <p className="font-semibold text-amber-900 dark:text-amber-100">Importante</p>
-                <p className="text-muted-foreground">
-                  Estas son condiciones generales. Las condiciones locales pueden variar. Consulta con un experto agrícola antes de sembrar.
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Sprout className="size-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">Manejo del cultivo</h2>
-            <p className="text-sm text-muted-foreground">Información técnica del perfil agrícola</p>
-          </div>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Sustratos recomendados</h3>
-            <div className="flex flex-wrap gap-2">
-              {crop.substrates.map((substrate) => (
-                <span key={substrate} className="rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
-                  {substrate}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Etapas de desarrollo</h3>
-            <ul className="space-y-2 text-sm">
-              {crop.stages.map((stage) => (
-                <li key={stage.label}>
-                  <p className="font-medium">{stage.label}</p>
-                  <p className="text-muted-foreground">{stage.description}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted-foreground">Consejos del cultivo</h3>
-            <ul className="space-y-2 text-sm">
-              {crop.tips.map((tip) => (
-                <li key={tip.title}>
-                  <p className="font-medium">{tip.title}</p>
-                  <p className="text-muted-foreground">{tip.description}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="border-primary/20 bg-primary/5 p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Sparkles className="size-6" />
-          </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-bold">Recomendaciones nacionales</h2>
-              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
-                Recomendación de IA
-              </span>
-            </div>
-            {guideLoading && <p className="text-sm text-muted-foreground">Generando guía nacional...</p>}
-            {guideError && <p className="text-sm text-muted-foreground">{guideError}</p>}
-            {nationalGuide && (
-              <div className="space-y-5">
-                <p className="text-sm text-muted-foreground">{nationalGuide.summary}</p>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {nationalGuide.sections.map((section) => (
-                    <div key={section.title} className="rounded-xl border border-primary/15 bg-card/70 p-4">
-                      <h3 className="font-semibold">{section.title}</h3>
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.content}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Esta guía fue generada por IA para orientación general. Valida las decisiones de manejo con asistencia técnica local.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </Card>
-
-      {/* Back Button */}
-      <div className="flex justify-center">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={() => router.push("/")}
-          className="gap-2"
-        >
-          <ArrowLeft className="size-4" />
-          Volver al inicio
-        </Button>
+      <div className="md:hidden">
+        <CropMapSidebar
+          crop={crop}
+          crops={catalogCrops}
+          selectedCropId={cropId}
+          onCropChange={(nextCropId) => router.push(`/mapa/${encodeURIComponent(nextCropId)}`)}
+        />
       </div>
     </div>
   )

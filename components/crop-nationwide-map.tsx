@@ -8,19 +8,19 @@ import { mapSuitabilityColors } from "@/lib/constants"
 import type { Suitability } from "@/types"
 import type { ZoningMapMunicipalityResult } from "@/lib/api-client/types"
 
-const COLOMBIA_BOUNDS: [[number, number], [number, number]] = [
-  [-79.1, -4.5],
-  [-66.8, 13.6],
+const MAP_CONTEXT_BOUNDS: [[number, number], [number, number]] = [
+  [-83.5, -6.5],
+  [-62.5, 15.5],
 ]
 
 const MAP_VIEW_BOUNDS: [[number, number], [number, number]] = [
-  [-81.5, -6.5],
-  [-64.5, 15.5],
+  [-84, -6.5],
+  [-61.5, 15.5],
 ]
 
 const MAP_STYLES = {
-  light: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  light: "https://tiles.openfreemap.org/styles/liberty",
+  dark: "https://tiles.openfreemap.org/styles/liberty",
 }
 
 interface MapPoint extends ZoningMapMunicipalityResult {
@@ -117,6 +117,27 @@ function MapContent({
     setClusters(clusterPoints(points, map.getZoom()))
   }, [map, points])
 
+  const applyVibrantPalette = useCallback(() => {
+    if (!map || !map.isStyleLoaded()) return
+
+    const isDarkStyle = map.getStyle().name?.toLowerCase().includes("dark") ?? false
+    const waterColor = isDarkStyle ? "#24586b" : "#67c7e0"
+    const waterShadowColor = isDarkStyle ? "#1d4657" : "#a1dce8"
+    const waterwayColor = isDarkStyle ? "#3d8298" : "#3aaecb"
+
+    for (const layer of map.getStyle().layers) {
+      if (layer.id === "water" && layer.type === "fill") {
+        map.setPaintProperty(layer.id, "fill-color", waterColor)
+      } else if (layer.id === "water_shadow" && layer.type === "fill") {
+        map.setPaintProperty(layer.id, "fill-color", waterShadowColor)
+      } else if (layer.id.startsWith("waterway") && layer.type === "line") {
+        map.setPaintProperty(layer.id, "line-color", waterwayColor)
+      } else if (layer.id === "background" && layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", isDarkStyle ? "#132229" : "#f8f8f3")
+      }
+    }
+  }, [map])
+
   useEffect(() => {
     if (!map) return
 
@@ -126,6 +147,44 @@ function MapContent({
       map.off("moveend", updateClusters)
     }
   }, [map, updateClusters])
+
+  useEffect(() => {
+    if (!map || points.length === 0) return
+
+    const pointsBounds = new MapLibreGL.LngLatBounds()
+    points.forEach(({ lng, lat }) => pointsBounds.extend([lng, lat]))
+
+    const southWest = pointsBounds.getSouthWest()
+    const northEast = pointsBounds.getNorthEast()
+    const longitudePadding = 2
+    const latitudePadding = 2
+    const expandedBounds = new MapLibreGL.LngLatBounds(
+      [
+        Math.max(MAP_VIEW_BOUNDS[0][0], southWest.lng - longitudePadding),
+        Math.max(MAP_VIEW_BOUNDS[0][1], southWest.lat - latitudePadding),
+      ],
+      [
+        Math.min(MAP_VIEW_BOUNDS[1][0], northEast.lng + longitudePadding),
+        Math.min(MAP_VIEW_BOUNDS[1][1], northEast.lat + latitudePadding),
+      ],
+    )
+
+    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 2.5, duration: 0 })
+  }, [map, points])
+
+  useEffect(() => {
+    if (!map) return
+
+    if (map.isStyleLoaded()) {
+      applyVibrantPalette()
+      return
+    }
+
+    map.once("idle", applyVibrantPalette)
+    return () => {
+      map.off("idle", applyVibrantPalette)
+    }
+  }, [applyVibrantPalette, map])
 
   const handleClusterClick = (cluster: CropCluster) => {
     if (cluster.points.length === 1) {
@@ -210,10 +269,10 @@ export function CropNationwideMap({
 
   return (
     <Map
-      bounds={COLOMBIA_BOUNDS}
-      fitBoundsOptions={{ padding: 48, maxZoom: 4.6 }}
+      bounds={MAP_CONTEXT_BOUNDS}
+      fitBoundsOptions={{ padding: 48, maxZoom: 2.5 }}
       maxBounds={MAP_VIEW_BOUNDS}
-      minZoom={3.2}
+      minZoom={2.2}
       maxZoom={12}
       styles={MAP_STYLES}
       scrollZoom

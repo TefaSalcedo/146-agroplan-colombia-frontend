@@ -9,8 +9,9 @@ import { WeatherCard } from '@/components/weather-card'
 import { ForecastCard } from '@/components/forecast-card'
 import { MonthlyForecastCard } from '@/components/monthly-forecast-card'
 import { ClimateAlertCard } from '@/components/climate-alert-card'
-import { SatelliteCropMap } from '@/components/satellite-crop-map'
+import { CropCard } from '@/components/crop-card'
 import { DashboardActionCard } from '@/components/dashboard-action-card'
+import { RecommendationSourceBanner } from '@/components/recommendation-source-banner'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { AgriculturalCalendar, AgriculturalCalendarLegend } from '@/components/agricultural-calendar'
@@ -147,7 +148,7 @@ export default function InicioPage() {
           <span id="general-title" className="sr-only">
             Ubicación y clima actual
           </span>
-          <LocationCard location={displayLocation} municipality={selectedLocation} />
+          <LocationCard location={displayLocation} />
           <WeatherCard weather={weather} loading={weatherLoading} />
         </section>
 
@@ -203,11 +204,38 @@ export default function InicioPage() {
                 ¿Qué puedes sembrar aquí?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Cultivos recomendados para {selectedLocation.name} con su probabilidad de éxito
+                Cultivos recomendados para {selectedLocation.name} con su confidence o escort correspondiente
               </p>
             </div>
           </div>
-          <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} />
+          {recommendations?.source && (
+            <RecommendationSourceBanner
+              source={recommendations.source}
+              sourceDescription={recommendations.sourceDescription}
+              whyItMatters={recommendations.whyItMatters}
+              modelVersion={recommendations.modelVersion}
+              method={recommendations.method}
+            />
+          )}
+          {allRecommendedCrops.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {allRecommendedCrops.map((crop) => (
+                <CropCard
+                  key={crop.id}
+                  id={crop.id}
+                  name={crop.name}
+                  image={crop.image}
+                  recommendation={crop.recommendation}
+                  successRate={crop.successRate}
+                  href={buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos', crop.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              No hay cultivos recomendados disponibles para esta ubicación.
+            </div>
+          )}
         </section>
 
         <section aria-labelledby="calendar-title" className="flex flex-col gap-4">

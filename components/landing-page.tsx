@@ -17,6 +17,8 @@ import {
   Maximize2,
   Minimize2,
   Trophy,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,13 +38,16 @@ import { isWithinColombia } from "@/lib/location-utils"
 import { buildLocationPath } from "@/lib/routing"
 import { GeoButton, MunicipalitySearchAutocomplete } from "@/components/location"
 import { Municipality } from "@/types"
+import { useTheme } from "next-themes"
 
 gsap.registerPlugin(useGSAP)
 
 export function LandingPage() {
   const router = useRouter()
   const { selectedLocation, setSelectedLocation } = useLocation()
+  const { resolvedTheme, setTheme } = useTheme()
   const currentYear = new Date().getFullYear()
+  const isDark = resolvedTheme === "dark"
 
   // Refs for GSAP animation
   const cardsContainerRef = useRef<HTMLDivElement>(null)
@@ -223,7 +228,7 @@ export function LandingPage() {
   }
 
   useGSAP(
-    (context, contextSafe) => {
+    (_context, contextSafe) => {
       if (!contextSafe) return
 
       gsap.set([cropBodyRef.current, locationBodyRef.current], {
@@ -393,7 +398,21 @@ export function LandingPage() {
       </video>
 
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50" />
+      <div
+        className={`absolute inset-0 bg-gradient-to-b ${
+          isDark ? "from-black/55 via-black/65 to-black/80" : "from-black/30 via-black/40 to-black/50"
+        }`}
+      />
+
+      <button
+        type="button"
+        onClick={() => setTheme(isDark ? "light" : "dark")}
+        className="absolute right-4 top-4 z-20 flex size-10 items-center justify-center rounded-xl border border-white/25 bg-black/35 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-black/55 sm:right-6 sm:top-6"
+        aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        aria-pressed={isDark}
+      >
+        {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+      </button>
 
       {/* Content */}
       <div className="relative flex min-h-svh flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
@@ -422,7 +441,7 @@ export function LandingPage() {
         >
           {/* Crop Card */}
           <div className="h-full min-h-0">
-            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
+            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-background/90 p-6 shadow-2xl backdrop-blur-md dark:border-white/15 dark:bg-card/90 sm:p-8">
               <div className="flex items-start gap-4">
                 <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
                   <Sprout className="size-6" />
@@ -502,7 +521,7 @@ export function LandingPage() {
 
           {/* Location Card */}
           <div className="h-full min-h-0">
-            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-white/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
+            <Card className="flex h-full flex-col gap-5 overflow-hidden border border-white/20 bg-background/90 p-6 shadow-2xl backdrop-blur-md dark:border-white/15 dark:bg-card/90 sm:p-8">
               <div className="flex items-start gap-4">
                 <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
                   <MapPin className="size-6" />

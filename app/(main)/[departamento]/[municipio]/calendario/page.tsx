@@ -13,6 +13,7 @@ import {
 import { useRecommendations, useCalendars } from "@/hooks"
 import { useLocation } from "@/context/LocationContext"
 import { CalendarDetail } from "@/components/calendar-detail"
+import { RecommendationSourceBanner } from "@/components/recommendation-source-banner"
 import type { CalendarBatchResponse } from "@/lib/api-client/types"
 
 export default function CalendarioPage() {
@@ -92,6 +93,16 @@ export default function CalendarioPage() {
         </div>
         <DownloadPdfButton pageName="Calendario-AgroPlan" />
       </div>
+
+      {recommendations?.source && (
+        <RecommendationSourceBanner
+          source={recommendations.source}
+          sourceDescription={recommendations.sourceDescription}
+          whyItMatters={recommendations.whyItMatters}
+          modelVersion={recommendations.modelVersion}
+          method={recommendations.method}
+        />
+      )}
 
       <div id="pdf-calendario" className="flex flex-col gap-6 rounded-lg bg-card p-4 md:p-6">
         <AgriculturalCalendar batchResponse={batchResponse} mode="full" />

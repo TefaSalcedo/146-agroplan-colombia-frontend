@@ -42,7 +42,6 @@ export function WeatherCard({ weather, loading }: WeatherCardProps) {
   }
 
   const Icon = ICONS[weather.icon] ?? Cloud
-  const hasPrecipitation = weather.precipitation > 0
 
   return (
     <Card className="flex h-full flex-col gap-3 overflow-hidden p-5">

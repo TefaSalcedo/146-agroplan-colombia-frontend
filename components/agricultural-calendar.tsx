@@ -93,8 +93,6 @@ export function AgriculturalCalendar({
     }))
   }, [batchResponse])
 
-  const isCompact = mode === "compact"
-
   if (loading) {
     return (
       <Card className={cn("overflow-hidden p-4 md:p-6", className)}>
@@ -118,6 +116,27 @@ export function AgriculturalCalendar({
         <p className="text-sm text-muted-foreground">
           No pudimos cargar el calendario agrícola para este municipio.
         </p>
+      </Card>
+    )
+  }
+
+  if (mode === "compact") {
+    return (
+      <Card className={cn("overflow-hidden p-4", className)}>
+        <div className="space-y-3">
+          {rows.map(({ result, activities }) => (
+            <div key={result.cropId} className="flex flex-col gap-2 border-b pb-3 last:border-b-0 last:pb-0">
+              <span className="text-sm font-medium">{result.cropName}</span>
+              <div className="flex flex-wrap gap-1.5">
+                {activities.map((activity, index) =>
+                  activity ? (
+                    <ActivityPill key={`${result.cropId}-${index}`} activity={activity} label={MONTHS[index]} />
+                  ) : null
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
     )
   }

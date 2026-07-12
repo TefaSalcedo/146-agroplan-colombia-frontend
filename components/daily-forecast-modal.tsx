@@ -7,6 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import type { ForecastDayResponse } from "@/lib/api-client/types"
+import { formatApiDate, parseApiDate } from "@/lib/date-utils"
 
 const WEEK_DAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 const WEEK_DAYS_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
@@ -23,7 +24,7 @@ function getWeatherIcon(day: ForecastDayResponse) {
 }
 
 function formatDayLabel(dateString: string): { full: string; short: string } {
-  const date = new Date(dateString)
+  const date = parseApiDate(dateString)
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(today.getDate() + 1)
@@ -39,7 +40,8 @@ function formatDayLabel(dateString: string): { full: string; short: string } {
   const dayIndex = date.getDay()
   const dayName = WEEK_DAYS[dayIndex] ?? ""
   const dayNameShort = WEEK_DAYS_SHORT[dayIndex] ?? ""
-  return { full: dayName, short: dayNameShort }
+  const dateLabel = formatApiDate(dateString)
+  return { full: `${dayName} ${dateLabel}`, short: `${dayNameShort} ${dateLabel}` }
 }
 
 interface DailyForecastModalProps {
@@ -50,14 +52,12 @@ interface DailyForecastModalProps {
 }
 
 export function DailyForecastModal({ open, onOpenChange, forecast, loading }: DailyForecastModalProps) {
-  console.log("[DailyForecastModal] open:", open, "forecast:", forecast, "loading:", loading)
-
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
   const days = forecast
     .filter((day) => {
-      const dayDate = new Date(day.date)
+      const dayDate = parseApiDate(day.date)
       dayDate.setHours(0, 0, 0, 0)
       return dayDate >= today
     })

@@ -1,17 +1,9 @@
 // API Configuration
 // NEXT_PUBLIC_API_URL is expected to include the /api/v1 prefix.
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.5.117:8000/api/v1'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 // Base URL without the API path prefix, used for static assets (e.g. crop images).
-function getApiBaseUrl(): string {
-  try {
-    return new URL(API_URL).origin
-  } catch {
-    return 'http://192.168.5.117:8000'
-  }
-}
-
-export const API_BASE_URL = getApiBaseUrl()
+export const API_BASE_URL = new URL(API_URL).origin
 
 // Simple in-memory cache for GET requests
 const cache = new Map<string, { data: unknown; timestamp: number }>()
@@ -43,7 +35,7 @@ export class ApiError extends Error {
   constructor(
     public message: string,
     public status?: number,
-    public response?: any
+    public response?: unknown
   ) {
     super(message)
     this.name = "ApiError"
@@ -51,7 +43,7 @@ export class ApiError extends Error {
 }
 
 // Retry with exponential backoff
-async function fetchWithRetry<T>(
+async function fetchWithRetry(
   url: string,
   options: RequestInit,
   maxRetries = 3,
@@ -83,7 +75,6 @@ export async function fetchApi<T>(
   // Use the Next.js rewrite in the browser to avoid CORS issues.
   // Server-side requests can still hit the API directly.
   const url = typeof window !== "undefined" ? `/api${endpoint}` : `${API_URL}${endpoint}`
-  
   const defaultOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
@@ -103,9 +94,9 @@ export async function fetchApi<T>(
 
   try {
     const response = await fetchWithRetry(url, defaultOptions)
-    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      console.error(`[fetchApi] HTTP error ${response.status} for ${url}:`, errorData)
       throw new ApiError(
         errorData.detail || `HTTP error! status: ${response.status}`,
         response.status,

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import Image from "next/image"
 import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
@@ -27,6 +26,7 @@ import { buildLocationPath } from "@/lib/routing"
 import { AIRecommendationCard } from "@/components/ai-recommendation-card"
 import { CropCalendarVisualization } from "@/components/crop-calendar-visualization"
 import { LandscapeIllustration, SproutPotIllustration, OrganicRingsIllustration } from "@/components/crop-illustrations"
+import type { Crop } from "@/types"
 
 const factIcons = {
   soil: Layers,
@@ -51,10 +51,14 @@ const factStyles: Record<
 
 interface CropDetailViewProps {
   id: string
+  initialCrop?: Crop
 }
 
-export function CropDetailView({ id }: CropDetailViewProps) {
-  const { crop, loading, error } = useCrop(id)
+export function CropDetailView({ id, initialCrop }: CropDetailViewProps) {
+  const cropQuery = useCrop(initialCrop ? "" : id)
+  const crop = initialCrop ?? cropQuery.crop
+  const loading = initialCrop ? false : cropQuery.loading
+  const error = initialCrop ? null : cropQuery.error
   const { selectedLocation } = useLocation()
   const cropsHref = selectedLocation
     ? buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
@@ -74,8 +78,6 @@ export function CropDetailView({ id }: CropDetailViewProps) {
   if (loading) {
     return <PageLoading title="Cargando cultivo" />
   }
-
-  const totalLoading = loading || calendarLoading
 
   if (error || !crop) {
     return (

@@ -11,7 +11,6 @@ import { suitabilityColors } from "@/lib/constants"
 import type { Municipality, Suitability } from "@/types"
 
 interface ZonificationMapProps {
-  cropId: string
   activeLayers: Record<Suitability, boolean>
   selectedId: string | null
   onSelect: (m: Municipality) => void
@@ -26,7 +25,6 @@ const mapStyles = {
 }
 
 export function ZonificationMap({
-  cropId,
   activeLayers,
   selectedId,
   onSelect,

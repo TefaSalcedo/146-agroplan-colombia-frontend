@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import type { ForecastTrend, MonthlyForecastResponse } from "@/lib/api-client/types"
+import { formatApiMonth } from "@/lib/date-utils"
 
 interface TrendMeta {
   label: string
@@ -141,7 +142,9 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
                   <WeatherIcon className="size-5" />
                 </div>
                 <div className="flex flex-col">
-                  <p className="text-sm font-semibold text-foreground">{month.monthName}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {formatApiMonth(month.forecastMonth, month.monthName)}
+                  </p>
                   <p className={`text-xs font-medium ${trendMeta.color}`}>{trendMeta.label}</p>
                 </div>
               </div>

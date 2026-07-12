@@ -85,11 +85,15 @@ export interface CropNationalGuideResponse {
   cropName: string
   summary: string
   sections: CropNationalGuideSection[]
-  generatedAt: string
-  expiresAt: string
+  generatedAt: string | null
+  expiresAt: string | null
   cached: boolean
-  provider: string
-  model: string
+  provider: string | null
+  model: string | null
+  tokensIn?: number | null
+  tokensOut?: number | null
+  tokensTotal?: number | null
+  latencyMs?: number | null
   status: string
   error: string | null
 }
@@ -148,7 +152,8 @@ export interface ZoningBatchCropResult {
 export interface ClimateBasedRecommendation {
   cropId: string
   cropName: string
-  score: number
+  /** Climate suitability score returned by the backend KNN model. */
+  score?: number | null
   source: string
 }
 
@@ -180,6 +185,47 @@ export interface ZoningMapResponse {
   results: ZoningMapMunicipalityResult[]
   totalMunicipalities?: number
   cacheHit?: boolean | null
+}
+
+// ==================== AI Insights ====================
+// fetchApi converts snake_case backend keys to camelCase, so these types reflect
+// the shape seen by the frontend after conversion.
+
+export interface AiInsightsAlternativeCrop {
+  cropName: string
+  why: string
+  confidence: "high" | "medium" | "low"
+}
+
+export interface AiInsightsFarmingSystem {
+  title: string
+  recommendation: string
+  suitable: "yes" | "no" | "maybe"
+}
+
+export interface AiInsightsSoilAndFertilizer {
+  title: string
+  content: string
+}
+
+export interface AiInsightsResponse {
+  municipalityId: string
+  municipalityName: string
+  summary: string
+  alternativeCrops: AiInsightsAlternativeCrop[]
+  farmingSystems: AiInsightsFarmingSystem[]
+  soilAndFertilizer: AiInsightsSoilAndFertilizer[]
+  generatedAt: string
+  expiresAt: string
+  cached: boolean
+  provider: string
+  model: string
+  tokensIn?: number | null
+  tokensOut?: number | null
+  tokensTotal?: number | null
+  latencyMs?: number | null
+  status: "success" | "error"
+  error: string | null
 }
 
 // ==================== Calendars ====================
@@ -297,8 +343,16 @@ export interface NextPlantingSeason {
 export interface RecommendationResponse {
   topCrop: Crop & { suitability: "high" | "medium" | "low" | "none" }
   otherCrops: CropResponseLite[]
+  /** Crops derived from data-based results (zoning model). Available even when both sources are present. */
+  dataBasedCrops: CropResponseLite[]
+  /** Crops derived from climate-based recommendations (KNN model). Available even when both sources are present. */
+  climateBasedCrops: CropResponseLite[]
   nextPlantingSeason: NextPlantingSeason
-  source: "data" | "climate" | "fallback"
+  source: "data" | "climate" | "mixed" | "fallback"
+  sourceDescription: string
+  whyItMatters: string
+  modelVersion: string
+  method: string
 }
 
 // ==================== Alerts ====================
