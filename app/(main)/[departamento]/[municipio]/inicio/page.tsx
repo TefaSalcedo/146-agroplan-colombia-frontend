@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, MapPin, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
+import { Calendar, MapPin, AlertTriangle, ArrowRight } from 'lucide-react'
 import { LocationCard } from '@/components/location-card'
 import { WeatherCard } from '@/components/weather-card'
 import { ForecastCard } from '@/components/forecast-card'
@@ -128,6 +129,7 @@ export default function InicioPage() {
   }
 
   const calendarBasePath = buildLocationPath(selectedLocation.department, selectedLocation.name, 'calendario')
+  const cropsBasePath = buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -206,7 +208,7 @@ export default function InicioPage() {
               </p>
             </div>
           </div>
-          <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} />
+          <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} cropsHref={cropsBasePath} />
         </section>
 
         <section aria-labelledby="calendar-title" className="flex flex-col gap-4">
@@ -225,8 +227,14 @@ export default function InicioPage() {
               </div>
             </div>
           </div>
-          <AgriculturalCalendar batchResponse={batchResponse} mode="compact" />
-          <AgriculturalCalendarLegend />
+          <Link href={calendarBasePath} className="group block focus:outline-none">
+            <AgriculturalCalendar batchResponse={batchResponse} mode="compact" />
+            <AgriculturalCalendarLegend />
+            <div className="mt-3 flex items-center gap-2 text-sm font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus:opacity-100">
+              <span>Ver calendario completo</span>
+              <ArrowRight className="size-4" />
+            </div>
+          </Link>
           <div className="sm:hidden">
             <DashboardActionCard
               icon={Calendar}

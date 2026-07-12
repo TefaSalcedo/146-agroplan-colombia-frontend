@@ -63,21 +63,32 @@ export function DownloadPdfButton({ pageName, className }: DownloadPdfButtonProp
   }
 
   return (
-    <Button
-      onClick={handleDownload}
-      disabled={isLoading}
-      variant="outline"
-      size="sm"
-      className={`gap-2 transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 disabled:opacity-50 ${className || ''}`}
-      aria-label={`Descargar reporte de ${pageName}`}
-      data-pdf-hide
-    >
-      {isLoading ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <FileDown className="size-4 transition-transform duration-200 group-hover:scale-110" />
+    <div className="flex flex-col items-end gap-2">
+      <Button
+        onClick={handleDownload}
+        disabled={isLoading}
+        variant="default"
+        size="lg"
+        className={`gap-2 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-md ${className || ''}`}
+        aria-label={`Descargar reporte de ${pageName}`}
+        data-pdf-hide
+      >
+        {isLoading ? (
+          <Loader2 className="size-5 animate-spin" />
+        ) : (
+          <FileDown className="size-5 transition-transform duration-200 group-hover:scale-110" />
+        )}
+        {isLoading ? 'Generando...' : 'Descargar PDF'}
+      </Button>
+      {isLoading && (
+        <div
+          className="text-xs text-muted-foreground animate-pulse"
+          role="status"
+          aria-live="polite"
+        >
+          Esto puede demorar un poco...
+        </div>
       )}
-      {isLoading ? 'Generando...' : 'Descargar'}
-    </Button>
+    </div>
   )
 }
