@@ -3,18 +3,14 @@
 import { useSearchParams } from "next/navigation"
 import { projectConfig } from "@/lib/project-config"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import {
   GitBranch,
   ExternalLink,
-  Users,
   Database,
   Cpu,
   Heart,
   Code2,
-  Globe,
-  Calendar,
-  TrendingUp,
   Award,
   BookOpen,
 } from "lucide-react"
@@ -87,11 +83,18 @@ export function ConcursoPage() {
                       </a>
                     </div>
                     <p className="mb-4 text-white/80">{repo.description}</p>
-                    <a href={repo.url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver en GitHub
-                      </Button>
+                    <a
+                      href={repo.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                        className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                      })}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Ver en GitHub
                     </a>
                   </Card>
                 ))}
@@ -121,11 +124,18 @@ export function ConcursoPage() {
                         </div>
                       </div>
                     )}
-                    <a href={model.url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver en Hugging Face
-                      </Button>
+                    <a
+                      href={model.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                        className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                      })}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Ver en Hugging Face
                     </a>
                   </Card>
                 ))}
@@ -225,11 +235,18 @@ export function ConcursoPage() {
                       <span className="rounded bg-blue-400/20 px-2 py-1 text-xs text-blue-300">{source.license}</span>
                       <span className="rounded bg-purple-400/20 px-2 py-1 text-xs text-purple-300">{source.usage}</span>
                     </div>
-                    <a href={source.url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Visitar fuente
-                      </Button>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                        className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                      })}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Visitar fuente
                     </a>
                   </Card>
                 ))}
@@ -266,11 +283,18 @@ export function ConcursoPage() {
                       <span className="rounded-full bg-purple-400/20 px-3 py-1 text-sm text-purple-300">{dataset.usage}</span>
                     </div>
                     {dataset.url && (
-                      <a href={dataset.url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Ver en datos.gov.co
-                        </Button>
+                      <a
+                        href={dataset.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                          className: "border-white/30 bg-white/10 text-white hover:bg-white/20",
+                        })}
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver en datos.gov.co
                       </a>
                     )}
                     {dataset.datasets && (
@@ -345,11 +369,18 @@ export function ConcursoPage() {
                       </div>
                     ))}
                   </div>
-                  <a href={creator.github} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
-                      <GitBranch className="mr-2 h-4 w-4" />
-                      Ver perfil de GitHub
-                    </Button>
+                  <a
+                    href={creator.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                      className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                    })}
+                  >
+                    <GitBranch className="mr-2 h-4 w-4" />
+                    Ver perfil de GitHub
                   </a>
                 </Card>
               ))}
@@ -385,11 +416,18 @@ export function ConcursoPage() {
                       <span className="text-white/80">{software.usage}</span>
                     </div>
                   </div>
-                  <a href={software.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Visitar sitio
-                    </Button>
+                  <a
+                    href={software.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                      className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                    })}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Visitar sitio
                   </a>
                 </Card>
               ))}

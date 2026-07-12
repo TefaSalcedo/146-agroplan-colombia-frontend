@@ -25,7 +25,7 @@ const sourceConfig = {
     icon: Cloud,
     title: "Recomendación basada en el clima actual",
     border: "border-l-sky-500",
-    bg: "bg-sky-50/50",
+    bg: "bg-sky-50/50 dark:bg-sky-950/30",
   },
   mixed: {
     badge: "Datos + clima",
@@ -33,7 +33,7 @@ const sourceConfig = {
     icon: Layers,
     title: "Recomendación combinada: histórica y climática",
     border: "border-l-emerald-500",
-    bg: "bg-emerald-50/50",
+    bg: "bg-emerald-50/50 dark:bg-emerald-950/30",
   },
   fallback: {
     badge: "Recomendación general",
@@ -41,7 +41,7 @@ const sourceConfig = {
     icon: AlertCircle,
     title: "Recomendación general",
     border: "border-l-amber-500",
-    bg: "bg-amber-50/50",
+    bg: "bg-amber-50/50 dark:bg-amber-950/30",
   },
 }
 

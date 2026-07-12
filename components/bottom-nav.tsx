@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
 import { buildNavHref } from "@/lib/routing"
-import { MapPin } from "lucide-react"
-import { useLocation } from '@/context/LocationContext'
+import { Settings, Trophy } from "lucide-react"
+import { useLocation } from "@/context/LocationContext"
 
 export function BottomNav() {
   const pathname = usePathname()
@@ -37,12 +37,27 @@ export function BottomNav() {
           </Link>
         )
       })}
-      {selectedLocation && (
-        <div className="flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium text-muted-foreground">
-          <MapPin className="size-5 text-primary" />
-          <span className="truncate text-center leading-tight">{selectedLocation.name}</span>
-        </div>
-      )}
+      {[
+        { label: "Concurso", href: "/concurso", icon: Trophy },
+        { label: "Configuración", href: "/configuracion", icon: Settings },
+      ].map((item) => {
+        const active = pathname.startsWith(item.href)
+        const Icon = item.icon
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium transition-colors",
+              active ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            <Icon className="size-5" />
+            <span className="truncate">{item.label}</span>
+          </Link>
+        )
+      })}
     </nav>
   )
 }

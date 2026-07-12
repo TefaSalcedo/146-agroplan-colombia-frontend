@@ -7,6 +7,7 @@ import { MONTHS_LONG } from "@/lib/constants"
 interface ProcessedCrop {
   crop: Crop
   modelValue: number
+  suitability: Suitability
   method: string
 }
 
@@ -16,9 +17,8 @@ function suitabilityFromScore(score: number): Suitability {
   return "low"
 }
 
-function recommendationLevelFromScore(score: number): RecommendationLevel {
-  const level = suitabilityFromScore(score)
-  return level === "none" ? "low" : level
+function recommendationLevelFromSuitability(suitability: Suitability): RecommendationLevel {
+  return suitability === "none" ? "low" : suitability
 }
 
 function percentageFromModelValue(modelValue: number): number {
@@ -44,7 +44,7 @@ function toCropResponseLite(item: ProcessedCrop): CropResponseLite {
     id: item.crop.id,
     name: item.crop.name,
     image: item.crop.image,
-    recommendation: recommendationLevelFromScore(item.modelValue),
+    recommendation: recommendationLevelFromSuitability(item.suitability),
     successRate: percentageFromModelValue(item.modelValue),
   }
 }
@@ -61,11 +61,21 @@ function processDataBasedResults(
         {
           crop,
           modelValue: result.confidence,
+          suitability: result.suitability,
           method: result.method ?? "zoning_model",
         },
       ]
     })
-    .sort((a, b) => b.modelValue - a.modelValue)
+    .sort((a, b) => {
+      const suitabilityOrder: Record<Suitability, number> = {
+        high: 3,
+        medium: 2,
+        low: 1,
+        none: 0,
+      }
+
+      return suitabilityOrder[b.suitability] - suitabilityOrder[a.suitability] || b.modelValue - a.modelValue
+    })
 }
 
 function processClimateRecommendations(
@@ -74,14 +84,15 @@ function processClimateRecommendations(
 ): ProcessedCrop[] {
   return recommendations
     .flatMap((result) => {
-      if (typeof result.escort !== "number" || !Number.isFinite(result.escort)) return []
+      if (typeof result.score !== "number" || !Number.isFinite(result.score)) return []
 
       const crop = cropMap.get(result.cropId)
       if (!crop) return []
       return [
         {
           crop,
-          modelValue: result.escort,
+          modelValue: result.score,
+          suitability: suitabilityFromScore(result.score),
           method: result.source ?? "climate_forecast",
         },
       ]
@@ -149,8 +160,8 @@ function buildRecommendationResponse(
   const topCrop = top
     ? {
         ...top.crop,
-        suitability: suitabilityFromScore(top.modelValue),
-        recommendation: recommendationLevelFromScore(top.modelValue),
+        suitability: top.suitability,
+        recommendation: recommendationLevelFromSuitability(top.suitability),
         successRate: percentageFromModelValue(top.modelValue),
       }
     : crops[0]

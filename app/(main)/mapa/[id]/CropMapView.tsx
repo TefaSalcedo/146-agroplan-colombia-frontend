@@ -181,10 +181,11 @@ function NationalGuide({ guide, loading, error }: {
 export function CropMapView({ cropId }: CropMapViewProps) {
   const router = useRouter()
   const { crop, loading: cropLoading, error: cropError } = useCrop(cropId)
+  const cropReady = Boolean(crop) && !cropLoading
   const { crops: catalogCrops } = useCropsLite()
   const { municipalities } = useMunicipalities()
   const { getMap, loading: zoningLoading, error: zoningError } = useZoning()
-  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropId)
+  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropReady ? cropId : "")
 
   const [zoningResults, setZoningResults] = useState<ZoningMapMunicipalityResult[]>([])
   const [selectedMunicipality, setSelectedMunicipality] = useState<
@@ -199,32 +200,30 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   )
 
   useEffect(() => {
-    if (!cropId) return
+    if (!cropId || !cropReady) {
+      setZoningResults([])
+      return
+    }
+
+    let cancelled = false
+    setZoningResults([])
 
     const loadPredictions = async () => {
       const result = await getMap(cropId)
-      if (!result) return
+      if (cancelled || !result) return
       setZoningResults(result.results)
     }
 
     loadPredictions()
-  }, [cropId, getMap])
+
+    return () => {
+      cancelled = true
+    }
+  }, [cropId, cropReady, getMap])
 
   const error = cropError || zoningError
 
-  if (cropLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Loader2 className="size-12 animate-spin text-primary" />
-          <p className="text-lg font-medium">Cargando información del cultivo...</p>
-          <p className="text-sm text-muted-foreground">Por favor espera un momento</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !crop) {
+  if (error) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 text-center">
@@ -245,7 +244,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   return (
     <div className="flex flex-col gap-6 pb-8">
       <Card className="overflow-hidden rounded-2xl border-2 p-0">
-        <div className="relative h-[90vh] min-h-[520px]">
+        <div className="relative h-[60vh]">
           <div className="absolute right-4 top-4 z-10 flex items-start gap-2">
             {showMapLegend && (
               <div className="rounded-xl border border-white/40 bg-background/70 p-3 text-xs text-foreground shadow-xl backdrop-blur-xl">
@@ -290,9 +289,16 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             )}
           </div>
 
-          <div className="absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)]">
+          {cropReady && crop && (
+            <div className="absolute left-4 top-4 z-10 rounded-xl border border-white/40 bg-background/55 px-3 py-2 text-sm font-semibold text-foreground shadow-lg backdrop-blur-xl">
+              Mapa de aptitud · {crop.name}
+            </div>
+          )}
+
+          {cropReady && crop && (
+            <div className="absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)]">
             {showCropConditions ? (
-              <div className="relative max-h-[calc(90vh-2rem)] overflow-y-auto rounded-2xl">
+              <div className="relative max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl">
                 <CropConditionsCard crop={crop} glass />
                 <button
                   type="button"
@@ -316,7 +322,8 @@ export function CropMapView({ cropId }: CropMapViewProps) {
                 <span>Ver condiciones ideales</span>
               </button>
             )}
-          </div>
+            </div>
+          )}
 
           <div className="relative h-full">
             {zoningLoading && (
@@ -327,15 +334,15 @@ export function CropMapView({ cropId }: CropMapViewProps) {
               </div>
             )}
             <CropNationwideMap
-              results={zoningResults}
+              results={cropReady ? zoningResults : []}
               departmentsByMunicipality={departmentsByMunicipality}
               selectedId={selectedMunicipality?.municipalityId ?? null}
               onSelect={setSelectedMunicipality}
             />
           </div>
 
-          {selectedMunicipality && (
-            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[70vh] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
+          {selectedMunicipality && cropReady && crop && (
+            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
               <div className="space-y-4">
                 <div>
                   <p className="text-xl font-bold leading-tight">{selectedMunicipality.municipalityName}</p>
@@ -363,7 +370,11 @@ export function CropMapView({ cropId }: CropMapViewProps) {
       </Card>
 
       <section aria-label="Recomendaciones inteligentes">
-        <NationalGuide guide={nationalGuide} loading={guideLoading} error={guideError} />
+        {cropReady ? (
+          <NationalGuide guide={nationalGuide} loading={guideLoading} error={guideError} />
+        ) : (
+          <NationalGuideSkeleton />
+        )}
       </section>
 
       <div className="md:hidden">

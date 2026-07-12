@@ -1,20 +1,15 @@
 'use client'
 
-import { BrainCircuit, Trophy, ArrowUpRight, MapPin, GitBranch } from 'lucide-react'
+import { BrainCircuit, Trophy, ArrowUpRight, GitBranch } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { SettingsControls } from '@/components/settings-controls'
-import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { BackendStatus } from '@/components/backend-status'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useLocation } from '@/context/LocationContext'
 import { projectConfig } from '@/lib/project-config'
 
 export default function ConfiguracionPage() {
-  const { selectedLocation, clearLocation } = useLocation()
-
   return (
     <div className='flex flex-col gap-8'>
       <div className='flex items-start justify-between gap-4'>

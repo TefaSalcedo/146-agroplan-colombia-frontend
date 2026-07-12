@@ -1,13 +1,9 @@
 "use client"
 
-import Link from "next/link"
 import {
-  ArrowLeft,
   CalendarDays,
   Info,
-  Trophy,
 } from "lucide-react"
-import { CropImage } from "@/components/crop-image"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
@@ -19,8 +15,6 @@ interface CropMapSidebarProps {
   crops: CropLite[]
   selectedCropId: string
   onCropChange: (cropId: string) => void
-  backHref?: string
-  contestHref?: string
 }
 
 const monthLabels = ["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
@@ -30,55 +24,9 @@ export function CropMapSidebar({
   crops,
   selectedCropId,
   onCropChange,
-  backHref = "/",
-  contestHref = "/concurso",
 }: CropMapSidebarProps) {
   return (
     <div className="flex flex-col gap-4">
-      <Link
-        href={backHref}
-        className="flex w-fit items-center gap-2 px-1 text-sm font-medium text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Volver al inicio
-      </Link>
-
-      <div className="space-y-2">
-        <label htmlFor="crop-map-selector" className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Cambiar cultivo
-        </label>
-        <Select
-          value={selectedCropId}
-          onValueChange={onCropChange}
-          disabled={crops.length === 0}
-          items={Object.fromEntries(crops.map((item) => [item.id, item.name]))}
-        >
-          <SelectTrigger id="crop-map-selector" className="w-full bg-background/70">
-            <SelectValue placeholder={crops.length === 0 ? "Cargando cultivos..." : "Selecciona un cultivo"} />
-          </SelectTrigger>
-          <SelectContent>
-            {crops.map((item) => (
-              <SelectItem key={item.id} value={item.id}>
-                {item.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Card className="overflow-hidden p-0">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-          <CropImage
-            src={crop?.image || "/placeholder.svg"}
-            alt={crop?.name || "Cultivo"}
-            fill
-            sizes="(max-width: 768px) 100vw, 280px"
-            className="object-cover"
-            priority
-          />
-        </div>
-      </Card>
-
       {crop && (
         <>
           <Card id="crop-calendar-section" className="border-2 p-4">
@@ -137,20 +85,31 @@ export function CropMapSidebar({
               </div>
             </div>
           </Card>
-
         </>
       )}
 
-      <Link
-        href={contestHref}
-        className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg"
-      >
-        <Trophy className="size-4 shrink-0" />
-        <span className="min-w-0">
-          <span className="block">Datos al ecosistema 2026</span>
-          <span className="block truncate text-[11px] text-white/80">Concurso Datos Abiertos</span>
-        </span>
-      </Link>
+      <div className="space-y-2">
+        <label htmlFor="crop-map-selector" className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Cambiar cultivo
+        </label>
+        <Select
+          value={selectedCropId}
+          onValueChange={onCropChange}
+          disabled={crops.length === 0}
+          items={Object.fromEntries(crops.map((item) => [item.id, item.name]))}
+        >
+          <SelectTrigger id="crop-map-selector" className="w-full bg-background/70">
+            <SelectValue placeholder={crops.length === 0 ? "Cargando cultivos..." : "Selecciona un cultivo"} />
+          </SelectTrigger>
+          <SelectContent>
+            {crops.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   )
 }

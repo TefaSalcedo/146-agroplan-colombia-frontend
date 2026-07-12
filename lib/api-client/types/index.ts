@@ -152,8 +152,8 @@ export interface ZoningBatchCropResult {
 export interface ClimateBasedRecommendation {
   cropId: string
   cropName: string
-  /** KNN escort value used as the unique suitability indicator for climate-based recommendations. */
-  escort?: number | null
+  /** Climate suitability score returned by the backend KNN model. */
+  score?: number | null
   source: string
 }
 

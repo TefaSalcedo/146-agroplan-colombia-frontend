@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import Image from "next/image"
 import { CropImage } from "@/components/crop-image"
 import Link from "next/link"
@@ -79,8 +78,6 @@ export function CropDetailView({ id, initialCrop }: CropDetailViewProps) {
   if (loading) {
     return <PageLoading title="Cargando cultivo" />
   }
-
-  const totalLoading = loading || calendarLoading
 
   if (error || !crop) {
     return (

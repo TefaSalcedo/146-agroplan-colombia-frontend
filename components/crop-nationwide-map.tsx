@@ -19,8 +19,8 @@ const MAP_VIEW_BOUNDS: [[number, number], [number, number]] = [
 ]
 
 const MAP_STYLES = {
-  light: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  light: "https://tiles.openfreemap.org/styles/liberty",
+  dark: "https://tiles.openfreemap.org/styles/liberty",
 }
 
 interface MapPoint extends ZoningMapMunicipalityResult {
@@ -126,13 +126,13 @@ function MapContent({
     const waterwayColor = isDarkStyle ? "#3d8298" : "#3aaecb"
 
     for (const layer of map.getStyle().layers) {
-      if (layer.id === "water") {
+      if (layer.id === "water" && layer.type === "fill") {
         map.setPaintProperty(layer.id, "fill-color", waterColor)
-      } else if (layer.id === "water_shadow") {
+      } else if (layer.id === "water_shadow" && layer.type === "fill") {
         map.setPaintProperty(layer.id, "fill-color", waterShadowColor)
-      } else if (layer.id === "waterway") {
+      } else if (layer.id.startsWith("waterway") && layer.type === "line") {
         map.setPaintProperty(layer.id, "line-color", waterwayColor)
-      } else if (layer.id === "background") {
+      } else if (layer.id === "background" && layer.type === "background") {
         map.setPaintProperty(layer.id, "background-color", isDarkStyle ? "#132229" : "#f8f8f3")
       }
     }
@@ -151,7 +151,25 @@ function MapContent({
   useEffect(() => {
     if (!map || points.length === 0) return
 
-    map.fitBounds(MAP_CONTEXT_BOUNDS, { padding: 48, maxZoom: 2.5, duration: 0 })
+    const pointsBounds = new MapLibreGL.LngLatBounds()
+    points.forEach(({ lng, lat }) => pointsBounds.extend([lng, lat]))
+
+    const southWest = pointsBounds.getSouthWest()
+    const northEast = pointsBounds.getNorthEast()
+    const longitudePadding = 2
+    const latitudePadding = 2
+    const expandedBounds = new MapLibreGL.LngLatBounds(
+      [
+        Math.max(MAP_VIEW_BOUNDS[0][0], southWest.lng - longitudePadding),
+        Math.max(MAP_VIEW_BOUNDS[0][1], southWest.lat - latitudePadding),
+      ],
+      [
+        Math.min(MAP_VIEW_BOUNDS[1][0], northEast.lng + longitudePadding),
+        Math.min(MAP_VIEW_BOUNDS[1][1], northEast.lat + latitudePadding),
+      ],
+    )
+
+    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 2.5, duration: 0 })
   }, [map, points])
 
   useEffect(() => {

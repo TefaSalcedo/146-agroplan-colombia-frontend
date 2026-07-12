@@ -14,6 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import type { ForecastTrend, MonthlyForecastResponse } from "@/lib/api-client/types"
+import { formatApiMonth } from "@/lib/date-utils"
 
 interface TrendMeta {
   label: string
@@ -88,7 +89,9 @@ export function MonthlyForecastModal({ open, onOpenChange, forecast, loading }: 
                   className="flex flex-col gap-2 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/50"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">{month.monthName}</p>
+                    <p className="text-sm font-semibold">
+                      {formatApiMonth(month.forecastMonth, month.monthName)}
+                    </p>
                     <WeatherIcon className="size-5 text-muted-foreground" />
                   </div>
                   <div className="space-y-1">

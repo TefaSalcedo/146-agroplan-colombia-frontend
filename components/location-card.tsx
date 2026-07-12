@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import type { Location, Municipality } from "@/types"
+import type { Location } from "@/types"
 
 const RURAL_IMAGE = "/ai images/Image-rural.webp"
 const URBAN_IMAGE = "/ai images/Image-urban.webp"
@@ -45,17 +45,11 @@ function getLocationImage(location: Location): string {
   return isCapitalCity(location.municipality) ? URBAN_IMAGE : RURAL_IMAGE
 }
 
-function formatNumber(value: number | undefined, suffix = ""): string | null {
-  if (value === undefined || value === null || Number.isNaN(value)) return null
-  return `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 }).format(value)}${suffix}`
-}
-
 interface LocationCardProps {
   location: Location
-  municipality?: Municipality | null
 }
 
-export function LocationCard({ location, municipality }: LocationCardProps) {
+export function LocationCard({ location }: LocationCardProps) {
   const imageUrl = getLocationImage(location)
 
   return (

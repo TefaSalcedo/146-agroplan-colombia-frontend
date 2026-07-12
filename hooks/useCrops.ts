@@ -42,24 +42,40 @@ export function useCrops() {
 
 export function useCrop(id: string) {
   const [crop, setCrop] = useState<Crop | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(id))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     const loadCrop = async () => {
-      if (!id) return
+      if (!id) {
+        setCrop(null)
+        setError(null)
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
+      setCrop(null)
       setError(null)
       try {
         const data = await fetchCrop(id)
+        if (cancelled) return
         setCrop(data)
       } catch (err) {
+        if (cancelled) return
         setError(err instanceof ApiError ? err.message : "Error loading crop")
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
     loadCrop()
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   return { crop, loading, error }

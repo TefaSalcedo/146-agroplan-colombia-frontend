@@ -12,7 +12,6 @@ import {
   ChevronUp,
   Cloud,
   Droplets,
-  Home,
   Loader2,
   MapPin,
   Moon,
@@ -24,12 +23,12 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
-import { buildNavHref, buildLocationPath } from "@/lib/routing"
+import { buildNavHref } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
 import { useCropsLite, useCrop, useDepartments, useMunicipalities, useWeather } from "@/hooks"
-import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
+import { concursoSections, getConcursoSection } from "@/lib/concurso-sections"
 import { ApiError } from "@/lib/api-client/client"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
 import { isWithinColombia } from "@/lib/location-utils"
@@ -428,8 +427,6 @@ export function AppSidebar() {
             crops={catalogCrops}
             selectedCropId={params.id ?? ""}
             onCropChange={(cropId) => router.push(`/mapa/${encodeURIComponent(cropId)}`)}
-            backHref="/"
-            contestHref="/concurso"
           />
         )}
 
