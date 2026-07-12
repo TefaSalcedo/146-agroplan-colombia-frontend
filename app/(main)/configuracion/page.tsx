@@ -1,6 +1,6 @@
 'use client'
 
-import { BrainCircuit, Trophy, ArrowUpRight, MapPin } from 'lucide-react'
+import { BrainCircuit, Trophy, ArrowUpRight, MapPin, GitBranch } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
@@ -10,6 +10,7 @@ import { BackendStatus } from '@/components/backend-status'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useLocation } from '@/context/LocationContext'
+import { projectConfig } from '@/lib/project-config'
 
 export default function ConfiguracionPage() {
   const { selectedLocation, clearLocation } = useLocation()
@@ -71,6 +72,35 @@ export default function ConfiguracionPage() {
       </section>
 
       <section className='flex flex-col gap-4'>
+        <h2 className='text-lg font-semibold'>Código Abierto</h2>
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          {projectConfig.repositories.map((repo) => (
+            <Card key={repo.name} className='flex flex-col gap-3 p-5'>
+              <div className='flex items-start gap-3'>
+                <div className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'>
+                  <GitBranch className='size-5' />
+                </div>
+                <div className='min-w-0 flex-1'>
+                  <p className='font-medium'>{repo.name}</p>
+                  <p className='text-xs text-muted-foreground'>{repo.technology}</p>
+                </div>
+              </div>
+              <p className='text-sm text-muted-foreground text-pretty'>{repo.description}</p>
+              <Link
+                href={repo.url}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='mt-auto flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 hover:bg-primary hover:text-primary-foreground bg-primary/10 text-primary'
+              >
+                Ver Repositorio <ArrowUpRight className='size-3' />
+              </Link>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className='flex flex-col gap-4'>
         <h2 className='text-lg font-semibold'>Equipo de Desarrollo</h2>
 
         <Card className='flex flex-col gap-4 p-5'>
@@ -114,23 +144,6 @@ export default function ConfiguracionPage() {
                 GitHub <ArrowUpRight className='size-3' />
               </Link>
             </div>
-          </div>
-        </Card>
-
-        <Card className='flex flex-col gap-4 p-5'>
-          <div className='flex items-start justify-between gap-4'>
-            <div>
-              <p className='font-medium'>Código Abierto</p>
-              <p className='text-sm text-muted-foreground'>Contribuye en GitHub</p>
-            </div>
-            <Link
-              href='https://github.com/TefaSalcedo/AgroPlan-Colombia'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-200 hover:bg-primary hover:text-primary-foreground bg-primary/10 text-primary'
-            >
-              Ver Repositorio <ArrowUpRight className='size-3' />
-            </Link>
           </div>
         </Card>
       </section>
