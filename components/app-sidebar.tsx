@@ -342,7 +342,7 @@ export function AppSidebar() {
       <div className="flex items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-3 transition-transform duration-200 hover:scale-105">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary">
-            <Image src="/logo.webp" alt="AgroPlan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
+            <Image src="/logo.webp" alt="Agroplan" width={40} height={40} className="size-10 rounded-2xl object-cover" />
           </div>
           <div className="leading-tight">
             <p className="font-semibold text-sidebar-foreground">AgroPlan</p>

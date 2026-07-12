@@ -32,7 +32,7 @@ export default function ConfiguracionPage() {
 
         <Card className='flex flex-row items-start gap-4 p-5'>
           <div className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10'>
-            <Image src='/logo.webp' alt='AgroPlan' width={44} height={44} className='size-11 rounded-xl object-cover' />
+            <Image src='/logo.webp' alt='Agroplan' width={44} height={44} className='size-11 rounded-xl object-cover' />
           </div>
           <div>
             <p className='font-medium'>AgroPlan Colombia</p>

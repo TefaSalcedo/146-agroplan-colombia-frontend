@@ -129,7 +129,6 @@ export default function InicioPage() {
   }
 
   const calendarBasePath = buildLocationPath(selectedLocation.department, selectedLocation.name, 'calendario')
-  const cropsBasePath = buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos')
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
