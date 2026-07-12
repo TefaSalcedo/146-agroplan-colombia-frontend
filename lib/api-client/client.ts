@@ -1,13 +1,13 @@
 // API Configuration
 // NEXT_PUBLIC_API_URL is expected to include the /api/v1 prefix.
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.5.117:8000/api/v1'
 
 // Base URL without the API path prefix, used for static assets (e.g. crop images).
 function getApiBaseUrl(): string {
   try {
     return new URL(API_URL).origin
   } catch {
-    return 'http://localhost:8000'
+    return 'http://192.168.5.117:8000'
   }
 }
 

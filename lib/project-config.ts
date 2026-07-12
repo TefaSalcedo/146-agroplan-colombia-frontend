@@ -43,7 +43,7 @@ export const projectConfig = {
   // Creators/Team
   creators: [
     {
-      name: "Stefanía Salcedo",
+      name: "Estefania Salcedo",
       role: "Lead Developer & ML Engineer",
       github: "https://github.com/TefaSalcedo",
       responsibilities: [
@@ -54,7 +54,7 @@ export const projectConfig = {
       ]
     },
     {
-      name: "Botom",
+      name: "Edwar Diaz",
       role: "Frontend Developer & System Architect",
       github: "https://github.com/BOTOOM",
       responsibilities: [
@@ -323,7 +323,7 @@ export const projectConfig = {
     },
     frontend: {
       language: "TypeScript",
-      framework: "Next.js 15",
+      framework: "Next.js 16.2.6",
       styling: "Tailwind CSS",
       maps: "MapLibre GL",
       animation: "GSAP"

@@ -3,7 +3,6 @@ import { predictZoning, predictZoningBatch, fetchZoningMap } from "@/lib/api-cli
 import type {
   ZoningRequest,
   ZoningResponse,
-  ZoningBatchRequest,
   ZoningBatchResponse,
   ZoningMapResponse,
 } from "@/lib/api-client/types"
@@ -28,12 +27,12 @@ export function useZoning() {
   }, [])
 
   const predictBatch = useCallback(async (
-    request: ZoningBatchRequest
+    municipalityId: string
   ): Promise<ZoningBatchResponse | null> => {
     setLoading(true)
     setError(null)
     try {
-      const result = await predictZoningBatch(request)
+      const result = await predictZoningBatch(municipalityId)
       return result
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Error predicting batch zoning")

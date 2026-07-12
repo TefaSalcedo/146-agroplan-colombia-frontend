@@ -107,10 +107,7 @@ export interface ZoningResponse {
   cacheHit?: boolean | null
 }
 
-export interface ZoningBatchRequest {
-  municipality_id: string
-  crop_ids?: string[] | null
-}
+
 
 export interface ZoningBatchCropResult {
   cropId: string
@@ -124,10 +121,18 @@ export interface ZoningBatchCropResult {
   warnings?: string[] | null
 }
 
+export interface ClimateBasedRecommendation {
+  cropId: string
+  cropName: string
+  score: number
+  source: string
+}
+
 export interface ZoningBatchResponse {
   municipalityId: string
   municipalityName: string
   results: ZoningBatchCropResult[]
+  climateBasedRecommendations: ClimateBasedRecommendation[]
   modelVersion: string
 }
 
@@ -204,6 +209,18 @@ export interface CalendarHarvestWindow {
   durationDaysMax?: number | null
 }
 
+export interface CalendarCropExplanation {
+  text: string | null
+  status: string
+  provider: string | null
+  model: string | null
+  tokensIn: number | null
+  tokensOut: number | null
+  tokensTotal: number | null
+  latencyMs: number | null
+  error: string | null
+}
+
 export interface CalendarCropResult {
   cropId: string
   cropName: string
@@ -214,6 +231,7 @@ export interface CalendarCropResult {
   monthlyForecasts: CalendarMonthlyForecast[]
   warnings: string[]
   method?: string
+  explanation: CalendarCropExplanation
 }
 
 export interface CalendarBatchResponse {
@@ -222,14 +240,28 @@ export interface CalendarBatchResponse {
   horizonMonths: number
   results: CalendarCropResult[]
   modelVersion: string
-  explanation?: string | null
-  llmStatus?: string | null
 }
 
 // ==================== Recommendations ====================
 
 export interface RecommendationRequest {
   municipality_id: string
+}
+
+export interface CropRecommendationResponse {
+  cropId: string
+  cropName: string
+  municipalityId: string
+  municipalityName: string
+  text: string
+  provider: string | null
+  model: string | null
+  tokensIn: number | null
+  tokensOut: number | null
+  tokensTotal: number | null
+  latencyMs: number | null
+  status: string
+  error: string | null
 }
 
 export interface NextPlantingSeason {
@@ -284,4 +316,58 @@ export interface ReadinessResponse {
   status: string
   version: string
   components: ComponentStatus[]
+}
+
+// ==================== Admin ====================
+
+export interface ClimateSyncStatusResponse {
+  enabled: boolean
+  lastSyncAt: string | null
+  nextSyncAt: string | null
+  status: string
+  syncedMunicipalities: number
+  totalMunicipalities: number
+}
+
+export interface ModelsStatusResponse {
+  loaded: boolean
+  models: Record<string, {
+    loaded: boolean
+    version: string
+    loadedAt: string | null
+  }>
+}
+
+export interface CacheStatsResponse {
+  totalEntries: number
+  hits: number
+  misses: number
+  hitRate: number
+  sizeBytes: number
+  entriesByType: Record<string, number>
+}
+
+export interface CacheInvalidateRequest {
+  prediction_type?: "zoning" | "calendar" | null
+  municipality_id?: string | null
+  crop_id?: string | null
+}
+
+export interface CacheInvalidateResponse {
+  success: boolean
+  invalidatedCount: number
+  message: string
+}
+
+export interface PredictionRunResponse {
+  id: string
+  timestamp: string
+  predictionType: string
+  municipalityId: string
+  cropId?: string | null
+  duration: number
+  success: boolean
+  cacheHit: boolean
+  method: string
+  errorMessage?: string | null
 }

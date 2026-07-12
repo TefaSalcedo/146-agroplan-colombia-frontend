@@ -636,7 +636,7 @@ export function LandingPage() {
             className="flex items-center gap-1 hover:text-white transition-colors"
           >
             <Trophy className="size-3" />
-            <span>Información del Concurso</span>
+            <span>Datos al ecosistema 2026</span>
           </Link>
           <p>
             © {currentYear} AgroPlan Colombia · Inteligencia para el Campo

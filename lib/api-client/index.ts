@@ -10,6 +10,7 @@ export * from "./recommendations"
 export * from "./health"
 export * from "./alerts"
 export * from "./forecast"
+export * from "./admin"
 
 // Unified API object for convenience
 export const api = {
@@ -29,10 +30,12 @@ export const api = {
     list: async () => (await import("./crops")).fetchCrops(),
     get: async (id: string) => (await import("./crops")).fetchCrop(id),
     lite: async () => (await import("./crops")).fetchCropsLite(),
+    recommendations: async (cropId: string, municipalityId: string) =>
+      (await import("./crops")).fetchCropRecommendations(cropId, municipalityId),
   },
   zoning: {
     predict: async (request: any) => (await import("./zoning")).predictZoning(request),
-    predictBatch: async (request: any) => (await import("./zoning")).predictZoningBatch(request),
+    predictBatch: async (municipalityId: string) => (await import("./zoning")).predictZoningBatch(municipalityId),
     getMap: async (cropId: string) => (await import("./zoning")).fetchZoningMap(cropId),
   },
   calendars: {
@@ -52,5 +55,12 @@ export const api = {
   health: {
     check: async () => (await import("./health")).fetchHealth(),
     readiness: async () => (await import("./health")).fetchReadiness(),
+  },
+  admin: {
+    climateSyncStatus: async () => (await import("./admin")).fetchClimateSyncStatus(),
+    modelsStatus: async () => (await import("./admin")).fetchModelsStatus(),
+    cacheStats: async () => (await import("./admin")).fetchCacheStats(),
+    invalidateCache: async (request?: any) => (await import("./admin")).invalidateCache(request),
+    recentPredictionRuns: async (limit?: number) => (await import("./admin")).fetchRecentPredictionRuns(limit),
   },
 }

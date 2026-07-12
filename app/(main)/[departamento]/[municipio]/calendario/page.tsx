@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Info } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -44,6 +44,18 @@ export default function CalendarioPage() {
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
 
+  const loadCalendar = useCallback(async () => {
+    const calendarData = await predict({
+      crop_id: cropId,
+      municipality_id: municipalityId,
+      month: currentMonth + 1, // API expects 1-based month
+      year: currentYear,
+    })
+    if (calendarData) {
+      setCalendar(calendarData)
+    }
+  }, [cropId, currentMonth, currentYear, municipalityId, predict])
+
   useEffect(() => {
     setMounted(true)
 
@@ -65,25 +77,13 @@ export default function CalendarioPage() {
     if (cropsData.length > 0 && !cropId) {
       setCropId(cropsData[0].id)
     }
-  }, [municipalitiesData, cropsData, selectedLocation])
+  }, [municipalitiesData, cropsData, cropId, municipalityId, selectedLocation])
 
   useEffect(() => {
     if (municipalityId && cropId) {
       loadCalendar()
     }
-  }, [municipalityId, cropId])
-
-  const loadCalendar = async () => {
-    const calendarData = await predict({
-      crop_id: cropId,
-      municipality_id: municipalityId,
-      month: currentMonth + 1, // API expects 1-based month
-      year: currentYear,
-    })
-    if (calendarData) {
-      setCalendar(calendarData)
-    }
-  }
+  }, [cropId, loadCalendar, municipalityId])
 
   const loading = municipalitiesLoading || cropsLoading
   const error = municipalitiesError || cropsError || calendarError

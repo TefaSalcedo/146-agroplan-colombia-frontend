@@ -41,6 +41,7 @@ function Combobox({
   const [open, setOpen] = React.useState(false)
   const [internalInputValue, setInternalInputValue] = React.useState("")
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const listboxId = React.useId()
 
   const inputValue = inputValueProp ?? internalInputValue
 
@@ -96,6 +97,7 @@ function Combobox({
         <input
           type="text"
           role="combobox"
+          aria-controls={listboxId}
           aria-expanded={open}
           aria-autocomplete="list"
           disabled={disabled || loading}
@@ -113,6 +115,7 @@ function Combobox({
 
       {open && (
         <ul
+          id={listboxId}
           role="listbox"
           className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md"
         >

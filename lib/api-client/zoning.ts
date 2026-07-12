@@ -2,7 +2,6 @@ import { fetchApi } from "./client"
 import type {
   ZoningRequest,
   ZoningResponse,
-  ZoningBatchRequest,
   ZoningBatchResponse,
   ZoningMapResponse,
 } from "./types"
@@ -17,12 +16,9 @@ export async function predictZoning(
 }
 
 export async function predictZoningBatch(
-  request: ZoningBatchRequest
+  municipalityId: string
 ): Promise<ZoningBatchResponse> {
-  return fetchApi<ZoningBatchResponse>("/zoning/recommendations", {
-    method: "POST",
-    body: JSON.stringify(request),
-  })
+  return fetchApi<ZoningBatchResponse>(`/zoning/recommendations/${municipalityId}`)
 }
 
 export async function fetchZoningMap(cropId: string): Promise<ZoningMapResponse> {

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { predictCalendar } from "@/lib/api-client/calendars"
 import type { CalendarRequest, CalendarResponse } from "@/lib/api-client/types"
 import { ApiError } from "@/lib/api-client/client"
@@ -7,7 +7,7 @@ export function useCalendars() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const predict = async (request: CalendarRequest): Promise<CalendarResponse | null> => {
+  const predict = useCallback(async (request: CalendarRequest): Promise<CalendarResponse | null> => {
     setLoading(true)
     setError(null)
     try {
@@ -19,7 +19,7 @@ export function useCalendars() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return { predict, loading, error }
 }

@@ -1,4 +1,4 @@
-import { Home, Sprout, CalendarDays, Settings, type LucideIcon } from "lucide-react"
+import { Home, Sprout, CalendarDays, Settings, Trophy, type LucideIcon } from "lucide-react"
 
 export interface NavItem {
   label: string
@@ -7,7 +7,7 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { label: "Inicio", href: "/inicio", icon: Home },
+  { label: "Dashboard municipio", href: "/inicio", icon: Home },
   { label: "Cultivos", href: "/cultivos", icon: Sprout },
   { label: "Calendario", href: "/calendario", icon: CalendarDays },
   { label: "Configuración", href: "/configuracion", icon: Settings },

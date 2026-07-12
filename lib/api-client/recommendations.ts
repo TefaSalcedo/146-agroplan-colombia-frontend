@@ -132,10 +132,7 @@ export async function fetchRecommendations(
   municipalityId: string
 ): Promise<RecommendationResponse> {
   const [zoning, crops] = await Promise.all([
-    fetchApi<ZoningBatchResponse>("/zoning/recommendations", {
-      method: "POST",
-      body: JSON.stringify({ municipality_id: municipalityId }),
-    }),
+    fetchApi<ZoningBatchResponse>(`/zoning/recommendations/${municipalityId}`),
     fetchCrops(),
   ])
 

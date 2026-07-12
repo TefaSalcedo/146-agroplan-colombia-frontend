@@ -1,473 +1,449 @@
 "use client"
 
+import { useSearchParams } from "next/navigation"
 import { projectConfig } from "@/lib/project-config"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { 
-  GitBranch, 
-  ExternalLink, 
-  Users, 
-  Database, 
-  Cpu, 
-  Heart, 
-  Code2, 
+import {
+  GitBranch,
+  ExternalLink,
+  Users,
+  Database,
+  Cpu,
+  Heart,
+  Code2,
   Globe,
   Calendar,
   TrendingUp,
   Award,
-  BookOpen
+  BookOpen,
 } from "lucide-react"
+import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
 
 export function ConcursoPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <Award className="w-10 h-10" />
-            <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
-              {projectConfig.project.competition}
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {projectConfig.project.name}
-          </h1>
-          <p className="text-xl text-green-100 max-w-3xl">
-            {projectConfig.project.description}
-          </p>
-        </div>
-      </div>
+  const searchParams = useSearchParams()
+  const activeSection: ConcursoSection = getConcursoSection(searchParams.get("section"))
 
-      <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
-        
-        {/* Repositories Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <GitBranch className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Repositorios del Proyecto
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {projectConfig.repositories.map((repo) => (
-              <Card key={repo.name} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{repo.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      {repo.technology}
-                    </p>
-                  </div>
-                  <a
-                    href={repo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-600 hover:text-green-700"
-                  >
-                    <GitBranch className="w-6 h-6" />
-                  </a>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {repo.description}
-                </p>
-                <a href={repo.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Ver en GitHub
-                  </Button>
-                </a>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Creators Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Users className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Equipo de Desarrollo
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {projectConfig.creators.map((creator) => (
-              <Card key={creator.name} className="p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {creator.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">{creator.name}</h3>
-                    <p className="text-green-600 font-medium">{creator.role}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  {creator.responsibilities.map((resp, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                      <p className="text-sm text-gray-700 dark:text-gray-300">{resp}</p>
-                    </div>
-                  ))}
-                </div>
-                <a href={creator.github} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <GitBranch className="w-4 h-4 mr-2" />
-                    Ver perfil de GitHub
-                  </Button>
-                </a>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Timeline Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Calendar className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Cronología del Proyecto
-            </h2>
-          </div>
-          <div className="space-y-4">
-            {projectConfig.timeline.map((phase, index) => (
-              <Card key={phase.phase} className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-2">{phase.phase}</h3>
-                    <p className="text-gray-700 dark:text-gray-300 mb-4">
-                      {phase.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {phase.deliverables.map((deliverable, i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm"
-                        >
-                          {deliverable}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Datasets Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Database className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Datasets del Concurso (Datos Abiertos)
-            </h2>
-          </div>
+  const renderContent = () => {
+    switch (activeSection) {
+      case "que-es":
+        return (
           <div className="space-y-6">
-            {projectConfig.datasets.map((dataset) => (
-              <Card key={dataset.name} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{dataset.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      <span className="font-medium">Fuente:</span>
-                      <span>{dataset.source}</span>
+            <div className="mb-8 text-center">
+              <h2 className="mb-4 text-4xl font-bold text-white">{projectConfig.project.name}</h2>
+              <p className="mx-auto max-w-2xl text-xl text-white/90">
+                {projectConfig.project.description}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <GitBranch className="h-8 w-8 text-green-400" />
+                  <h3 className="text-xl font-semibold text-white">4 Repositorios</h3>
+                </div>
+                <p className="text-white/80">Proyecto completo distribuido en repositorios especializados</p>
+              </Card>
+
+              <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <Database className="h-8 w-8 text-blue-400" />
+                  <h3 className="text-xl font-semibold text-white">20+ Datasets</h3>
+                </div>
+                <p className="text-white/80">Fuentes de datos abiertos y complementarias integradas</p>
+              </Card>
+
+              <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <Cpu className="h-8 w-8 text-purple-400" />
+                  <h3 className="text-xl font-semibold text-white">2 Modelos ML</h3>
+                </div>
+                <p className="text-white/80">Modelos de zonificación y rendimiento en Hugging Face</p>
+              </Card>
+            </div>
+          </div>
+        )
+
+      case "nuestro-proyecto":
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="mb-4 text-3xl font-bold text-white">Nuestro Proyecto</h2>
+              <p className="max-w-3xl text-lg text-white/80">{projectConfig.project.description}</p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-white">Repositorios</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {projectConfig.repositories.map((repo) => (
+                  <Card key={repo.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div>
+                        <h4 className="mb-2 text-xl font-semibold text-white">{repo.name}</h4>
+                        <p className="mb-3 text-sm text-white/70">{repo.technology}</p>
+                      </div>
+                      <a href={repo.url} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">
+                        <GitBranch className="h-6 w-6" />
+                      </a>
                     </div>
-                    {dataset.datasetId && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span className="font-medium">Dataset ID:</span>
-                        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                          {dataset.datasetId}
-                        </code>
+                    <p className="mb-4 text-white/80">{repo.description}</p>
+                    <a href={repo.url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver en GitHub
+                      </Button>
+                    </a>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-white">Modelos de Machine Learning</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {projectConfig.huggingFaceModels.map((model) => (
+                  <Card key={model.name} className="border-white/20 bg-white/10 p-6">
+                    <div className="mb-4 flex items-start justify-between">
+                      <h4 className="text-xl font-semibold text-white">{model.name}</h4>
+                      <span className="rounded-full bg-orange-400/20 px-3 py-1 text-sm text-orange-300">{model.type}</span>
+                    </div>
+                    <p className="mb-2 text-sm text-white/70">{model.framework}</p>
+                    <p className="mb-4 text-white/80">{model.description}</p>
+                    {model.crops && (
+                      <div className="mb-4">
+                        <p className="mb-2 text-sm font-medium text-white">Cultivos soportados:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {model.crops.map((crop) => (
+                            <span key={crop} className="rounded bg-green-400/20 px-2 py-1 text-sm text-green-300">
+                              {crop}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">
-                      {dataset.records?.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      registros
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {dataset.description}
-                </p>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm">
-                    {dataset.license}
-                  </span>
-                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm">
-                    {dataset.usage}
-                  </span>
-                </div>
-                {dataset.url && (
-                  <a href={dataset.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Ver en datos.gov.co
-                    </Button>
-                  </a>
-                )}
-                {dataset.datasets && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium mb-2">Datasets individuales:</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {dataset.datasets.map((ds) => (
-                        <a
-                          key={ds.id}
-                          href={ds.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-green-600 hover:text-green-700 hover:underline"
-                        >
-                          {ds.crop}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        </section>
+                    <a href={model.url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver en Hugging Face
+                      </Button>
+                    </a>
+                  </Card>
+                ))}
+              </div>
+            </div>
 
-        {/* External Data Sources Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Globe className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Fuentes de Datos Externas (Open Data)
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {projectConfig.externalDataSources.map((source) => (
-              <Card key={source.name} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold">{source.name}</h3>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-green-600">
-                      {source.records?.toLocaleString()}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-white">Stack Tecnológico</h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card className="border-white/20 bg-white/10 p-6">
+                  <h4 className="mb-4 text-lg font-semibold text-green-400">Backend</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Lenguaje</p>
+                      <p className="text-white">{projectConfig.techStack.backend.language}</p>
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      registros
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Framework</p>
+                      <p className="text-white">{projectConfig.techStack.backend.framework}</p>
                     </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {source.source}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {source.description}
-                </p>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-                    {source.license}
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">
-                    {source.usage}
-                  </span>
-                </div>
-                <a href={source.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Visitar fuente
-                  </Button>
-                </a>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Hugging Face Models Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Cpu className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Modelos de Machine Learning (Hugging Face)
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {projectConfig.huggingFaceModels.map((model) => (
-              <Card key={model.name} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-xl font-semibold">{model.name}</h3>
-                  <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full text-sm">
-                    {model.type}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {model.framework}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {model.description}
-                </p>
-                {model.crops && (
-                  <div className="mb-4">
-                    <p className="text-sm font-medium mb-2">Cultivos soportados:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {model.crops.map((crop) => (
-                        <span
-                          key={crop}
-                          className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-sm"
-                        >
-                          {crop}
-                        </span>
-                      ))}
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Base de datos</p>
+                      <p className="text-white">{projectConfig.techStack.backend.database}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">ML Frameworks</p>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {projectConfig.techStack.backend.ml.map((ml) => (
+                          <span key={ml} className="rounded bg-white/10 px-2 py-1 text-xs text-white">{ml}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )}
-                <a href={model.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Ver en Hugging Face
-                  </Button>
-                </a>
-              </Card>
-            ))}
-          </div>
-        </section>
+                </Card>
 
-        {/* Open Source Software Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <Heart className="w-8 h-8 text-red-500" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Menciones Especiales - Software Libre
-            </h2>
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">
-            Este proyecto agradece profundamente a las comunidades de software libre que hacen posible esta iniciativa.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projectConfig.openSourceSoftware.map((software) => (
-              <Card key={software.name} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-3 mb-4">
-                  <Code2 className="w-6 h-6 text-green-600" />
-                  <h3 className="text-lg font-semibold">{software.name}</h3>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4 text-sm">
-                  {software.description}
-                </p>
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Licencia:</span>
-                    <span className="text-gray-700 dark:text-gray-300">{software.license}</span>
+                <Card className="border-white/20 bg-white/10 p-6">
+                  <h4 className="mb-4 text-lg font-semibold text-green-400">Frontend</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Lenguaje</p>
+                      <p className="text-white">{projectConfig.techStack.frontend.language}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Framework</p>
+                      <p className="text-white">{projectConfig.techStack.frontend.framework}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Estilos</p>
+                      <p className="text-white">{projectConfig.techStack.frontend.styling}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Mapas</p>
+                      <p className="text-white">{projectConfig.techStack.frontend.maps}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Animaciones</p>
+                      <p className="text-white">{projectConfig.techStack.frontend.animation}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Uso:</span>
-                    <span className="text-gray-700 dark:text-gray-300">{software.usage}</span>
-                  </div>
-                </div>
-                <a href={software.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Visitar sitio web
-                  </Button>
-                </a>
-              </Card>
-            ))}
-          </div>
-        </section>
+                </Card>
 
-        {/* Technical Stack Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="w-8 h-8 text-green-600" />
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Stack Tecnológico
-            </h2>
+                <Card className="border-white/20 bg-white/10 p-6">
+                  <h4 className="mb-4 text-lg font-semibold text-green-400">Deployment</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Modelos</p>
+                      <p className="text-white">{projectConfig.techStack.deployment.models}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Hosting Frontend</p>
+                      <p className="text-white">{projectConfig.techStack.deployment.hosting}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white/70">Protocolo</p>
+                      <p className="text-white">{projectConfig.techStack.deployment.protocol}</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-white">Fuentes de Datos Externas</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {projectConfig.externalDataSources.map((source) => (
+                  <Card key={source.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
+                    <div className="mb-4 flex items-start justify-between">
+                      <h4 className="text-lg font-semibold text-white">{source.name}</h4>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-green-400">{source.records?.toLocaleString()}</div>
+                        <div className="text-xs text-white/70">registros</div>
+                      </div>
+                    </div>
+                    <p className="mb-2 text-sm text-white/70">{source.source}</p>
+                    <p className="mb-4 text-white/80">{source.description}</p>
+                    <div className="mb-4 flex items-center gap-2">
+                      <span className="rounded bg-blue-400/20 px-2 py-1 text-xs text-blue-300">{source.license}</span>
+                      <span className="rounded bg-purple-400/20 px-2 py-1 text-xs text-purple-300">{source.usage}</span>
+                    </div>
+                    <a href={source.url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Visitar fuente
+                      </Button>
+                    </a>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-white">Datasets del Concurso</h3>
+              <div className="space-y-4">
+                {projectConfig.datasets.map((dataset) => (
+                  <Card key={dataset.name} className="border-white/20 bg-white/10 p-6">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div>
+                        <h4 className="mb-2 text-xl font-semibold text-white">{dataset.name}</h4>
+                        <div className="mb-2 flex items-center gap-2 text-sm text-white/70">
+                          <span className="font-medium">Fuente:</span>
+                          <span>{dataset.source}</span>
+                        </div>
+                        {dataset.datasetId && (
+                          <div className="flex items-center gap-2 text-sm text-white/70">
+                            <span className="font-medium">Dataset ID:</span>
+                            <code className="rounded bg-white/10 px-2 py-1">{dataset.datasetId}</code>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-400">{dataset.records?.toLocaleString()}</div>
+                        <div className="text-sm text-white/70">registros</div>
+                      </div>
+                    </div>
+                    <p className="mb-4 text-white/80">{dataset.description}</p>
+                    <div className="mb-4 flex items-center gap-2">
+                      <span className="rounded-full bg-blue-400/20 px-3 py-1 text-sm text-blue-300">{dataset.license}</span>
+                      <span className="rounded-full bg-purple-400/20 px-3 py-1 text-sm text-purple-300">{dataset.usage}</span>
+                    </div>
+                    {dataset.url && (
+                      <a href={dataset.url} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Ver en datos.gov.co
+                        </Button>
+                      </a>
+                    )}
+                    {dataset.datasets && (
+                      <div className="mt-4 border-t border-white/20 pt-4">
+                        <p className="mb-2 text-sm font-medium text-white">Datasets individuales:</p>
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                          {dataset.datasets.map((ds) => (
+                            <a key={ds.id} href={ds.url} target="_blank" rel="noopener noreferrer" className="text-sm text-green-400 hover:text-green-300 hover:underline">
+                              {ds.crop}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-green-600">Backend</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Lenguaje</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.backend.language}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Framework</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.backend.framework}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Base de datos</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.backend.database}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">ML Frameworks</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {projectConfig.techStack.backend.ml.map((ml) => (
-                      <span key={ml} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-                        {ml}
-                      </span>
+        )
+
+      case "como-lo-hicimos":
+        return (
+          <div className="space-y-4">
+            <h2 className="mb-6 text-3xl font-bold text-white">Cómo lo hicimos</h2>
+            <div className="space-y-4">
+              {projectConfig.timeline.map((phase, index) => (
+                <Card key={phase.phase} className="border-white/20 bg-white/10 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500 font-bold text-white">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="mb-2 text-xl font-semibold text-white">{phase.phase}</h3>
+                      <p className="mb-4 text-white/80">{phase.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {phase.deliverables.map((deliverable, i) => (
+                          <span key={i} className="rounded-full bg-green-400/20 px-3 py-1 text-sm text-green-300">
+                            {deliverable}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )
+
+      case "nuestro-equipo":
+        return (
+          <div className="space-y-4">
+            <h2 className="mb-6 text-3xl font-bold text-white">Nuestro equipo</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {projectConfig.creators.map((creator) => (
+                <Card key={creator.name} className="border-white/20 bg-white/10 p-6">
+                  <div className="mb-4 flex items-center gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-2xl font-bold text-white">
+                      {creator.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">{creator.name}</h3>
+                      <p className="font-medium text-green-400">{creator.role}</p>
+                    </div>
+                  </div>
+                  <div className="mb-4 space-y-2">
+                    {creator.responsibilities.map((resp, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-400" />
+                        <p className="text-sm text-white/80">{resp}</p>
+                      </div>
                     ))}
                   </div>
-                </div>
-              </div>
-            </Card>
+                  <a href={creator.github} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
+                      <GitBranch className="mr-2 h-4 w-4" />
+                      Ver perfil de GitHub
+                    </Button>
+                  </a>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )
 
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-green-600">Frontend</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Lenguaje</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.frontend.language}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Framework</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.frontend.framework}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Estilos</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.frontend.styling}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Mapas</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.frontend.maps}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Animaciones</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.frontend.animation}</p>
-                </div>
-              </div>
-            </Card>
+      case "software-libre":
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold text-white">Software libre</h2>
+              <p className="text-white/80">
+                Este proyecto agradece profundamente a las comunidades de software libre que hacen posible esta iniciativa. Muchas gracias a todos los desarrolladores, mantenedores y contribuyentes que comparten su trabajo con el mundo.
+              </p>
+            </div>
 
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-green-600">Deployment</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Modelos</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.deployment.models}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Hosting Frontend</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.deployment.hosting}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Protocolo</p>
-                  <p className="text-gray-900 dark:text-white">{projectConfig.techStack.deployment.protocol}</p>
-                </div>
-              </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {projectConfig.openSourceSoftware.map((software) => (
+                <Card key={software.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
+                  <div className="mb-4 flex items-center gap-3">
+                    <Code2 className="h-6 w-6 text-green-400" />
+                    <h3 className="text-lg font-semibold text-white">{software.name}</h3>
+                  </div>
+                  <p className="mb-4 text-sm text-white/80">{software.description}</p>
+                  <div className="mb-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium text-white/70">Licencia:</span>
+                      <span className="text-white/80">{software.license}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium text-white/70">Uso:</span>
+                      <span className="text-white/80">{software.usage}</span>
+                    </div>
+                  </div>
+                  <a href={software.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Visitar sitio
+                    </Button>
+                  </a>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="border-white/20 bg-white/10 p-8 text-center backdrop-blur-sm">
+              <Heart className="mx-auto mb-4 h-10 w-10 text-green-400" />
+              <h3 className="mb-2 text-2xl font-bold text-white">Muchas gracias</h3>
+              <p className="text-white/80">
+                Gracias a todas las comunidades de código abierto, a los datos abiertos del Gobierno de Colombia y a quienes creen en compartir conocimiento para construir un mejor futuro.
+              </p>
             </Card>
           </div>
-        </section>
+        )
 
-        {/* Footer */}
-        <div className="text-center py-8 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <BookOpen className="w-5 h-5 text-green-600" />
-            <span className="text-gray-600 dark:text-gray-400">
-              Documentado siguiendo la metodología CRISP-ML
+      default:
+        return null
+    }
+  }
+
+  const activeLabel = concursoSections.find((s) => s.id === activeSection)?.label ?? "Qué es"
+
+  return (
+    <div className="relative -mx-4 -mt-6 min-h-[calc(100svh-5rem)] overflow-hidden rounded-b-3xl bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 text-white md:-mx-8 md:-mt-8">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        style={{ backgroundImage: "url('/ai images/Image-urban.webp')" }}
+      />
+      <div className="relative z-10 mx-auto max-w-6xl p-6 lg:p-10">
+        <header className="mb-8">
+          <div className="mb-4 flex items-center gap-3">
+            <Award className="size-10 text-green-300" />
+            <span className="rounded-full border border-green-300/30 bg-green-500/20 px-3 py-1 text-sm font-medium text-green-200">
+              Datos al ecosistema 2026
             </span>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            {projectConfig.project.name} - {projectConfig.project.competition} - {projectConfig.project.year}
-          </p>
+          <h1 className="mb-4 text-4xl font-bold md:text-5xl">{projectConfig.project.name}</h1>
+          <p className="max-w-3xl text-xl text-white/80">{projectConfig.project.description}</p>
+        </header>
+
+        <div className="mb-6 flex items-center gap-2">
+          <span className="text-sm text-white/60">Sección actual:</span>
+          <span className="rounded-full border border-green-300/30 bg-green-500/20 px-3 py-1 text-sm font-medium text-green-100">
+            {activeLabel}
+          </span>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm lg:p-8">
+          {renderContent()}
+        </div>
+
+        <div className="mt-10 flex items-center justify-center gap-2 border-t border-white/10 py-8 text-sm text-white/60">
+          <BookOpen className="size-5" />
+          <span>Documentado siguiendo la metodología CRISP-ML</span>
         </div>
       </div>
     </div>

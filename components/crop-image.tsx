@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { API_BASE_URL } from '@/lib/api-client/client'
 
@@ -55,13 +56,14 @@ export function CropImage({
   }
 
   return (
-    <img
+    <Image
       src={imageSrc}
       alt={alt}
+      fill={fill}
       width={fill ? undefined : width}
       height={fill ? undefined : height}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      priority={priority}
+      unoptimized
       className={cn(
         fill ? 'absolute inset-0 h-full w-full' : '',
         'object-cover',

@@ -3,17 +3,33 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname } from "next/navigation"
+import { usePathname, useParams, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Collapsible } from "@base-ui/react/collapsible"
-import { ChevronDown, ChevronUp, Droplets, Home, Loader2, MapPin, Moon, Sun, Thermometer } from "lucide-react"
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Droplets,
+  Home,
+  Loader2,
+  MapPin,
+  Moon,
+  Sprout,
+  Sun,
+  Thermometer,
+  Trophy,
+  CalendarDays,
+  Settings,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
-import { buildNavHref } from "@/lib/routing"
+import { buildNavHref, buildLocationPath } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
-import { useDepartments, useForecast, useMunicipalities, useWeather } from "@/hooks"
+import { useCropsLite, useCrop, useDepartments, useForecast, useMunicipalities, useWeather } from "@/hooks"
+import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
 import { ApiError } from "@/lib/api-client/client"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
 import { isWithinColombia } from "@/lib/location-utils"
@@ -207,12 +223,16 @@ export function AppSidebar() {
   const [isLoadingGeo, setIsLoadingGeo] = useState(false)
   const [isLoadingManual, setIsLoadingManual] = useState(false)
   const [isLocationPanelOpen, setIsLocationPanelOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const params = useParams<{ id?: string }>()
+  const { crop: mapaCrop } = useCrop(params.id ?? "")
 
   const municipalityId = selectedLocation?.id ?? ""
   const { departments, loading: departmentsLoading } = useDepartments()
   const { municipalities, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
   const { weather, loading: weatherLoading } = useWeather(municipalityId)
   const { forecast, loading: forecastLoading } = useForecast(municipalityId, 1)
+  const { crops: catalogCrops } = useCropsLite()
 
   useEffect(() => {
     setMounted(true)
@@ -308,6 +328,15 @@ export function AppSidebar() {
 
   const isDark = theme === "dark"
   const uvIndex = forecast[0]?.uvIndex
+  const isCompetitionRoute = pathname.startsWith("/concurso")
+  const isMapaRoute = pathname.startsWith("/mapa")
+  const isMunicipioRoute = !isCompetitionRoute && !isMapaRoute
+  const activeConcursoSection = getConcursoSection(searchParams.get("section"))
+  const firstCrop = catalogCrops[0]
+  const concursoMapaHref = firstCrop ? `/mapa/${encodeURIComponent(firstCrop.id)}` : null
+  const configHref = selectedLocation
+    ? buildLocationPath(selectedLocation.department, selectedLocation.name, "configuracion")
+    : null
 
   return (
     <aside className="sticky top-0 hidden h-svh shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar self-start md:flex md:w-80">
@@ -337,38 +366,158 @@ export function AppSidebar() {
           href="/"
           className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
         >
-          <Home className="size-5 shrink-0 transition-transform duration-200" />
-          Volver a home
+          <ArrowLeft className="size-5 shrink-0 transition-transform duration-200" />
+          Volver al home
         </Link>
-        {navItems.map((item) => {
-          const segment = item.href.replace(/^\//, "")
-          // Special case for concurso - it's a static route that doesn't depend on location
-          const href = segment === "concurso" ? "/concurso" : buildNavHref(selectedLocation, segment)
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
-          const Icon = item.icon
 
-          return (
+        {isCompetitionRoute && (
+          <>
+            {concursoSections.map((section) => {
+              const Icon = section.icon
+              const active = activeConcursoSection === section.id
+              return (
+                <Link
+                  key={section.id}
+                  href={`/concurso?section=${section.id}`}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+                  )}
+                >
+                  <Icon className={cn("size-5 shrink-0", active && "scale-110")} />
+                  {section.label}
+                </Link>
+              )
+            })}
             <Link
-              key={item.href}
-              href={href}
-              aria-current={active ? "page" : undefined}
+              href={concursoMapaHref ?? "/"}
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
-                active
-                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+                !concursoMapaHref && "pointer-events-none opacity-50",
+                "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
               )}
             >
-              <Icon className={cn("size-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
-              {item.label}
+              <Sprout className="size-5 shrink-0" />
+              Mapa
             </Link>
-          )
-        })}
+            {configHref ? (
+              <Link
+                href={configHref}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+              >
+                <Settings className="size-5 shrink-0" />
+                Configuración
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground">
+                <Settings className="size-5 shrink-0" />
+                Configuración
+              </div>
+            )}
+          </>
+        )}
+
+        {isMapaRoute && (
+          <>
+            <div className="flex items-center gap-3 rounded-2xl px-4 py-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Sprout className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-sidebar-foreground">
+                  {mapaCrop ? mapaCrop.name : params.id ? "Cargando cultivo..." : "Cultivo"}
+                </p>
+                {mapaCrop && <p className="truncate text-xs text-muted-foreground">{mapaCrop.scientificName}</p>}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => document.getElementById("crop-calendar-section")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-left text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+            >
+              <CalendarDays className="size-5 shrink-0" />
+              Información del cultivo calendario
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById("crop-temperature-section")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-left text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+            >
+              <Thermometer className="size-5 shrink-0" />
+              Información del cultivo temperatura
+            </button>
+            <Link
+              href="/concurso"
+              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
+            >
+              <Trophy className="size-5 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="block">Datos al ecosistema 2026</span>
+                <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
+              </div>
+            </Link>
+            {configHref ? (
+              <Link
+                href={configHref}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+              >
+                <Settings className="size-5 shrink-0" />
+                Configuración
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground">
+                <Settings className="size-5 shrink-0" />
+                Configuración
+              </div>
+            )}
+          </>
+        )}
+
+        {isMunicipioRoute && (
+          <>
+            {navItems.map((item) => {
+              const segment = item.href.replace(/^\//, "")
+              const href = buildNavHref(selectedLocation, segment)
+              const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
+                  )}
+                >
+                  <Icon className={cn("size-5 shrink-0 transition-transform duration-200", active && "scale-110")} />
+                  {item.label}
+                </Link>
+              )
+            })}
+            <Link
+              href="/concurso"
+              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
+            >
+              <Trophy className="size-5 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="block">Datos al ecosistema 2026</span>
+                <span className="block truncate text-xs text-white/80">Concurso Datos Abiertos</span>
+              </div>
+            </Link>
+          </>
+        )}
       </nav>
 
       <div className="flex-1" />
 
       <div className="px-3 pb-4">
+        <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ubicación</p>
         <div className="rounded-3xl border border-border bg-sidebar-accent/30 p-4">
           <div className="mb-4 flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
