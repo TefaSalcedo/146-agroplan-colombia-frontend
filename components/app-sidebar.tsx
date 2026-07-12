@@ -342,7 +342,8 @@ export function AppSidebar() {
         </Link>
         {navItems.map((item) => {
           const segment = item.href.replace(/^\//, "")
-          const href = buildNavHref(selectedLocation, segment)
+          // Special case for concurso - it's a static route that doesn't depend on location
+          const href = segment === "concurso" ? "/concurso" : buildNavHref(selectedLocation, segment)
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
           const Icon = item.icon
 

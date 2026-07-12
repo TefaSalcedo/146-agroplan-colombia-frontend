@@ -22,6 +22,7 @@ import {
   ChevronUp,
   Eye,
   EyeOff,
+  Trophy,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -156,13 +157,22 @@ export function CropMapView({ cropId }: CropMapViewProps) {
     <div className="flex h-screen flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-shrink-0 flex-col gap-2 border-b bg-background p-4 lg:p-6">
-        <Link
-          href="/"
-          className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Volver al inicio
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Volver al inicio
+          </Link>
+          <Link
+            href="/concurso"
+            className="flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+          >
+            <Trophy className="size-4" />
+            Concurso
+          </Link>
+        </div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           {crop.name} en Colombia
         </h1>

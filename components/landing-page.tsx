@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { gsap } from "gsap"
 import { useGSAP } from "@gsap/react"
 import {
@@ -15,6 +16,7 @@ import {
   BarChart3,
   Maximize2,
   Minimize2,
+  Trophy,
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -628,9 +630,18 @@ export function LandingPage() {
         </div>
 
         {/* Copyright */}
-        <p className="mt-6 text-center text-xs text-white/70">
-          © {currentYear} AgroPlan Colombia · Inteligencia para el Campo
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-2 text-center text-xs text-white/70">
+          <Link
+            href="/concurso"
+            className="flex items-center gap-1 hover:text-white transition-colors"
+          >
+            <Trophy className="size-3" />
+            <span>Información del Concurso</span>
+          </Link>
+          <p>
+            © {currentYear} AgroPlan Colombia · Inteligencia para el Campo
+          </p>
+        </div>
       </div>
     </div>
   )
