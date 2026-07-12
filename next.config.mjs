@@ -9,6 +9,11 @@ const nextConfig = {
         port: '8000',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        pathname: '/**',
+      },
     ],
   },
   allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.5.121'],
