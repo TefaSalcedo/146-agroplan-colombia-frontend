@@ -1,20 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { LandingPage } from '@/components/landing-page'
-import { useLocation } from '@/context/LocationContext'
-import { buildLocationPath } from '@/lib/routing'
 
+/**
+ * Renders the landing page at `/`.
+ *
+ * The auto-redirect to `/inicio` was removed so that the "Volver a home"
+ * button in the sidebar shows the landing page instead of bouncing back
+ * to the dashboard. The redirect is now handled exclusively by the
+ * LandingPage itself when the user actively selects a location.
+ */
 export function PageWrapper() {
-  const router = useRouter()
-  const { selectedLocation } = useLocation()
-
-  useEffect(() => {
-    if (selectedLocation) {
-      router.push(buildLocationPath(selectedLocation.department, selectedLocation.name, 'inicio'))
-    }
-  }, [selectedLocation, router])
-
   return <LandingPage />
 }

@@ -13,7 +13,7 @@ export interface Weather {
 export interface Location {
   municipality: string
   department: string
-  altitude: number
+  altitude?: number
 }
 
 export interface GrowthStage {

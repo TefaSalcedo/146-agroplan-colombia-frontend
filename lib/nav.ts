@@ -1,4 +1,4 @@
-import { Home, Map, Sprout, CalendarDays, Settings, type LucideIcon } from "lucide-react"
+import { Home, Sprout, CalendarDays, Settings, type LucideIcon } from "lucide-react"
 
 export interface NavItem {
   label: string
@@ -8,7 +8,6 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { label: "Inicio", href: "/inicio", icon: Home },
-  { label: "Zonificación", href: "/zonificacion", icon: Map },
   { label: "Cultivos", href: "/cultivos", icon: Sprout },
   { label: "Calendario", href: "/calendario", icon: CalendarDays },
   { label: "Configuración", href: "/configuracion", icon: Settings },

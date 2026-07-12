@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { gsap } from "gsap"
 import { useGSAP } from "@gsap/react"
@@ -30,6 +30,7 @@ import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/mun
 import { ApiError } from "@/lib/api-client/client"
 import { useLocation } from "@/context/LocationContext"
 import { isWithinColombia } from "@/lib/location-utils"
+import { buildLocationPath } from "@/lib/routing"
 import { GeoButton, MunicipalityAutocomplete, MapModal } from "@/components/location"
 import { Municipality } from "@/types"
 
@@ -37,7 +38,7 @@ gsap.registerPlugin(useGSAP)
 
 export function LandingPage() {
   const router = useRouter()
-  const { setSelectedLocation } = useLocation()
+  const { selectedLocation, setSelectedLocation } = useLocation()
   const currentYear = new Date().getFullYear()
 
   // Refs for GSAP animation
@@ -68,6 +69,14 @@ export function LandingPage() {
   const { municipalities: deptMunicipios, loading: municipalitiesLoading } = useMunicipalities(selectedDept)
   const { municipalities: allMunicipalities, loading: allMunicipalitiesLoading } = useMunicipalities()
 
+  // Pre-fill the location form when a location was previously selected
+  // so the user sees their current department/municipio when returning home.
+  useEffect(() => {
+    if (!selectedLocation) return
+    setSelectedDept(selectedLocation.department)
+    setSelectedMunic(selectedLocation.id)
+  }, [selectedLocation])
+
   const handleContinueWithCrop = () => {
     if (!selectedCrop) return
     router.push(`/mapa/${selectedCrop}`)
@@ -95,7 +104,7 @@ export function LandingPage() {
 
           const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude, 20)
           setSelectedLocation(nearbyMunicipality)
-          router.push("/inicio")
+          router.push(buildLocationPath(nearbyMunicipality.department, nearbyMunicipality.name, "inicio"))
         } catch (error) {
           const message = error instanceof ApiError && error.status && [400, 404].includes(error.status)
             ? "No encontramos un municipio cubierto por AgroPlan a menos de 20 km de tu ubicación. Por favor selecciona tu ubicación manualmente."
@@ -156,7 +165,7 @@ export function LandingPage() {
     try {
       const municipality = await fetchMunicipality(selectedMunic)
       setSelectedLocation(municipality)
-      router.push("/inicio")
+      router.push(buildLocationPath(municipality.department, municipality.name, "inicio"))
     } catch (error) {
       const message =
         error instanceof ApiError && error.status === 404

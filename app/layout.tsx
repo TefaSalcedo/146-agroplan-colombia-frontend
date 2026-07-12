@@ -4,7 +4,6 @@ import './globals.css'
 // Using system fonts to avoid Google Fonts connectivity issues
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
-import { LocationProvider } from '@/context/LocationContext'
 
 // Using system fonts via CSS classes
 
@@ -49,12 +48,10 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className="bg-background">
       <body className="antialiased">
-        <LocationProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            {children}
-            <Toaster position="top-center" richColors />
-          </ThemeProvider>
-        </LocationProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

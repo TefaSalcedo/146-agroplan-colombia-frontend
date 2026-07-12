@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { RecommendationBadge } from "@/components/recommendation-badge"
+import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 
 interface CropCardProps {
@@ -10,9 +11,10 @@ interface CropCardProps {
   recommendation: "high" | "medium" | "low"
   successRate?: number
   href?: string
+  statusLabel?: string
 }
 
-export function CropCard({ id, name, image, recommendation, successRate, href }: CropCardProps) {
+export function CropCard({ id, name, image, recommendation, successRate, href, statusLabel }: CropCardProps) {
   const targetHref = href ?? `/cultivos/${id}`
   return (
     <Link href={targetHref} className="group block focus:outline-none">
@@ -34,7 +36,13 @@ export function CropCard({ id, name, image, recommendation, successRate, href }:
               <span className="text-sm font-semibold text-primary tabular-nums transition-transform duration-200 group-hover:scale-110">{successRate}%</span>
             )}
           </div>
-          <RecommendationBadge level={recommendation} />
+          {statusLabel ? (
+            <Badge variant="outline" className="font-medium border-primary/20 bg-primary/15 text-primary">
+              {statusLabel}
+            </Badge>
+          ) : (
+            <RecommendationBadge level={recommendation} />
+          )}
         </div>
       </Card>
     </Link>
