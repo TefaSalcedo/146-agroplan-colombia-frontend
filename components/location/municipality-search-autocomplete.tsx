@@ -35,6 +35,7 @@ export function MunicipalitySearchAutocomplete({
   const [error, setError] = useState<string | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSearchedTermRef = useRef<string>("")
+  const isUserInteractingRef = useRef(false)
 
   const options: ComboboxOption[] = useMemo(() => {
     return results.map((m) => ({
@@ -107,6 +108,13 @@ export function MunicipalitySearchAutocomplete({
   }, [search, performSearch])
 
   useEffect(() => {
+    if (isUserInteractingRef.current) {
+      return
+    }
+    // Don't update search if the user has typed something (search is not empty)
+    if (search.trim() !== "") {
+      return
+    }
     if (!value && !selectedMunicipality) {
       setSearch("")
       return
@@ -115,17 +123,28 @@ export function MunicipalitySearchAutocomplete({
     if (target) {
       setSearch(`${target.name}, ${target.department}`)
     }
-  }, [value, selectedMunicipality, results])
+  }, [value, selectedMunicipality])
 
   const handleValueChange = (selectedId: string) => {
     const selected = results.find((m) => m.id === selectedId)
     if (selected) {
       onSelect(selected)
       setSearch(`${selected.name}, ${selected.department}`)
+      isUserInteractingRef.current = false
     }
   }
 
   const handleInputChange = (newValue: string) => {
+    isUserInteractingRef.current = true
+    
+    // Reset the interaction flag after a longer delay to prevent race conditions with search results
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      isUserInteractingRef.current = false
+    }, DEBOUNCE_MS + 1000)
+    
     setSearch(newValue)
     if (newValue === "") {
       onSelect(null)

@@ -77,11 +77,11 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
   }
 
   return (
-    <Card className="flex h-full flex-col gap-4 p-5">
-      <div>
-        <p className="text-sm font-semibold">Pronóstico mensual</p>
-        <p className="text-xs text-muted-foreground">Próximos {forecast.months} meses</p>
-      </div>
+    <Card className="flex h-full flex-col gap-4 p-5 hover:bg-accent/50 transition-colors">
+        <div>
+          <p className="text-sm font-semibold">Pronóstico mensual</p>
+          <p className="text-xs text-muted-foreground">Próximos {forecast.months} meses</p>
+        </div>
 
       <div className="flex flex-1 flex-col gap-3">
         {forecast.forecasts.map((month) => {

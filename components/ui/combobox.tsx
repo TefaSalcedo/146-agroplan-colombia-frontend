@@ -41,6 +41,7 @@ function Combobox({
   const [open, setOpen] = React.useState(false)
   const [internalInputValue, setInternalInputValue] = React.useState("")
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const inputRef = React.useRef<HTMLInputElement>(null)
   const listboxId = React.useId()
 
   const inputValue = inputValueProp ?? internalInputValue
@@ -50,11 +51,12 @@ function Combobox({
   }, [options, value])
 
   React.useEffect(() => {
-    if (value && selectedLabel && inputValueProp === undefined) {
+    if (value && selectedLabel && inputValueProp === undefined && !open) {
       setInternalInputValue(selectedLabel)
     }
-  }, [value, selectedLabel, inputValueProp])
+  }, [value, selectedLabel, inputValueProp, open])
 
+  
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -95,6 +97,7 @@ function Combobox({
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input
+          ref={inputRef}
           type="text"
           role="combobox"
           aria-controls={listboxId}

@@ -80,10 +80,10 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
 
   return (
     <Card className="flex h-full flex-col gap-4 p-5">
-      <div>
-        <p className="text-sm font-semibold">Pronóstico</p>
-        <p className="text-xs text-muted-foreground">Próximos 4 días</p>
-      </div>
+        <div>
+          <p className="text-sm font-semibold">Pronóstico</p>
+          <p className="text-xs text-muted-foreground">Próximos 4 días</p>
+        </div>
 
       <div className="flex flex-1 flex-col gap-3">
         {days.map((day) => {

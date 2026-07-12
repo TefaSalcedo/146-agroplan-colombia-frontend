@@ -179,7 +179,11 @@ export default function InicioPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <ForecastCard forecast={forecast} loading={forecastLoading} />
+              <ForecastCard 
+                forecast={forecast} 
+                loading={forecastLoading} 
+
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -187,7 +191,6 @@ export default function InicioPage() {
             </div>
           </div>
         </section>
-
 
         <section aria-labelledby="map-title" className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
