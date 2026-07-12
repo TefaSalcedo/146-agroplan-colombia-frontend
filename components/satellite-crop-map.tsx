@@ -75,7 +75,7 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
       <div className="relative">
         <svg
           viewBox="0 0 100 100"
-          className="size-20 sm:size-24"
+          className="size-24 sm:size-28"
           style={{ transform: "rotate(-90deg)" }}
         >
           <circle
@@ -101,7 +101,7 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center p-3">
-          <div className="relative size-12 sm:size-14 overflow-hidden rounded-full shadow-inner">
+          <div className="relative size-14 sm:size-16 overflow-hidden rounded-full shadow-inner">
             <CropImage
               src={crop.image || "/placeholder.svg"}
               alt={crop.name}
@@ -113,10 +113,10 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
         </div>
       </div>
       <div>
-        <p className="text-sm font-semibold text-white drop-shadow-md">
+        <p className="text-base font-semibold text-white drop-shadow-md">
           {hasData ? `${crop.successRate}%` : "No Data"}
         </p>
-        <p className="max-w-[5.5rem] truncate text-xs font-medium text-white/90 drop-shadow-md sm:max-w-24">
+        <p className="max-w-24 truncate text-sm font-medium text-white/90 drop-shadow-md sm:max-w-28">
           {crop.name}
         </p>
       </div>
@@ -164,8 +164,8 @@ export function SatelliteCropMap({
         <MapControls position="bottom-right" showZoom />
       </Map>
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-5">
-        <div className="pointer-events-auto self-start rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-white shadow-lg backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-0 p-4 sm:p-5">
+        <div className="pointer-events-auto absolute left-4 top-4 rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-white shadow-lg backdrop-blur-xl">
           <p className="text-sm font-semibold drop-shadow-md">{location.name}</p>
           <p className="text-xs text-white/80 drop-shadow-md">
             {location.department}, Colombia
@@ -173,11 +173,11 @@ export function SatelliteCropMap({
         </div>
 
         {displayedCrops.length > 0 && (
-          <div className="pointer-events-auto self-center rounded-3xl border border-white/20 bg-black/25 p-4 shadow-2xl backdrop-blur-xl sm:self-end sm:p-5">
-            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-white/95 drop-shadow">
+          <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/20 bg-black/25 p-5 shadow-2xl backdrop-blur-xl sm:p-6">
+            <p className="mb-3 text-center text-sm font-semibold uppercase tracking-wider text-white/95 drop-shadow">
               Cultivos recomendados
             </p>
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-3 gap-4 sm:gap-5">
               {displayedCrops.map((crop) => (
                 <CropRing key={crop.id} crop={crop} />
               ))}

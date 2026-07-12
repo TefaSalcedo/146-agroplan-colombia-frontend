@@ -12,6 +12,7 @@ import {
 } from "@/components/agricultural-calendar"
 import { useRecommendations, useCalendars } from "@/hooks"
 import { useLocation } from "@/context/LocationContext"
+import { CalendarDetail } from "@/components/calendar-detail"
 import type { CalendarBatchResponse } from "@/lib/api-client/types"
 
 export default function CalendarioPage() {
@@ -84,7 +85,9 @@ export default function CalendarioPage() {
             Calendario de siembra y cosecha
           </h1>
           <p className="mt-1 text-muted-foreground text-pretty">
-            Planifica tu próxima siembra según el clima de tu municipio.
+            {batchResponse
+              ? `Plan agrícola para ${batchResponse.municipalityName} a ${batchResponse.horizonMonths} meses.`
+              : "Planifica tu próxima siembra según el clima de tu municipio."}
           </p>
         </div>
         <DownloadPdfButton pageName="Calendario-AgroPlan" />
@@ -105,6 +108,8 @@ export default function CalendarioPage() {
             </div>
           </Card>
         </div>
+
+        <CalendarDetail batchResponse={batchResponse} />
       </div>
     </div>
   )

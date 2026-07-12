@@ -314,6 +314,38 @@ export interface ForecastResponse {
   forecast: ForecastDayResponse[]
 }
 
+export type ForecastTrend =
+  | "warmer"
+  | "cooler"
+  | "wetter"
+  | "drier"
+  | "warmer_drier"
+  | "warmer_wetter"
+  | "cooler_drier"
+  | "cooler_wetter"
+  | "normal"
+
+export interface MonthlyForecastItem {
+  forecastMonth: string
+  monthName: string
+  tempMean: number
+  tempAnomaly: number
+  precipitation: number
+  precipitationAnomaly: number
+  trend: ForecastTrend
+  source: string
+  fetchedAt: string
+}
+
+export interface MonthlyForecastResponse {
+  municipalityId: string
+  municipalityName: string
+  months: number
+  model: string
+  forecasts: MonthlyForecastItem[]
+  note: string
+}
+
 // ==================== Health ====================
 
 export interface HealthResponse {

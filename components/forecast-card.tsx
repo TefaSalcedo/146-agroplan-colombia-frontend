@@ -56,7 +56,16 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
     )
   }
 
-  const days = forecast.slice(0, 4)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const days = forecast
+    .filter((day) => {
+      const dayDate = new Date(day.date)
+      dayDate.setHours(0, 0, 0, 0)
+      return dayDate >= today
+    })
+    .slice(0, 4)
 
   if (days.length === 0) {
     return (

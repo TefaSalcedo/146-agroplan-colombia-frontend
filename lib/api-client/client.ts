@@ -80,7 +80,9 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_URL}${endpoint}`
+  // Use the Next.js rewrite in the browser to avoid CORS issues.
+  // Server-side requests can still hit the API directly.
+  const url = typeof window !== "undefined" ? `/api${endpoint}` : `${API_URL}${endpoint}`
   
   const defaultOptions: RequestInit = {
     headers: {

@@ -188,27 +188,6 @@ export function AgriculturalCalendar({
           </tbody>
         </table>
       </div>
-
-      {!isCompact && (
-        <div className="flex flex-wrap items-center gap-4 border-t bg-muted/30 px-4 py-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-emerald-600" />
-            <span>Siembra ideal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-emerald-200" />
-            <span>Siembra posible</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-amber-500" />
-            <span>Cosecha</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-amber-200" />
-            <span>Cosecha posible</span>
-          </div>
-        </div>
-      )}
     </Card>
   )
 }
