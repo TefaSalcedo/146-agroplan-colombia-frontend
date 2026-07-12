@@ -24,9 +24,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:px-8 md:pb-10 md:pt-8">
           {children}
         </main>
-        <footer className="px-4 pb-5 text-center text-xs text-muted-foreground md:px-8">
-          © 2026 · con código
-        </footer>
       </div>
       <BottomNav />
     </div>
