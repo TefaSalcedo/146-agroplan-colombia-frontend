@@ -208,7 +208,7 @@ export default function InicioPage() {
               </p>
             </div>
           </div>
-          <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} cropsHref={cropsBasePath} />
+          <SatelliteCropMap location={selectedLocation} crops={allRecommendedCrops} loading={loading} />
         </section>
 
         <section aria-labelledby="calendar-title" className="flex flex-col gap-4">

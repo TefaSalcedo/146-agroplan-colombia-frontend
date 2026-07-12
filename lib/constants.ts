@@ -38,6 +38,13 @@ export const suitabilityColors: Record<string, string> = {
   none: "#b8b8b0",
 }
 
+export const mapSuitabilityColors: Record<string, string> = {
+  high: "#2DC4B2",
+  medium: "#F1F075",
+  low: "#F28CB1",
+  none: "#B8B8B8",
+}
+
 export function getSuitabilityLabel(s: string): string {
   switch (s) {
     case "high":

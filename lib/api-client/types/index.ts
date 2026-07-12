@@ -75,6 +75,25 @@ export interface CropListResponse {
   count: number
 }
 
+export interface CropNationalGuideSection {
+  title: string
+  content: string
+}
+
+export interface CropNationalGuideResponse {
+  cropId: string
+  cropName: string
+  summary: string
+  sections: CropNationalGuideSection[]
+  generatedAt: string
+  expiresAt: string
+  cached: boolean
+  provider: string
+  model: string
+  status: string
+  error: string | null
+}
+
 export type CropResponseLite = Pick<
   Crop,
   "id" | "name" | "image" | "recommendation" | "successRate"

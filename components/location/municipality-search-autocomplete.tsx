@@ -123,7 +123,7 @@ export function MunicipalitySearchAutocomplete({
     if (target) {
       setSearch(`${target.name}, ${target.department}`)
     }
-  }, [value, selectedMunicipality])
+  }, [value, selectedMunicipality, results, search])
 
   const handleValueChange = (selectedId: string) => {
     const selected = results.find((m) => m.id === selectedId)

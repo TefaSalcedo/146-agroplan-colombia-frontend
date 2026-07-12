@@ -1,5 +1,10 @@
 import { fetchApi } from "./client"
-import type { CropListResponse, CropLite, CropRecommendationResponse } from "./types"
+import type {
+  CropListResponse,
+  CropLite,
+  CropNationalGuideResponse,
+  CropRecommendationResponse,
+} from "./types"
 import type { Crop } from "@/types"
 
 function normalizeCropImage(image: string | undefined | null): string {
@@ -54,9 +59,14 @@ export async function fetchCropRecommendations(
   )
 }
 
+export async function fetchCropNationalGuide(cropId: string): Promise<CropNationalGuideResponse> {
+  return fetchApi<CropNationalGuideResponse>(`/crops/${cropId}/national-guide`)
+}
+
 export const cropsApi = {
   list: fetchCrops,
   get: fetchCrop,
   lite: fetchCropsLite,
   recommendations: fetchCropRecommendations,
+  nationalGuide: fetchCropNationalGuide,
 }
