@@ -27,6 +27,7 @@ import { buildNavHref } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
+import { RepositoryHubButton } from "@/components/repository-hub-button"
 import { useCropsLite, useCrop, useDepartments, useMunicipalities, useWeather } from "@/hooks"
 import { concursoSections, getConcursoSection } from "@/lib/concurso-sections"
 import { ApiError } from "@/lib/api-client/client"
@@ -348,15 +349,18 @@ export function AppSidebar() {
             <p className="text-xs text-muted-foreground">Colombia</p>
           </div>
         </Link>
-        <button
-          type="button"
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-          aria-pressed={isDark}
-          className="flex size-9 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50"
-        >
-          {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <RepositoryHubButton placement="inline" />
+          <button
+            type="button"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            aria-pressed={isDark}
+            className="flex size-9 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50"
+          >
+            {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          </button>
+        </div>
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2" aria-label="Navegación principal">

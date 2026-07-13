@@ -209,6 +209,44 @@
   --concurso-oak: oklch(0.62 0.10 70);
 }
 
+@keyframes repository-hub-shimmer {
+  0%,
+  65%,
+  100% {
+    transform: translateX(-140%);
+  }
+  35% {
+    transform: translateX(140%);
+  }
+}
+
+.repository-hub-button {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.repository-hub-button::before {
+  animation: repository-hub-shimmer 4.5s ease-in-out infinite;
+  background: linear-gradient(110deg, transparent 20%, rgb(255 255 255 / 0.35) 50%, transparent 80%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-140%);
+}
+
+.repository-hub-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .repository-hub-button::before {
+    animation: none;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not(.light) .concurso-shell {
     --concurso-oak: oklch(0.62 0.10 70);

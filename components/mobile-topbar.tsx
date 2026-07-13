@@ -7,6 +7,7 @@ import { MapPin, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { LocationSelectorModal } from "./location-selector-modal"
 import { useLocation } from '@/context/LocationContext'
+import { RepositoryHubButton } from '@/components/repository-hub-button'
 
 export function MobileTopbar() {
   const [isLocationOpen, setIsLocationOpen] = useState(false)
@@ -32,6 +33,7 @@ export function MobileTopbar() {
           </div>
         </Link>
         <div className="flex items-center gap-1">
+          <RepositoryHubButton placement="inline" />
           <button
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

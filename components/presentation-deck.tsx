@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
+import { RepositoryHubButton } from "@/components/repository-hub-button"
 import {
   ArrowRight,
   BarChart3,
@@ -946,15 +947,18 @@ export function PresentationDeck() {
             />
           ))}
         </div>
-        <button
-          type="button"
-          onClick={() => deckRef.current?.requestFullscreen().catch(() => undefined)}
-          className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          aria-label="Ver en pantalla completa"
-        >
-          <Expand className="size-4" />
-          Pantalla completa
-        </button>
+        <div className="flex items-center gap-2">
+          <RepositoryHubButton placement="inline" />
+          <button
+            type="button"
+            onClick={() => deckRef.current?.requestFullscreen().catch(() => undefined)}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            aria-label="Ver en pantalla completa"
+          >
+            <Expand className="size-4" />
+            Pantalla completa
+          </button>
+        </div>
       </footer>
     </main>
   )
