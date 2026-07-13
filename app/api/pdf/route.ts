@@ -9,6 +9,13 @@ export const maxDuration = 60
 const CHROMIUM_PACK_URL =
   'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar'
 
+function getPrintableSelector(page: string): string {
+  if (page.endsWith('/inicio')) return '#pdf-content'
+  if (page.endsWith('/calendario')) return '#pdf-calendario'
+  if (page.endsWith('/cultivos')) return '#pdf-cultivos'
+  return 'main'
+}
+
 export async function POST(request: NextRequest) {
   const { page = '/cultivos', filename = 'documento.pdf', location } = await request.json()
 
@@ -64,9 +71,38 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[PDF API] Navigating to ${url}...`)
-    await browserPage.goto(url, { waitUntil: 'networkidle0', timeout: 30000 })
-    console.log('[PDF API] Page loaded, waiting for complete state')
-    await browserPage.waitForFunction(() => document.readyState === 'complete')
+    await browserPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
+
+    const printableSelector = getPrintableSelector(page)
+    console.log(`[PDF API] Waiting for printable content: ${printableSelector}`)
+    await browserPage.waitForSelector(printableSelector, { timeout: 25000 })
+
+    // The application has long-lived background requests (sidebar data and map tiles).
+    // Waiting for networkidle0 would block until the navigation timeout despite the
+    // printable content already being rendered.
+    await browserPage.waitForNetworkIdle({
+      concurrency: 2,
+      idleTime: 500,
+      timeout: 5000,
+    }).catch(() => {
+      console.warn('[PDF API] Background requests are still active; continuing with rendered content')
+    })
+
+    await browserPage.evaluate(async () => {
+      await document.fonts.ready
+      const pendingImages = Promise.all(
+        Array.from(document.images)
+          .filter((image) => !image.complete)
+          .map((image) => new Promise<void>((resolve) => {
+            image.addEventListener('load', () => resolve(), { once: true })
+            image.addEventListener('error', () => resolve(), { once: true })
+          })),
+      )
+      await Promise.race([
+        pendingImages,
+        new Promise<void>((resolve) => window.setTimeout(resolve, 3000)),
+      ])
+    })
 
     // Hide interactive elements that should not appear in the PDF.
     console.log('[PDF API] Applying PDF-specific styles (hiding navigation, buttons)')
