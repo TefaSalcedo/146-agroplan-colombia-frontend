@@ -443,8 +443,8 @@ export function LandingPage() {
 
       {/* Content */}
       <div className="relative flex min-h-svh flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 text-center">
+        {/* Header  */}
+        <div className="mb-6 text-center sm: mt-10">
           <Image
             src="/ai%20images/agroplan.webp"
             alt="Agroplan"
@@ -453,7 +453,7 @@ export function LandingPage() {
             className="mx-auto mb-4 size-20 rounded-2xl object-cover shadow-2xl ring-2 ring-white/30"
             priority
           />
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl mx-10 ">
             Planifica mejor. Cosecha más.
           </h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/90 sm:text-base">

@@ -19,7 +19,7 @@ const nextConfig = {
       },
     ],
   },
-  allowedDevOrigins: ['localhost', '127.0.0.1'],
+  allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.5.121'],
   outputFileTracingIncludes: {
     '/api/pdf': ['./node_modules/@sparticuz/chromium-min/**'],
   },
