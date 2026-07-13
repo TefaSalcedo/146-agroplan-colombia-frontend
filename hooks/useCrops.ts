@@ -16,7 +16,7 @@ import { ApiError } from "@/lib/api-client/client"
 
 export function useCrops() {
   const [crops, setCrops] = useState<Crop[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const loadCrops = async () => {

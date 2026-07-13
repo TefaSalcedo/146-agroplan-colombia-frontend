@@ -33,6 +33,7 @@ import { ApiError } from "@/lib/api-client/client"
 import { fetchMunicipality, fetchNearbyMunicipality } from "@/lib/api-client/municipalities"
 import { isWithinColombia } from "@/lib/location-utils"
 import { CropMapSidebar } from "@/components/crop-map-sidebar"
+import { formatPrecipitation } from "@/lib/weather-format"
 
 function formatMetric(value: number | null | undefined, suffix: string) {
   if (value == null || Number.isNaN(value)) {
@@ -488,7 +489,7 @@ export function AppSidebar() {
                   <span className="text-[11px] font-medium">Lluvia</span>
                 </div>
                 <p className="text-sm font-semibold">
-                  {formatMetric(weather?.precipitation, "mm")}
+                  {formatPrecipitation(weather?.precipitation)}
                 </p>
               </div>
               <div className="rounded-2xl border border-border/60 bg-background/70 p-2.5">

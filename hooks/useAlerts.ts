@@ -5,12 +5,16 @@ import { ApiError } from "@/lib/api-client/client"
 
 export function useAlerts(municipalityId: string) {
   const [alerts, setAlerts] = useState<AlertResponse[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(municipalityId))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadAlerts = async () => {
-      if (!municipalityId) return
+      if (!municipalityId) {
+        setAlerts([])
+        setLoading(false)
+        return
+      }
       setLoading(true)
       setError(null)
       try {

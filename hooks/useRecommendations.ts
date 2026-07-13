@@ -5,11 +5,15 @@ import { ApiError } from "@/lib/api-client/client"
 
 export function useRecommendations(municipalityId: string) {
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(municipalityId))
   const [error, setError] = useState<string | null>(null)
 
   const loadRecommendations = async (id: string) => {
-    if (!id) return
+    if (!id) {
+      setRecommendations(null)
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError(null)
     try {

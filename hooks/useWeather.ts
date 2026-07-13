@@ -5,12 +5,16 @@ import { ApiError } from "@/lib/api-client/client"
 
 export function useWeather(municipalityId: string) {
   const [weather, setWeather] = useState<WeatherResponse | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(municipalityId))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadWeather = async () => {
-      if (!municipalityId) return
+      if (!municipalityId) {
+        setWeather(null)
+        setLoading(false)
+        return
+      }
       setLoading(true)
       setError(null)
       try {
