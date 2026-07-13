@@ -32,6 +32,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import type {
@@ -256,9 +257,7 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
             <RefreshCw className={cn("size-6 text-primary", isRetrying && "animate-spin")} />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">
-              {isRetrying ? "Reintentando recomendaciones de IA..." : "Cargando recomendaciones de IA..."}
-            </p>
+            <DynamicAiLoadingMessage isLoading={loading} />
             <p className="text-xs text-muted-foreground">
               {isRetrying
                 ? `Reintento ${retryAttempt} de 2. El servidor está tardando más de lo esperado.`

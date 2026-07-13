@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CropMapSidebar } from "@/components/crop-map-sidebar"
 import { CropConditionsCard } from "@/components/crop-conditions-card"
+import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
 import { useCrop, useCropNationalGuide, useCropsLite, useMunicipalities, useZoning } from "@/hooks"
 import { mapSuitabilityColors } from "@/lib/constants"
 import type { CropNationalGuideResponse, ZoningMapMunicipalityResult } from "@/lib/api-client/types"
@@ -55,6 +56,7 @@ function NationalGuideSkeleton() {
             <Skeleton className="h-4 w-72 max-w-full" />
           </div>
         </div>
+        <DynamicAiLoadingMessage isLoading className="py-1" />
         <Skeleton className="h-16 w-full rounded-xl" />
         <div className="grid gap-4 md:grid-cols-2">
           <Skeleton className="h-32 w-full rounded-xl" />
