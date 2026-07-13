@@ -326,3 +326,9 @@
     margin-top: 1rem !important;
   }
 }
+
+@media (max-width: 1279px) {
+  .concurso-shell [data-slot="card"] {
+    padding: 1rem;
+  }
+}

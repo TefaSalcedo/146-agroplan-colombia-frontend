@@ -19,24 +19,6 @@ export const projectConfig = {
       url: "https://github.com/TefaSalcedo/146-agroplan-colombia-backend",
       description: "API REST construida con FastAPI que sirve los endpoints de predicción, datos climáticos y catálogos de cultivos.",
       technology: "FastAPI, Python, PostgreSQL"
-    },
-    {
-      name: "Frontend Web",
-      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-frontend",
-      description: "Interfaz web responsiva construida con Next.js que permite a los usuarios interactuar con el sistema de planificación agrícola.",
-      technology: "Next.js, TypeScript, Tailwind CSS"
-    },
-    {
-      name: "Machine Learning Models",
-      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-ml",
-      description: "Repositorio que contiene todo el ciclo de vida de los modelos de machine learning siguiendo la metodología CRISP-ML.",
-      technology: "Python, Scikit-learn, TensorFlow"
-    },
-    {
-      name: "MCP Server",
-      url: "https://github.com/BOTOOM/146-datos-abiertos-mcp",
-      description: "Model Context Protocol (MCP) server que integra los datos abiertos del gobierno colombiano con sistemas de IA.",
-      technology: "TypeScript, MCP Protocol"
     }
   ],
 
@@ -209,7 +191,7 @@ export const projectConfig = {
     {
       name: "NASA POWER - Clima",
       source: "NASA POWER Project",
-      url: "https://power.larc.nasa.gov/api/temporal/daily/point",
+      url: "https://power.larc.nasa.gov/data-access-viewer/",
       description: "Datos climáticos diarios (temperatura, precipitación, humedad, radiación solar) para 32 departamentos de Colombia (2019-2024).",
       records: 70000,
       license: "NASA Open Data",
@@ -248,7 +230,6 @@ export const projectConfig = {
   huggingFaceModels: [
     {
       name: "AgroPlan Zonificación",
-      url: "https://huggingface.co/SRBOTOM/agroplan-zonificacion",
       description: "Modelos de zonificación agroclimática para los 7 cultivos disponibles. LightGBM es el modelo principal, CatBoost funciona como modelo secundario y KNN genera recomendaciones de cultivos similares.",
       type: "Classification Model",
       framework: "LightGBM + CatBoost + KNN",
@@ -256,7 +237,6 @@ export const projectConfig = {
     },
     {
       name: "AgroPlan Rendimiento",
-      url: "https://huggingface.co/SRBOTOM/agroplan-rendimiento",
       description: "Ensamble de modelos para predecir el rendimiento agrícola de 94 cultivos. Combina XGBoost y LightGBM para aprovechar sus fortalezas complementarias.",
       type: "Regression Ensemble",
       framework: "XGBoost + LightGBM",

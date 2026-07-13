@@ -379,7 +379,7 @@ export function AppSidebar() {
                   key={section.id}
                   type="button"
                   onClick={() => {
-                    document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    router.replace(`/concurso?section=${section.id}`, { scroll: false })
                   }}
                   aria-current={active ? "page" : undefined}
                   className={cn(

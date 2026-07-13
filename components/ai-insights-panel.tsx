@@ -409,7 +409,7 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
           <span>·</span>
           <span>{insights.latencyMs != null ? `${insights.latencyMs}ms` : "—"}</span>
           <span>·</span>
-          <span>{insights.tokensTotal != null ? `${insights.tokensTotal.toLocaleString()} tokens` : "Tokens no disponibles"}</span>
+          <span>{insights.tokensTotal != null ? `${new Intl.NumberFormat("es-CO").format(insights.tokensTotal)} tokens` : "Tokens no disponibles"}</span>
           <span>·</span>
           <span>{insights.generatedAt ? new Date(insights.generatedAt).toLocaleString("es-CO") : "Fecha no disponible"}</span>
         </div>

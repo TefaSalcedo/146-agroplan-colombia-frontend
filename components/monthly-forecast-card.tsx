@@ -55,7 +55,7 @@ interface MonthlyForecastCardProps {
 
 export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const DEFAULT_MONTHS = 4
+  const DEFAULT_MONTHS = 3
   const MAX_MONTHS = 6
 
   if (loading) {
@@ -89,7 +89,7 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
   const canExpand = forecast.forecasts.length > DEFAULT_MONTHS
 
   return (
-    <Card className="flex h-full flex-col gap-4 p-5 hover:bg-accent/50 transition-colors">
+    <Card className="flex h-full flex-col gap-4 p-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold">Pronóstico mensual</p>

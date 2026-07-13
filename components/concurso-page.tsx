@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { projectConfig } from "@/lib/project-config"
@@ -15,8 +15,13 @@ import {
   Code2,
   Award,
   BookOpen,
+  ChevronDown,
 } from "lucide-react"
 import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
+
+function formatConcursoNumber(value: number | null | undefined) {
+  return value == null ? "No disponible" : new Intl.NumberFormat("es-CO").format(value)
+}
 
 export function ConcursoPage() {
   const searchParams = useSearchParams()
@@ -24,6 +29,37 @@ export function ConcursoPage() {
   const activeSection: ConcursoSection = getConcursoSection(searchParams.get("section"))
   const sectionRefs = useRef<Partial<Record<ConcursoSection, HTMLElement | null>>>({})
   const skipNextQueryScroll = useRef(false)
+  const activeSectionRef = useRef(activeSection)
+  const [isCompactViewport, setIsCompactViewport] = useState(false)
+  const [openSections, setOpenSections] = useState<Set<ConcursoSection>>(
+    () => new Set(concursoSections.map((section) => section.id))
+  )
+  activeSectionRef.current = activeSection
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 1279px)")
+    const updateViewport = () => {
+      setIsCompactViewport(mediaQuery.matches)
+      setOpenSections(
+        mediaQuery.matches
+          ? new Set([activeSectionRef.current])
+          : new Set(concursoSections.map((section) => section.id))
+      )
+    }
+
+    updateViewport()
+    mediaQuery.addEventListener("change", updateViewport)
+    return () => mediaQuery.removeEventListener("change", updateViewport)
+  }, [])
+
+  useEffect(() => {
+    if (isCompactViewport) {
+      setOpenSections((current) => {
+        if (current.has(activeSection)) return current
+        return new Set(current).add(activeSection)
+      })
+    }
+  }, [activeSection, isCompactViewport])
 
   useEffect(() => {
     if (skipNextQueryScroll.current) {
@@ -32,10 +68,11 @@ export function ConcursoPage() {
     }
 
     const section = sectionRefs.current[activeSection]
-    if (section && searchParams.has("section")) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" })
+    const activeSectionIsOpen = !isCompactViewport || openSections.has(activeSection)
+    if (section && searchParams.has("section") && activeSectionIsOpen) {
+      section.scrollIntoView({ behavior: "auto", block: "start" })
     }
-  }, [activeSection, searchParams])
+  }, [activeSection, isCompactViewport, openSections, searchParams])
 
   useEffect(() => {
     const sections = Object.entries(sectionRefs.current)
@@ -97,9 +134,9 @@ export function ConcursoPage() {
               <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
                 <div className="mb-4 flex items-center gap-3">
                   <GitBranch className="concurso-oak h-8 w-8" />
-                  <h3 className="text-xl font-semibold text-white">4 Repositorios</h3>
+                  <h3 className="text-xl font-semibold text-white">1 Repositorio público</h3>
                 </div>
-                <p className="text-white/80">Proyecto completo distribuido en repositorios especializados</p>
+                <p className="text-white/80">API pública del proyecto disponible para consulta</p>
               </Card>
 
               <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
@@ -185,19 +222,6 @@ export function ConcursoPage() {
                         </div>
                       </div>
                     )}
-                    <a
-                      href={model.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={buttonVariants({
-                        variant: "outline",
-                        size: "sm",
-                        className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
-                      })}
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Ver en Hugging Face
-                    </a>
                   </Card>
                 ))}
               </div>
@@ -286,7 +310,7 @@ export function ConcursoPage() {
                     <div className="mb-4 flex items-start justify-between">
                       <h4 className="text-lg font-semibold text-white">{source.name}</h4>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-green-400">{source.records != null ? source.records.toLocaleString() : "No disponible"}</div>
+                        <div className="text-xl font-bold text-green-400">{formatConcursoNumber(source.records)}</div>
                         <div className="text-xs text-white/70">registros</div>
                       </div>
                     </div>
@@ -334,7 +358,7 @@ export function ConcursoPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-green-400">{dataset.records != null ? dataset.records.toLocaleString() : "No disponible"}</div>
+                        <div className="text-2xl font-bold text-green-400">{formatConcursoNumber(dataset.records)}</div>
                         <div className="text-sm text-white/70">registros</div>
                       </div>
                     </div>
@@ -524,33 +548,78 @@ export function ConcursoPage() {
 
   return (
     <div className="concurso-shell relative -mx-4 -mt-6 bg-background text-foreground md:-mx-8 md:-mt-8">
-      <div className="relative z-10 mx-auto max-w-6xl p-6 lg:p-10">
-        <header className="mb-8">
+      <div className="relative z-10 mx-auto max-w-6xl p-3 sm:p-4 xl:p-10">
+        <header className="mb-5 xl:mb-8">
           <div className="mb-4 flex items-center gap-3">
-            <Award className="size-10 text-primary" />
+            <Award className="size-8 text-primary sm:size-10" />
             <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               Datos al ecosistema 2026
             </span>
           </div>
-          <h1 className="mb-4 text-4xl font-bold md:text-5xl">{projectConfig.project.name}</h1>
-          <p className="max-w-3xl text-xl text-white/80">{projectConfig.project.description}</p>
+          <h1 className="mb-3 text-3xl font-bold sm:text-4xl xl:mb-4 xl:text-5xl">{projectConfig.project.name}</h1>
+          <p className="max-w-3xl text-base text-white/80 sm:text-lg xl:text-xl">{projectConfig.project.description}</p>
         </header>
 
-        <div className="space-y-8">
-          {concursoSections.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              ref={(element) => {
-                sectionRefs.current[section.id] = element
-              }}
-              className="scroll-mt-8"
-            >
-              <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-sm backdrop-blur-sm lg:p-8">
-                {renderContent(section.id)}
-              </div>
-            </section>
-          ))}
+        <div className="space-y-4 xl:space-y-8">
+          {concursoSections.map((section) => {
+            const SectionIcon = section.icon
+            const isOpen = !isCompactViewport || openSections.has(section.id)
+
+            return (
+              <section
+                key={section.id}
+                id={section.id}
+                ref={(element) => {
+                  sectionRefs.current[section.id] = element
+                }}
+                className="scroll-mt-4 xl:scroll-mt-8"
+              >
+                <div className="overflow-hidden rounded-2xl border border-border bg-card/80 p-2 shadow-sm backdrop-blur-sm sm:p-3 xl:p-8">
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={`${section.id}-content`}
+                    onClick={() => {
+                      if (!isCompactViewport) return
+                      setOpenSections((current) => {
+                        const next = new Set(current)
+                        if (next.has(section.id)) {
+                          next.delete(section.id)
+                        } else {
+                          next.add(section.id)
+                        }
+                        return next
+                      })
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
+                  >
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <SectionIcon className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-foreground">{section.label}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {isOpen ? "Ocultar contenido" : "Toca para explorar"}
+                      </span>
+                    </span>
+                    <ChevronDown
+                      className={`size-5 shrink-0 text-muted-foreground transition-transform ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <div
+                    id={`${section.id}-content`}
+                    className={isCompactViewport && !isOpen ? "hidden" : "block"}
+                  >
+                    {renderContent(section.id)}
+                  </div>
+                </div>
+              </section>
+            )
+          })}
         </div>
 
         <div className="mt-10 flex items-center justify-center gap-2 border-t border-white/10 py-8 text-sm text-white/60">

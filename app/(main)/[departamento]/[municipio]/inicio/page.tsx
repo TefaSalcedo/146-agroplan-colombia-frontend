@@ -67,8 +67,7 @@ function enrichRecommendations(
 
 export default function InicioPage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const { selectedLocation } = useLocation()
+  const { selectedLocation, hasHydrated } = useLocation()
 
   const municipalityId = selectedLocation?.id || ''
 
@@ -85,12 +84,10 @@ export default function InicioPage() {
   const loading = recommendationsLoading || cropsLoading || calendarLoading || weatherLoading || forecastLoading || monthlyForecastLoading
 
   useEffect(() => {
-    setMounted(true)
-
-    if (!selectedLocation && mounted) {
-      router.push('/')
+    if (hasHydrated && !selectedLocation) {
+      router.replace('/')
     }
-  }, [selectedLocation, mounted, router])
+  }, [hasHydrated, selectedLocation, router])
 
   useEffect(() => {
     const recommendedIds = recommendations?.topCrop
@@ -116,8 +113,8 @@ export default function InicioPage() {
     return enrichRecommendations(recommendations, cropMap)
   }, [allCrops, recommendations])
 
-  if (!mounted || !selectedLocation) {
-    return null
+  if (!hasHydrated || !selectedLocation) {
+    return <DashboardSkeleton />
   }
 
   if (loading && !batchResponse) {
