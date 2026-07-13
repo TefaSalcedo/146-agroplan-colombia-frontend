@@ -1,10 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import { CropImage } from "@/components/crop-image"
 import { Skeleton } from "@/components/ui/skeleton"
 import { suitabilityColors } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 import type { Municipality, RecommendationLevel } from "@/types"
 import type { StyleSpecification } from "maplibre-gl"
 
@@ -19,7 +21,7 @@ interface SatelliteCropMapCrop {
 interface SatelliteCropMapProps {
   location: Municipality
   crops: SatelliteCropMapCrop[]
-  maxCrops?: number
+  getCropHref: (crop: SatelliteCropMapCrop) => string
   loading?: boolean
 }
 
@@ -62,20 +64,40 @@ function getRingColor(successRate: number, recommendation: RecommendationLevel):
   return suitabilityColors.low
 }
 
-function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
+function CropRing({
+  crop,
+  href,
+  compact,
+}: {
+  crop: SatelliteCropMapCrop
+  href: string
+  compact: boolean
+}) {
   const radius = 40
   const circumference = 2 * Math.PI * radius
   const progress = Math.min(Math.max(crop.successRate, 0), 100)
   const offset = circumference - (progress / 100) * circumference
   const color = getRingColor(crop.successRate, crop.recommendation)
   const hasData = crop.successRate > 0
+  const [isAnimated, setIsAnimated] = useState(false)
+
+  useEffect(() => {
+    setIsAnimated(false)
+    const frame = requestAnimationFrame(() => setIsAnimated(true))
+
+    return () => cancelAnimationFrame(frame)
+  }, [offset])
 
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <Link
+      href={href}
+      className="group flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-1 text-center outline-none transition-transform hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-white/90"
+      aria-label={`Ver detalles de ${crop.name}, recomendación ${hasData ? `${crop.successRate}%` : "sin datos"}`}
+    >
       <div className="relative">
         <svg
           viewBox="0 0 100 100"
-          className="size-24 sm:size-28"
+          className={cn("transition-transform duration-300 group-hover:scale-105", compact ? "size-18 sm:size-20" : "size-20 sm:size-24")}
           style={{ transform: "rotate(-90deg)" }}
         >
           <circle
@@ -96,12 +118,14 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            style={{ transition: "stroke-dashoffset 0.8s ease-out" }}
+            strokeDashoffset={isAnimated ? offset : circumference}
+            style={{
+              transition: "stroke-dashoffset 1.1s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center p-3">
-          <div className="relative size-14 sm:size-16 overflow-hidden rounded-full shadow-inner">
+          <div className={cn("relative overflow-hidden rounded-full shadow-inner", compact ? "size-11 sm:size-12" : "size-12 sm:size-14")}>
             <CropImage
               src={crop.image || "/placeholder.svg"}
               alt={crop.name}
@@ -113,27 +137,31 @@ function CropRing({ crop }: { crop: SatelliteCropMapCrop }) {
         </div>
       </div>
       <div>
-        <p className="text-base font-semibold text-white drop-shadow-md">
+        <p className={cn("font-semibold tabular-nums text-white drop-shadow-md", compact ? "text-sm" : "text-base")}>
           {hasData ? `${crop.successRate}%` : "No Data"}
         </p>
-        <p className="max-w-24 truncate text-sm font-medium text-white/90 drop-shadow-md sm:max-w-28">
+        <p className={cn("truncate font-medium text-white/90 drop-shadow-md", compact ? "max-w-18 text-xs sm:max-w-20" : "max-w-24 text-sm sm:max-w-28")}>
           {crop.name}
         </p>
       </div>
-    </div>
+    </Link>
   )
 }
 
 export function SatelliteCropMap({
   location,
   crops,
-  maxCrops = 6,
+  getCropHref,
   loading,
 }: SatelliteCropMapProps) {
-  const displayedCrops = useMemo(
-    () => crops.slice(0, maxCrops),
-    [crops, maxCrops],
-  )
+  const hasManyCrops = crops.length > 4
+  const cropGridClass = crops.length === 1
+    ? "grid-cols-1"
+    : crops.length === 2
+      ? "grid-cols-2"
+      : hasManyCrops
+        ? "grid-cols-2 sm:grid-cols-4"
+        : "grid-cols-3"
 
   const mapStyles = useMemo(
     () => ({
@@ -152,7 +180,12 @@ export function SatelliteCropMap({
   }
 
   return (
-    <div className="relative h-[420px] overflow-hidden rounded-3xl border border-border sm:h-[520px]">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-3xl border border-border",
+        hasManyCrops ? "h-[540px] sm:h-[520px]" : "h-[420px] sm:h-[460px]",
+      )}
+    >
       <Map
         center={[location.lng, location.lat]}
         zoom={15}
@@ -172,14 +205,17 @@ export function SatelliteCropMap({
           </p>
         </div>
 
-        {displayedCrops.length > 0 && (
-          <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/20 bg-black/25 p-5 shadow-2xl backdrop-blur-xl sm:p-6">
-            <p className="mb-3 text-center text-sm font-semibold uppercase tracking-wider text-white/95 drop-shadow">
+        {crops.length > 0 && (
+          <div className="pointer-events-auto absolute left-1/2 top-1/2 w-[min(92%,34rem)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/25 bg-black/15 p-4 shadow-[0_14px_40px_rgba(0,0,0,0.24)] backdrop-blur-md sm:p-5">
+            <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-white/95 drop-shadow sm:text-sm">
               Cultivos recomendados
             </p>
-            <div className="grid grid-cols-3 gap-4 sm:gap-5">
-              {displayedCrops.map((crop) => (
-                <CropRing key={crop.id} crop={crop} />
+            <p className="mb-3 text-center text-[11px] text-white/75 sm:text-xs">
+              Selecciona un cultivo para ver su recomendación
+            </p>
+            <div className={cn("grid items-start justify-items-center gap-x-3 gap-y-3 sm:gap-x-5 sm:gap-y-4", cropGridClass)}>
+              {crops.map((crop) => (
+                <CropRing key={crop.id} crop={crop} href={getCropHref(crop)} compact={hasManyCrops} />
               ))}
             </div>
           </div>

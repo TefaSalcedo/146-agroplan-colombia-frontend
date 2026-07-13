@@ -9,7 +9,7 @@ import { WeatherCard } from '@/components/weather-card'
 import { ForecastCard } from '@/components/forecast-card'
 import { MonthlyForecastCard } from '@/components/monthly-forecast-card'
 import { ClimateAlertCard } from '@/components/climate-alert-card'
-import { CropCard } from '@/components/crop-card'
+import { SatelliteCropMap } from '@/components/satellite-crop-map'
 import { DashboardActionCard } from '@/components/dashboard-action-card'
 import { RecommendationSourceBanner } from '@/components/recommendation-source-banner'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
@@ -216,19 +216,13 @@ export default function InicioPage() {
               ))}
             </div>
           ) : allRecommendedCrops.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {allRecommendedCrops.map((crop) => (
-                <CropCard
-                  key={crop.id}
-                  id={crop.id}
-                  name={crop.name}
-                  image={crop.image}
-                  recommendation={crop.recommendation}
-                  successRate={crop.successRate}
-                  href={buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos', crop.id)}
-                />
-              ))}
-            </div>
+            <SatelliteCropMap
+              location={selectedLocation}
+              crops={allRecommendedCrops}
+              getCropHref={(crop) =>
+                buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos', crop.id)
+              }
+            />
           ) : (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No hay cultivos recomendados disponibles para esta ubicación.
