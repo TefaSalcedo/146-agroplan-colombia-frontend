@@ -17,6 +17,7 @@ import {
   Maximize2,
   Minimize2,
   Trophy,
+  Presentation,
   Moon,
   Sun,
 } from "lucide-react"
@@ -404,15 +405,27 @@ export function LandingPage() {
         }`}
       />
 
-      <button
-        type="button"
-        onClick={() => setTheme(isDark ? "light" : "dark")}
-        className="absolute right-4 top-4 z-20 flex size-10 items-center justify-center rounded-xl border border-white/25 bg-black/35 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-black/55 sm:right-6 sm:top-6"
-        aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-        aria-pressed={isDark}
-      >
-        {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
-      </button>
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
+        <Link
+          href="/presentacion"
+          className="flex h-10 items-center gap-2 rounded-xl border border-orange-300/90 bg-orange-500/25 px-3 text-xs font-bold text-white shadow-[0_0_18px_rgba(251,146,60,0.4)] backdrop-blur-md transition-all hover:border-orange-200 hover:bg-orange-500/40 hover:shadow-[0_0_24px_rgba(251,146,60,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 sm:px-4 sm:text-sm"
+          aria-label="Ver presentación de AgroPlan Colombia"
+        >
+          <span className="size-1.5 rounded-full bg-orange-200 shadow-[0_0_8px_rgba(254,215,170,0.95)]" />
+          <Presentation className="size-4 sm:size-5" />
+          <span className="hidden sm:inline">Presentación</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className="flex size-10 items-center justify-center rounded-xl border border-white/25 bg-black/35 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          aria-pressed={isDark}
+        >
+          {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+        </button>
+      </div>
 
       {/* Content */}
       <div className="relative flex min-h-svh flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
