@@ -242,6 +242,91 @@
   border-color: var(--border) !important;
 }
 
+@media (min-width: 768px) and (max-height: 800px) {
+  .presentation-slide {
+    padding-bottom: 1rem !important;
+    padding-top: 1.5rem !important;
+  }
+
+  .presentation-slide h1,
+  .presentation-slide h2 {
+    font-size: clamp(2.5rem, 5vw, 3.25rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  .presentation-slide h3 {
+    font-size: 1.15rem !important;
+  }
+
+  .presentation-insight {
+    padding: 0.65rem 0.9rem !important;
+  }
+
+  .presentation-insight > div:first-child svg {
+    height: 1.6rem !important;
+    width: 1.6rem !important;
+  }
+
+  .presentation-insight > p:first-of-type {
+    font-size: 1.8rem !important;
+    line-height: 1 !important;
+    margin-top: 0.75rem !important;
+  }
+
+  .presentation-insight > p:nth-of-type(2) {
+    font-size: 0.88rem !important;
+    line-height: 1.15 !important;
+    margin-top: 0.3rem !important;
+  }
+
+  .presentation-insight > p:nth-of-type(3) {
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    margin-top: 0.4rem !important;
+  }
+
+  .presentation-insight > a {
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .presentation-recommendation-chart {
+    padding: 1rem 1.25rem !important;
+  }
+
+  .presentation-recommendation-chart svg {
+    height: clamp(12rem, 30vh, 18rem) !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .presentation-recommendation-chart > p {
+    font-size: 0.65rem !important;
+    line-height: 1.2 !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) and (max-height: 800px) {
+  .presentation-slide h1,
+  .presentation-slide h2 {
+    font-size: clamp(2.35rem, 4.3vw, 2.9rem) !important;
+  }
+
+  .presentation-slide h2 + p {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .presentation-impact-callout {
+    margin-top: 1rem !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  .presentation-impact-goals {
+    margin-top: 1rem !important;
+  }
+}
+
 @media (max-width: 1279px) {
   .concurso-shell [data-slot="card"] {
     padding: 1rem;
