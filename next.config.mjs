@@ -20,6 +20,9 @@ const nextConfig = {
     ],
   },
   allowedDevOrigins: ['localhost', '127.0.0.1'],
+  outputFileTracingIncludes: {
+    '/api/pdf': ['./node_modules/@sparticuz/chromium-min/**'],
+  },
   async rewrites() {
     return [
       {

@@ -2,6 +2,7 @@ import { Cloud, CloudRain, Sun, CloudSun, CloudFog, Droplets, Wind, Thermometer 
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { WeatherResponse } from "@/lib/api-client/types"
+import { formatPrecipitation } from "@/lib/weather-format"
 
 const ICONS: Record<string, typeof Sun> = {
   sun: Sun,
@@ -72,7 +73,7 @@ export function WeatherCard({ weather, loading }: WeatherCardProps) {
           <Wind className="size-4 text-slate-500" />
           <div>
             <p className="text-[10px] uppercase text-muted-foreground">Precipitación</p>
-            <p className="text-sm font-semibold">{weather.precipitation}mm</p>
+            <p className="text-sm font-semibold">{formatPrecipitation(weather.precipitation)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2">

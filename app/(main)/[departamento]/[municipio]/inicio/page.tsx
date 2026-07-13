@@ -9,12 +9,13 @@ import { WeatherCard } from '@/components/weather-card'
 import { ForecastCard } from '@/components/forecast-card'
 import { MonthlyForecastCard } from '@/components/monthly-forecast-card'
 import { ClimateAlertCard } from '@/components/climate-alert-card'
-import { CropCard } from '@/components/crop-card'
+import { SatelliteCropMap } from '@/components/satellite-crop-map'
 import { DashboardActionCard } from '@/components/dashboard-action-card'
 import { RecommendationSourceBanner } from '@/components/recommendation-source-banner'
 import { DownloadPdfButton } from '@/components/download-pdf-button'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { AgriculturalCalendar, AgriculturalCalendarLegend } from '@/components/agricultural-calendar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useRecommendations, useCrops, useCalendars, useWeather, useForecast, useMonthlyForecast, useAlerts } from '@/hooks'
 import { useLocation } from '@/context/LocationContext'
 import { buildLocationPath } from '@/lib/routing'
@@ -81,8 +82,6 @@ export default function InicioPage() {
 
   const [batchResponse, setBatchResponse] = useState<CalendarBatchResponse | null>(null)
 
-  const loading = recommendationsLoading || cropsLoading || calendarLoading || weatherLoading || forecastLoading || monthlyForecastLoading
-
   useEffect(() => {
     if (hasHydrated && !selectedLocation) {
       router.replace('/')
@@ -114,10 +113,6 @@ export default function InicioPage() {
   }, [allCrops, recommendations])
 
   if (!hasHydrated || !selectedLocation) {
-    return <DashboardSkeleton />
-  }
-
-  if (loading && !batchResponse) {
     return <DashboardSkeleton />
   }
 
@@ -214,20 +209,20 @@ export default function InicioPage() {
               method={recommendations.method}
             />
           )}
-          {allRecommendedCrops.length > 0 ? (
+          {recommendationsLoading || cropsLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {allRecommendedCrops.map((crop) => (
-                <CropCard
-                  key={crop.id}
-                  id={crop.id}
-                  name={crop.name}
-                  image={crop.image}
-                  recommendation={crop.recommendation}
-                  successRate={crop.successRate}
-                  href={buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos', crop.id)}
-                />
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-56 rounded-2xl" />
               ))}
             </div>
+          ) : allRecommendedCrops.length > 0 ? (
+            <SatelliteCropMap
+              location={selectedLocation}
+              crops={allRecommendedCrops}
+              getCropHref={(crop) =>
+                buildLocationPath(selectedLocation.department, selectedLocation.name, 'cultivos', crop.id)
+              }
+            />
           ) : (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No hay cultivos recomendados disponibles para esta ubicación.
@@ -252,7 +247,11 @@ export default function InicioPage() {
             </div>
           </div>
           <Link href={calendarBasePath} className="group block focus:outline-none">
-            <AgriculturalCalendar batchResponse={batchResponse} mode="compact" />
+            <AgriculturalCalendar
+              batchResponse={batchResponse}
+              mode="compact"
+              loading={recommendationsLoading || cropsLoading || calendarLoading}
+            />
             <AgriculturalCalendarLegend />
             <div className="mt-3 flex items-center gap-2 text-sm font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus:opacity-100">
               <span>Ver calendario completo</span>

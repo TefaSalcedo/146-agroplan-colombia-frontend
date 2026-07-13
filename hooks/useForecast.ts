@@ -5,12 +5,16 @@ import { ApiError } from "@/lib/api-client/client"
 
 export function useForecast(municipalityId: string, days = 4) {
   const [forecast, setForecast] = useState<ForecastDayResponse[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(municipalityId))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadForecast = async () => {
-      if (!municipalityId) return
+      if (!municipalityId) {
+        setForecast([])
+        setLoading(false)
+        return
+      }
       setLoading(true)
       setError(null)
       try {
