@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import puppeteer from 'puppeteer'
+import chromium from '@sparticuz/chromium-min'
+import puppeteer from 'puppeteer-core'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
+const CHROMIUM_PACK_URL =
+  'https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar'
 
 export async function POST(request: NextRequest) {
   const { page = '/cultivos', filename = 'documento.pdf', location } = await request.json()
@@ -30,8 +35,12 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[PDF API] Launching Puppeteer browser...')
     browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      args: await puppeteer.defaultArgs({
+        args: chromium.args,
+        headless: 'shell',
+      }),
+      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+      headless: 'shell',
     })
     console.log('[PDF API] Browser launched successfully')
 
