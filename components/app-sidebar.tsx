@@ -330,8 +330,6 @@ export function AppSidebar() {
   const isMapaRoute = pathname.startsWith("/mapa")
   const isMunicipioRoute = !isCompetitionRoute && !isMapaRoute
   const activeConcursoSection = getConcursoSection(searchParams.get("section"))
-  const firstCrop = catalogCrops[0]
-  const concursoMapaHref = firstCrop ? `/mapa/${encodeURIComponent(firstCrop.id)}` : null
   const configHref = "/configuracion"
 
   return (
@@ -377,9 +375,12 @@ export function AppSidebar() {
               const Icon = section.icon
               const active = activeConcursoSection === section.id
               return (
-                <Link
+                <button
                   key={section.id}
-                  href={`/concurso?section=${section.id}`}
+                  type="button"
+                  onClick={() => {
+                    router.replace(`/concurso?section=${section.id}`, { scroll: false })
+                  }}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
@@ -390,34 +391,9 @@ export function AppSidebar() {
                 >
                   <Icon className={cn("size-5 shrink-0", active && "scale-110")} />
                   {section.label}
-                </Link>
+                </button>
               )
             })}
-            <Link
-              href={concursoMapaHref ?? "/"}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95",
-                !concursoMapaHref && "pointer-events-none opacity-50",
-                "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-              )}
-            >
-              <Sprout className="size-5 shrink-0" />
-              Mapa
-            </Link>
-            {configHref ? (
-              <Link
-                href={configHref}
-                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 active:scale-95 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:translate-x-1"
-              >
-                <Settings className="size-5 shrink-0" />
-                Configuración
-              </Link>
-            ) : (
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground">
-                <Settings className="size-5 shrink-0" />
-                Configuración
-              </div>
-            )}
           </>
         )}
 

@@ -50,16 +50,30 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)")
-    const handleChange = () => setIsDesktop(mediaQuery.matches)
+    const handleChange = () => {
+      setIsDesktop(mediaQuery.matches)
+    }
 
     handleChange()
-    mediaQuery.addEventListener("change", handleChange)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange)
 
-    return () => mediaQuery.removeEventListener("change", handleChange)
+      return () => {
+        mediaQuery.removeEventListener("change", handleChange)
+      }
+    }
+
+    mediaQuery.addListener(handleChange)
+
+    return () => {
+      mediaQuery.removeListener(handleChange)
+    }
   }, [])
 
   useEffect(() => {
-    if (isDesktop) setIsExpanded(false)
+    if (isDesktop) {
+      setIsExpanded(false)
+    }
   }, [isDesktop])
 
   if (loading) {
@@ -117,7 +131,7 @@ export function ForecastCard({ forecast = [], loading }: ForecastCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 gap-1 text-xs"
+              className="h-8 gap-1 text-xs xl:hidden"
             >
               {isExpanded ? (
                 <>

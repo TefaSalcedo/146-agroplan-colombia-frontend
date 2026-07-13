@@ -50,24 +50,21 @@ function CropGrid({ crops, basePath, emptyMessage }: CropGridProps) {
 
 export default function CultivosPage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const { selectedLocation } = useLocation()
+  const { selectedLocation, hasHydrated } = useLocation()
 
   const municipalityId = selectedLocation?.id || ''
   const { recommendations, loading, error } = useRecommendations(municipalityId)
   const { insights, loading: insightsLoading, error: insightsError, retryAttempt: insightsRetryAttempt, reload: reloadInsights } = useAiInsights(municipalityId)
 
   useEffect(() => {
-    setMounted(true)
-
     // Redirect to landing page if no location selected
-    if (!selectedLocation && mounted) {
-      router.push('/')
+    if (hasHydrated && !selectedLocation) {
+      router.replace('/')
     }
-  }, [selectedLocation, mounted, router])
+  }, [hasHydrated, selectedLocation, router])
 
-  if (!mounted || !selectedLocation) {
-    return null
+  if (!hasHydrated || !selectedLocation) {
+    return <PageLoading title='Cultivos recomendados' />
   }
 
   if (loading) {

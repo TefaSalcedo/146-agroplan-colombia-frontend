@@ -6,8 +6,10 @@ import type { Municipality } from '@/types'
 
 interface LocationState {
   selectedLocation: Municipality | null
+  hasHydrated: boolean
   setSelectedLocation: (location: Municipality | null) => void
   clearLocation: () => void
+  setHasHydrated: (hydrated: boolean) => void
 }
 
 /**
@@ -23,8 +25,10 @@ export const useLocationStore = create<LocationState>()(
   persist(
     (set) => ({
       selectedLocation: null,
+      hasHydrated: false,
       setSelectedLocation: (location) => set({ selectedLocation: location }),
       clearLocation: () => set({ selectedLocation: null }),
+      setHasHydrated: (hydrated) => set({ hasHydrated: hydrated }),
     }),
     {
       name: 'selectedLocation',
@@ -44,6 +48,12 @@ export const useLocationStore = create<LocationState>()(
           },
         } as Storage
       }),
+      onRehydrateStorage: () => (state, error) => {
+        state?.setHasHydrated(true)
+        if (error) {
+          console.error('Error restoring selected location:', error)
+        }
+      },
     }
   )
 )
@@ -56,8 +66,9 @@ export const useLocationStore = create<LocationState>()(
  */
 export function useLocation() {
   const selectedLocation = useLocationStore((state) => state.selectedLocation)
+  const hasHydrated = useLocationStore((state) => state.hasHydrated)
   const setSelectedLocation = useLocationStore((state) => state.setSelectedLocation)
   const clearLocation = useLocationStore((state) => state.clearLocation)
 
-  return { selectedLocation, setSelectedLocation, clearLocation }
+  return { selectedLocation, hasHydrated, setSelectedLocation, clearLocation }
 }

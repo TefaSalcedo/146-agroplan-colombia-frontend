@@ -456,7 +456,7 @@ export function LandingPage() {
 
               <div
                 ref={cropBodyRef}
-                className="overflow-hidden"
+                className="overflow-hidden max-xl:!h-auto max-xl:!opacity-100"
                 style={{ height: 0, opacity: 0 }}
               >
                 <div className="space-y-1.5">
@@ -507,7 +507,7 @@ export function LandingPage() {
             aria-label={isExpanded ? "Colapsar tarjetas" : "Expandir tarjetas"}
             aria-expanded={isExpanded}
             onClick={() => toggleCardsRef.current?.()}
-            className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center justify-center gap-1 rounded-full border-2 border-white/40 bg-black/50 p-3 text-white shadow-xl backdrop-blur-md transition-all hover:scale-110 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:p-4"
+            className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center justify-center gap-1 rounded-full border-2 border-white/40 bg-black/50 p-3 text-white shadow-xl backdrop-blur-md transition-all hover:scale-110 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 xl:flex sm:p-4"
           >
             {isExpanded ? (
               <Minimize2 className="size-5 sm:size-6" />
@@ -536,7 +536,7 @@ export function LandingPage() {
 
               <div
                 ref={locationBodyRef}
-                className="overflow-hidden"
+                className="overflow-hidden max-xl:!h-auto max-xl:!opacity-100"
                 style={{ height: 0, opacity: 0 }}
               >
                 <div className="space-y-4">

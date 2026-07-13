@@ -200,3 +200,50 @@
     @apply hidden!;
   }
 }
+
+.concurso-shell {
+  --concurso-oak: oklch(0.48 0.09 65);
+}
+
+.dark .concurso-shell {
+  --concurso-oak: oklch(0.62 0.10 70);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .concurso-shell {
+    --concurso-oak: oklch(0.62 0.10 70);
+  }
+}
+
+.concurso-shell .concurso-oak {
+  color: var(--concurso-oak) !important;
+}
+
+.concurso-shell .text-white {
+  color: var(--foreground) !important;
+}
+
+.concurso-shell .text-white\/90,
+.concurso-shell .text-white\/80,
+.concurso-shell .text-white\/70,
+.concurso-shell .text-white\/60 {
+  color: var(--muted-foreground) !important;
+}
+
+.concurso-shell .bg-white\/5,
+.concurso-shell .bg-white\/10,
+.concurso-shell .bg-white\/15 {
+  background-color: color-mix(in srgb, var(--card) 92%, transparent) !important;
+}
+
+.concurso-shell .border-white\/10,
+.concurso-shell .border-white\/20,
+.concurso-shell .border-white\/30 {
+  border-color: var(--border) !important;
+}
+
+@media (max-width: 1279px) {
+  .concurso-shell [data-slot="card"] {
+    padding: 1rem;
+  }
+}

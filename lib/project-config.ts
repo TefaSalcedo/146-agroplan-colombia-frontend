@@ -19,24 +19,6 @@ export const projectConfig = {
       url: "https://github.com/TefaSalcedo/146-agroplan-colombia-backend",
       description: "API REST construida con FastAPI que sirve los endpoints de predicción, datos climáticos y catálogos de cultivos.",
       technology: "FastAPI, Python, PostgreSQL"
-    },
-    {
-      name: "Frontend Web",
-      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-frontend",
-      description: "Interfaz web responsiva construida con Next.js que permite a los usuarios interactuar con el sistema de planificación agrícola.",
-      technology: "Next.js, TypeScript, Tailwind CSS"
-    },
-    {
-      name: "Machine Learning Models",
-      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-ml",
-      description: "Repositorio que contiene todo el ciclo de vida de los modelos de machine learning siguiendo la metodología CRISP-ML.",
-      technology: "Python, Scikit-learn, TensorFlow"
-    },
-    {
-      name: "MCP Server",
-      url: "https://github.com/BOTOOM/146-datos-abiertos-mcp",
-      description: "Model Context Protocol (MCP) server que integra los datos abiertos del gobierno colombiano con sistemas de IA.",
-      technology: "TypeScript, MCP Protocol"
     }
   ],
 
@@ -44,24 +26,26 @@ export const projectConfig = {
   creators: [
     {
       name: "Estefania Salcedo",
-      role: "Lead Developer & ML Engineer",
+      role: "Lead Developer, Data Scientist & Data Engineer",
       github: "https://github.com/TefaSalcedo",
+      avatar: "https://avatars.githubusercontent.com/u/122816145?v=4",
       responsibilities: [
-        "Desarrollo de modelos de machine learning para zonificación y rendimiento",
-        "Implementación de backend con FastAPI",
-        "Ingeniería de datos y preprocesamiento",
-        "Integración de APIs externas (Open-Meteo, NASA POWER)"
+        "Preparación y análisis de más del 90% de los datos para los modelos",
+        "Ingeniería de datos sobre clima, suelos, cultivos, NASA POWER y fuentes complementarias",
+        "Desarrollo del backend con FastAPI e integración de APIs externas",
+        "Desarrollo del frontend y optimización de la experiencia de usuario"
       ]
     },
     {
       name: "Edwar Diaz",
-      role: "Frontend Developer & System Architect",
+      role: "Backend Developer, ML Engineer & System Architect",
       github: "https://github.com/BOTOOM",
+      avatar: "https://avatars.githubusercontent.com/u/28914781?v=4",
       responsibilities: [
-        "Desarrollo de interfaz web con Next.js",
-        "Arquitectura del sistema MCP",
-        "Integración de componentes de visualización",
-        "Optimización de experiencia de usuario"
+        "Diseño, entrenamiento y fine-tuning de los modelos de machine learning",
+        "Creación de versiones optimizadas y análisis de métricas",
+        "Arquitectura del sistema y despliegue de los componentes",
+        "Creación e integración del MCP para la puesta en producción"
       ]
     }
   ],
@@ -98,38 +82,47 @@ export const projectConfig = {
     },
     {
       phase: "Fase 4: Model Engineering",
-      description: "Desarrollo y entrenamiento de modelos de machine learning para zonificación agroclimática y predicción de rendimiento.",
+      description: "Creación de modelos base y modelos ajustados con AutoML y Optuna para zonificación y predicción de rendimiento. Se usó SHAP para identificar las features más importantes y construir versiones optimizadas con menos variables.",
       deliverables: [
-        "Modelos entrenados y validados",
-        "Métricas de evaluación",
-        "Model cards documentados"
+        "Dos modelos de zonificación, dos modelos de rendimiento en ensamble y un modelo KNN de recomendaciones",
+        "Modelos base, fine-tuned y optimizados",
+        "Métricas iniciales y análisis de importancia de features con SHAP"
       ]
     },
     {
-      phase: "Fase 5: Backend Development",
-      description: "Implementación de API REST con FastAPI para servir predicciones y datos climáticos.",
+      phase: "Fase 5: ML Evaluation & Interpretability",
+      description: "Evaluación formal de los modelos con las métricas apropiadas para cada tarea: R² y RMSE para rendimiento, y F1 macro para clasificación. Esta fase concentra la evaluación adicional y la interpretación de resultados.",
       deliverables: [
-        "API endpoints funcionales",
-        "Integración con modelos de ML",
-        "Sistema de sincronización climática"
+        "Evaluación comparativa de modelos",
+        "Métricas R², RMSE y F1 macro según el caso",
+        "Interpretación de resultados y selección de candidatos"
       ]
     },
     {
-      phase: "Fase 6: Frontend Development",
-      description: "Desarrollo de interfaz web responsiva con Next.js para visualización y uso del sistema.",
+      phase: "Fase 6: Backend Deployment",
+      description: "Despliegue del backend y sus servicios en Coolify sobre un VPS, con integración de los modelos y las fuentes de datos.",
       deliverables: [
-        "Interfaz de usuario completa",
-        "Visualización de mapas y calendarios",
-        "Integración con backend"
+        "API desplegada en Coolify",
+        "Integración de modelos y servicios",
+        "Configuración operativa del backend"
       ]
     },
     {
-      phase: "Fase 7: Deployment & Integration",
-      description: "Despliegue de modelos en Hugging Face, configuración de MCP server y puesta en producción.",
+      phase: "Fase 7: Frontend Deployment",
+      description: "Publicación del frontend y conexión con el backend desplegado para entregar la experiencia web completa.",
       deliverables: [
-        "Modelos publicados en Hugging Face",
-        "Sistema MCP funcional",
-        "Aplicación web en producción"
+        "Aplicación web publicada",
+        "Integración con la API productiva",
+        "Validación de mapas, calendarios y flujos principales"
+      ]
+     },
+     {
+      phase: "Fase 8: Model Registry, MCP & Production Integration",
+      description: "Almacenamiento de modelos, datasets y artefactos en Hugging Face; configuración del MCP según el entorno y puesta en producción integral del sistema.",
+      deliverables: [
+        "Modelos y artefactos publicados en Hugging Face",
+        "MCP auto-hospedado según las necesidades del entorno",
+        "Integración y puesta en producción total del sistema"
       ]
     }
   ],
@@ -198,7 +191,7 @@ export const projectConfig = {
     {
       name: "NASA POWER - Clima",
       source: "NASA POWER Project",
-      url: "https://power.larc.nasa.gov/api/temporal/daily/point",
+      url: "https://power.larc.nasa.gov/data-access-viewer/",
       description: "Datos climáticos diarios (temperatura, precipitación, humedad, radiación solar) para 32 departamentos de Colombia (2019-2024).",
       records: 70000,
       license: "NASA Open Data",
@@ -233,23 +226,21 @@ export const projectConfig = {
     }
   ],
 
-  // Hugging Face Models
+  // Machine Learning Models
   huggingFaceModels: [
     {
       name: "AgroPlan Zonificación",
-      url: "https://huggingface.co/SRBOTOM/agroplan-zonificacion",
-      description: "Modelo de machine learning para zonificación agroclimática de cultivos. Incluye modelo compilado, preprocesadores y datasets necesarios.",
+      description: "Modelos de zonificación agroclimática para los 7 cultivos disponibles. LightGBM es el modelo principal, CatBoost funciona como modelo secundario y KNN genera recomendaciones de cultivos similares.",
       type: "Classification Model",
-      framework: "Scikit-learn / TensorFlow",
+      framework: "LightGBM + CatBoost + KNN",
       crops: ["Aguacate", "Piña", "Cebolla", "Soya", "Algodón", "Fresa", "Caña Panelera"]
     },
     {
       name: "AgroPlan Rendimiento",
-      url: "https://huggingface.co/SRBOTOM/agroplan-rendimiento",
-      description: "Modelo de machine learning para predicción de rendimiento agrícola basado en condiciones climáticas y de suelo.",
-      type: "Regression Model",
-      framework: "Scikit-learn / TensorFlow",
-      crops: ["Aguacate", "Piña", "Cebolla", "Soya", "Algodón", "Fresa", "Caña Panelera"]
+      description: "Ensamble de modelos para predecir el rendimiento agrícola de 94 cultivos. Combina XGBoost y LightGBM para aprovechar sus fortalezas complementarias.",
+      type: "Regression Ensemble",
+      framework: "XGBoost + LightGBM",
+      crops: ["7 cultivos de zonificación", "87 cultivos adicionales", "94 cultivos en total"]
     }
   ],
 
@@ -310,6 +301,13 @@ export const projectConfig = {
       description: "Biblioteca de animación JavaScript profesional para el web.",
       license: "Standard (Free for web use)",
       usage: "Animaciones en la interfaz de usuario"
+    },
+    {
+      name: "Coolify",
+      url: "https://coolify.io/",
+      description: "Plataforma open source para desplegar y administrar servicios en infraestructura propia.",
+      license: "Apache-2.0",
+      usage: "Despliegue del backend en un VPS"
     }
   ],
 
@@ -319,7 +317,7 @@ export const projectConfig = {
       language: "Python",
       framework: "FastAPI",
       database: "PostgreSQL",
-      ml: ["TensorFlow", "Scikit-learn", "Pandas", "NumPy"]
+      ml: ["Scikit-learn", "Pandas", "NumPy", "LightGBM", "XGBoost", "CatBoost", "Joblib", "SHAP", "AutoML / Optuna"]
     },
     frontend: {
       language: "TypeScript",
@@ -329,9 +327,9 @@ export const projectConfig = {
       animation: "GSAP"
     },
     deployment: {
-      models: "Hugging Face",
-      hosting: "Vercel (Frontend)",
-      protocol: "MCP (Model Context Protocol)"
+      models: "Hugging Face: modelos, datasets y artefactos",
+      hosting: "Frontend en Vercel · Backend en Coolify sobre un VPS",
+      protocol: "MCP auto-hospedado según el entorno"
     }
   }
 }
