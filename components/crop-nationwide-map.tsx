@@ -40,6 +40,7 @@ interface CropNationwideMapProps {
   departmentsByMunicipality: Record<string, string>
   selectedId: string | null
   onSelect: (municipality: MapPoint) => void
+  onMapClick: () => void
 }
 
 function haversineDistanceMeters(
@@ -104,10 +105,12 @@ function MapContent({
   points,
   selectedId,
   onSelect,
+  onMapClick,
 }: {
   points: MapPoint[]
   selectedId: string | null
   onSelect: (municipality: MapPoint) => void
+  onMapClick: () => void
 }) {
   const { map } = useMap()
   const [clusters, setClusters] = useState<CropCluster[]>([])
@@ -147,6 +150,21 @@ function MapContent({
       map.off("moveend", updateClusters)
     }
   }, [map, updateClusters])
+
+  useEffect(() => {
+    if (!map) return
+
+    const handleMapClick = (event: MapLibreGL.MapMouseEvent) => {
+      const target = event.originalEvent.target
+      if (target instanceof HTMLElement && target.closest(".maplibregl-marker")) return
+      onMapClick()
+    }
+
+    map.on("click", handleMapClick)
+    return () => {
+      map.off("click", handleMapClick)
+    }
+  }, [map, onMapClick])
 
   useEffect(() => {
     if (!map || points.length === 0) return
@@ -255,6 +273,7 @@ export function CropNationwideMap({
   departmentsByMunicipality,
   selectedId,
   onSelect,
+  onMapClick,
 }: CropNationwideMapProps) {
   const points = useMemo(
     () =>
@@ -279,7 +298,7 @@ export function CropNationwideMap({
       className="h-full w-full"
       attributionControl={{ compact: true }}
     >
-      <MapContent points={points} selectedId={selectedId} onSelect={onSelect} />
+      <MapContent points={points} selectedId={selectedId} onSelect={onSelect} onMapClick={onMapClick} />
     </Map>
   )
 }

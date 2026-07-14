@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import {
@@ -37,6 +37,7 @@ interface CropNationwideMapProps {
   departmentsByMunicipality: Record<string, string>
   selectedId: string | null
   onSelect: (municipality: ZoningMapMunicipalityResult & { department: string }) => void
+  onMapClick: () => void
 }
 
 const CropNationwideMap = dynamic<CropNationwideMapProps>(
@@ -168,7 +169,7 @@ function NationalGuideContent({
     <Card
       className={cn(
         "border-primary/20 bg-background/90 p-3 shadow-xl backdrop-blur-xl md:p-4",
-        desktopLayout ? "h-auto min-h-full" : "h-full overflow-hidden",
+        desktopLayout ? "h-auto min-h-full" : "h-auto overflow-visible md:h-full md:overflow-hidden",
       )}
     >
       <div className="space-y-3 md:space-y-2">
@@ -186,8 +187,8 @@ function NationalGuideContent({
         </div>
 
         {guide.summary && (
-          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 md:max-h-10 md:overflow-hidden md:p-2">
-            <p className="text-sm leading-relaxed md:line-clamp-1 md:text-xs">{guide.summary}</p>
+          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 md:p-2">
+            <p className="text-sm leading-relaxed md:text-xs">{guide.summary}</p>
           </div>
         )}
 
@@ -352,6 +353,13 @@ export function CropMapView({ cropId }: CropMapViewProps) {
     reloadNationalGuide()
   }
 
+  const handleMapClick = useCallback(() => {
+    setSelectedMunicipality(null)
+    if (window.matchMedia("(min-width: 1024px)").matches) {
+      setDesktopRecommendationsOpen(false)
+    }
+  }, [])
+
   if (error) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
@@ -442,6 +450,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
               departmentsByMunicipality={departmentsByMunicipality}
               selectedId={selectedMunicipality?.municipalityId ?? null}
               onSelect={setSelectedMunicipality}
+              onMapClick={handleMapClick}
             />
           </div>
 
