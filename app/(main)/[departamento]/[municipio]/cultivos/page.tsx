@@ -118,7 +118,7 @@ export default function CultivosPage() {
       </div>
 
       {isMixed ? (
-        <div id='pdf-cultivos' className='flex flex-col gap-6 rounded-lg bg-white p-6'>
+        <div id='pdf-cultivos' className='flex flex-col gap-6 rounded-lg bg-card p-6'>
           <div className='flex flex-col gap-3'>
             <div className='flex items-center gap-2'>
               <Database className='size-4 text-primary' />
@@ -151,7 +151,7 @@ export default function CultivosPage() {
       ) : (
         <div
           id='pdf-cultivos'
-          className='grid grid-cols-2 gap-4 rounded-lg bg-white p-6 sm:grid-cols-3 lg:grid-cols-4'
+          className='grid grid-cols-2 gap-4 rounded-lg bg-card p-6 sm:grid-cols-3 lg:grid-cols-4'
         >
           {cropCards.map((crop) => (
             <CropCard key={crop.id} {...crop} href={`${cropsBasePath}/${crop.id}`} />

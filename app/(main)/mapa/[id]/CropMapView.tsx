@@ -371,10 +371,15 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-8 md:h-screen md:w-screen md:block">
+    <div className="flex flex-col gap-6 pb-8 md:h-screen md:w-full md:block">
       <Card className="overflow-hidden rounded-2xl border-2 p-0 md:h-full md:w-full md:rounded-none md:border-0">
         <div className="relative h-[60svh] min-h-0 md:h-full">
-          <div className="absolute right-4 top-4 z-10 flex items-start gap-2">
+          <div
+            className={cn(
+              "absolute right-4 top-4 z-10 flex items-start gap-2 transition-[right] duration-500 ease-out",
+              desktopRecommendationsOpen ? "lg:right-[calc(min(34vw,420px)+1rem)]" : "",
+            )}
+          >
             {showMapLegend && (
               <div className="rounded-xl border border-white/40 bg-background/70 p-3 text-xs text-foreground shadow-xl backdrop-blur-xl">
                 <div className="mb-2 flex items-center justify-between gap-4">
@@ -441,7 +446,14 @@ export function CropMapView({ cropId }: CropMapViewProps) {
           </div>
 
           {selectedMunicipality && cropReady && crop && (
-            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[calc(95svh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
+            <div
+              className={cn(
+                "absolute inset-x-4 bottom-4 z-10 max-h-[calc(95svh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm transition-[right] duration-500 ease-out md:inset-x-auto md:bottom-4 md:w-96",
+                desktopRecommendationsOpen
+                  ? "lg:right-[calc(min(34vw,420px)+1rem)]"
+                  : "",
+              )}
+            >
               <div className="space-y-4">
                 <div>
                   <p className="text-xl font-bold leading-tight">{selectedMunicipality.municipalityName}</p>
@@ -502,11 +514,11 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-40 hidden lg:block">
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-40 hidden w-[min(34vw,420px)] lg:block">
             <aside
               id="desktop-national-guide"
               className={cn(
-                "pointer-events-auto absolute inset-y-4 right-0 flex w-[min(34vw,420px)] flex-col overflow-y-auto rounded-l-2xl border border-r-0 transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-out",
+                "pointer-events-auto absolute inset-y-4 right-0 flex h-auto w-full flex-col overflow-y-auto rounded-l-2xl border border-r-0 transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-out",
                 !cropReady || guideLoading
                   ? "border-transparent bg-transparent shadow-none backdrop-blur-none"
                   : "border-primary/20 bg-background/90 shadow-2xl backdrop-blur-xl",
