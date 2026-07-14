@@ -40,6 +40,7 @@ interface CropNationwideMapProps {
   departmentsByMunicipality: Record<string, string>
   selectedId: string | null
   onSelect: (municipality: MapPoint) => void
+  onMapClick: () => void
 }
 
 function haversineDistanceMeters(
@@ -104,10 +105,12 @@ function MapContent({
   points,
   selectedId,
   onSelect,
+  onMapClick,
 }: {
   points: MapPoint[]
   selectedId: string | null
   onSelect: (municipality: MapPoint) => void
+  onMapClick: () => void
 }) {
   const { map } = useMap()
   const [clusters, setClusters] = useState<CropCluster[]>([])
@@ -149,6 +152,21 @@ function MapContent({
   }, [map, updateClusters])
 
   useEffect(() => {
+    if (!map) return
+
+    const handleMapClick = (event: MapLibreGL.MapMouseEvent) => {
+      const target = event.originalEvent.target
+      if (target instanceof HTMLElement && target.closest(".maplibregl-marker")) return
+      onMapClick()
+    }
+
+    map.on("click", handleMapClick)
+    return () => {
+      map.off("click", handleMapClick)
+    }
+  }, [map, onMapClick])
+
+  useEffect(() => {
     if (!map || points.length === 0) return
 
     const pointsBounds = new MapLibreGL.LngLatBounds()
@@ -169,7 +187,7 @@ function MapContent({
       ],
     )
 
-    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 2.5, duration: 0 })
+    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 1.8, duration: 0 })
   }, [map, points])
 
   useEffect(() => {
@@ -255,6 +273,7 @@ export function CropNationwideMap({
   departmentsByMunicipality,
   selectedId,
   onSelect,
+  onMapClick,
 }: CropNationwideMapProps) {
   const points = useMemo(
     () =>
@@ -270,16 +289,16 @@ export function CropNationwideMap({
   return (
     <Map
       bounds={MAP_CONTEXT_BOUNDS}
-      fitBoundsOptions={{ padding: 48, maxZoom: 2.5 }}
+      fitBoundsOptions={{ padding: 48, maxZoom: 1.8 }}
       maxBounds={MAP_VIEW_BOUNDS}
-      minZoom={2.2}
+      minZoom={1.8}
       maxZoom={12}
       styles={MAP_STYLES}
       scrollZoom
       className="h-full w-full"
       attributionControl={{ compact: true }}
     >
-      <MapContent points={points} selectedId={selectedId} onSelect={onSelect} />
+      <MapContent points={points} selectedId={selectedId} onSelect={onSelect} onMapClick={onMapClick} />
     </Map>
   )
 }

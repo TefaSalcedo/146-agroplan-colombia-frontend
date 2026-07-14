@@ -32,6 +32,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import type {
@@ -170,11 +171,6 @@ function getCropIconColor(cropName: string): string {
   return "bg-primary/10 text-primary"
 }
 
-function makeBullet(text: string): string {
-  // Truncate long explanations to keep cards scannable.
-  return text.length > 120 ? `${text.slice(0, 120).trim()}...` : text
-}
-
 function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
   const confidence = crop.confidence
   const percent = getConfidencePercent(confidence)
@@ -185,7 +181,7 @@ function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
       </div>
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="font-semibold leading-tight">{crop.cropName}</h4>
+          <h4 className="min-w-0 break-words font-semibold leading-tight">{crop.cropName}</h4>
           <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", getConfidenceBadge(confidence))}>
             {getConfidenceLabel(confidence)}
           </Badge>
@@ -196,7 +192,7 @@ function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Confianza: {percent}%</p>
         </div>
-        <p className="text-sm leading-snug text-muted-foreground line-clamp-3">{makeBullet(crop.why)}</p>
+        <p className="break-words text-sm leading-snug text-muted-foreground">{crop.why}</p>
       </div>
     </Card>
   )
@@ -212,14 +208,14 @@ function FarmingSystemCard({ system }: { system: AiInsightsFarmingSystem }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="font-semibold leading-tight">{system.title}</h4>
+            <h4 className="min-w-0 break-words font-semibold leading-tight">{system.title}</h4>
             <div className={cn("flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium", getSuitableBadge(suitable))}>
               {renderSuitableIcon(suitable)}
               <span>{getSuitableLabel(suitable)}</span>
             </div>
           </div>
-          <p className="mt-1.5 text-sm leading-snug text-muted-foreground line-clamp-3">
-            {makeBullet(system.recommendation)}
+          <p className="mt-1.5 break-words text-sm leading-snug text-muted-foreground">
+            {system.recommendation}
           </p>
         </div>
       </div>
@@ -235,8 +231,8 @@ function SoilCard({ item }: { item: AiInsightsSoilAndFertilizer }) {
           {renderSoilIcon(item.title, "size-5 text-emerald-600")}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight">{item.title}</h4>
-          <p className="mt-1.5 text-sm leading-snug text-muted-foreground line-clamp-3">{makeBullet(item.content)}</p>
+          <h4 className="break-words font-semibold leading-tight">{item.title}</h4>
+          <p className="mt-1.5 break-words text-sm leading-snug text-muted-foreground">{item.content}</p>
         </div>
       </div>
     </Card>
@@ -244,8 +240,6 @@ function SoilCard({ item }: { item: AiInsightsSoilAndFertilizer }) {
 }
 
 export function AiInsightsPanel({ insights, loading, error, retryAttempt, municipalityName, onReload }: AiInsightsPanelProps) {
-  console.log("[AiInsightsPanel] render:", { loading, error, retryAttempt, hasInsights: !!insights, status: insights?.status })
-
   const isRetrying = loading && retryAttempt && retryAttempt > 0
 
   if (loading) {
@@ -256,9 +250,7 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
             <RefreshCw className={cn("size-6 text-primary", isRetrying && "animate-spin")} />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">
-              {isRetrying ? "Reintentando recomendaciones de IA..." : "Cargando recomendaciones de IA..."}
-            </p>
+            <DynamicAiLoadingMessage isLoading={loading} />
             <p className="text-xs text-muted-foreground">
               {isRetrying
                 ? `Reintento ${retryAttempt} de 2. El servidor está tardando más de lo esperado.`
@@ -292,24 +284,28 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
 
   if (error || (insights && insights.status === "error")) {
     return (
-      <Card className="relative overflow-hidden border border-destructive/20 bg-destructive/5 p-6">
-        <div className="flex flex-col gap-3 text-sm text-destructive">
+      <Card className="relative overflow-hidden border border-amber-200/80 bg-amber-50/60 p-5 dark:border-amber-900/60 dark:bg-amber-950/20 sm:p-6">
+        <div className="flex flex-col gap-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            <p>{error || "No se pudieron generar las recomendaciones de IA."}</p>
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+              <AlertCircle className="size-5" aria-hidden="true" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-semibold text-foreground">No pudimos cargar las recomendaciones</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                El servicio de IA no está disponible en este momento. Puedes intentarlo nuevamente en unos segundos.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            No se pudieron cargar las recomendaciones de IA en este momento. Esto puede deberse a que el servidor está ocupado o alcanzó el límite de solicitudes.
-          </p>
           {onReload && (
             <Button
               variant="outline"
               size="sm"
-              className="w-fit gap-2 text-destructive hover:bg-destructive/10"
+              className="w-fit gap-2 border-amber-300 bg-background text-foreground hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-900/40"
               onClick={onReload}
             >
-              <RefreshCw className="size-4" />
-              Reintentar
+              <RefreshCw className="size-4" aria-hidden="true" />
+              Intentar de nuevo
             </Button>
           )}
         </div>

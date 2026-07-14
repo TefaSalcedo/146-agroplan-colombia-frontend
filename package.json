@@ -12,7 +12,7 @@
     "@base-ui/react": "^1.5.0",
     "@gsap/react": "^2.1.2",
     "@sparticuz/chromium-min": "149.0.0",
-    "@vercel/analytics": "1.6.1",
+    "@vercel/analytics": "2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gsap": "^3.15.0",
@@ -21,6 +21,7 @@
     "maplibre-gl": "^5.24.0",
     "next": "16.2.10",
     "next-themes": "^0.4.6",
+    "postcss": "^8.5.19",
     "puppeteer-core": "25.3.0",
     "react": "^19",
     "react-dom": "^19",
@@ -40,18 +41,8 @@
     "@types/tar-fs": "2.0.4",
     "eslint": "9.39.3",
     "eslint-config-next": "16.2.10",
-    "postcss": "^8.5",
+    "postcss": "^8.5.19",
     "tailwindcss": "^4.2.0",
     "typescript": "5.7.3"
-  },
-  "pnpm": {
-    "settings": {
-      "onlyBuiltDependencies": [
-        "core-js",
-        "msw",
-        "sharp",
-        "unrs-resolver"
-      ]
-    }
   }
 }

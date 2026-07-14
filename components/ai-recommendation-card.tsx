@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
 import type { CropRecommendationResponse } from "@/lib/api-client/types"
 
 interface ParsedRecommendation {
@@ -114,10 +115,13 @@ export function AIRecommendationCard({
         </div>
 
         {loading && (
-          <div className="space-y-3">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
+          <div className="space-y-4">
+            <DynamicAiLoadingMessage isLoading={loading} />
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/6" />
+            </div>
           </div>
         )}
 

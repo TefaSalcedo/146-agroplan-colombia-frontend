@@ -2,19 +2,30 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 // Using system fonts to avoid Google Fonts connectivity issues
+import { ScrollToTop } from '@/components/scroll-to-top'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
 // Using system fonts via CSS classes
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://agroplan.co'),
   title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva | Qué Sembrar Hoy',
   description:
     'AgroPlan es un sistema de IA que ayuda a agricultores y alcaldías en Colombia a decidir qué cultivar, cuándo sembrar y dónde. Zonificación agroclimática inteligente basada en datos reales de tu región.',
-  keywords: 'agricultura Colombia, qué sembrar, zonificación agrícola, cultivos, predicción agrícola, IA agrícola, planificación agraria',
+  keywords: [
+    'agricultura Colombia',
+    'qué sembrar',
+    'zonificación agrícola',
+    'cultivos',
+    'predicción agrícola',
+    'IA agrícola',
+    'planificación agraria',
+  ],
   authors: [{ name: 'AgroPlan Colombia' }],
   creator: 'AgroPlan Colombia',
   publisher: 'AgroPlan Colombia',
+  category: 'Agricultura y tecnología',
   icons: {
     icon: '/favicon.ico',
   },
@@ -25,11 +36,33 @@ export const metadata: Metadata = {
     siteName: 'AgroPlan Colombia',
     title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva',
     description: 'Sistema de IA para agricultura inteligente en Colombia. Descubre qué sembrar con precisión.',
+    images: [
+      {
+        url: '/ai%20images/portada%20Agroplan.webp',
+        alt: 'AgroPlan Colombia: inteligencia agrícola predictiva',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva',
+    description: 'Descubre qué sembrar, cuándo y dónde con inteligencia agrícola para Colombia.',
+    images: ['/ai%20images/portada%20Agroplan.webp'],
   },
   alternates: {
     canonical: 'https://agroplan.co',
   },
-  robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
 }
 
 export const viewport: Viewport = {
@@ -49,10 +82,11 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className="bg-background">
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <ScrollToTop />
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.VERCEL === '1' && <Analytics />}
       </body>
     </html>
   )

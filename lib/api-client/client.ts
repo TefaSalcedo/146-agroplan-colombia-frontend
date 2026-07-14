@@ -50,6 +50,7 @@ async function fetchWithRetry(
   baseDelay = 1000
 ): Promise<Response> {
   let lastError: Error | null = null
+  const signal = options.signal
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -57,9 +58,30 @@ async function fetchWithRetry(
       return response
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
+      if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) {
+        throw error
+      }
       if (attempt < maxRetries) {
         const delay = baseDelay * Math.pow(2, attempt)
-        await new Promise(resolve => setTimeout(resolve, delay))
+        await new Promise<void>((resolve, reject) => {
+          const handleTimeout = () => {
+            signal?.removeEventListener("abort", handleAbort)
+            resolve()
+          }
+          const timeout = setTimeout(handleTimeout, delay)
+          const handleAbort = () => {
+            clearTimeout(timeout)
+            signal?.removeEventListener("abort", handleAbort)
+            reject(new DOMException("The request was aborted", "AbortError"))
+          }
+
+          if (signal?.aborted) {
+            handleAbort()
+            return
+          }
+
+          signal?.addEventListener("abort", handleAbort, { once: true })
+        })
       }
     }
   }

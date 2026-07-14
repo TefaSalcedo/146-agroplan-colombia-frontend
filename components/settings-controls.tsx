@@ -14,7 +14,7 @@ export function SettingsControls() {
     setMounted(true)
   }, [])
 
-  const isDark = theme === "dark"
+  const isDark = mounted && theme === "dark"
 
   return (
     <div className="flex flex-col gap-4">

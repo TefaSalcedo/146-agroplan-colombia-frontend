@@ -144,48 +144,6 @@ export default function InicioPage() {
           <WeatherCard weather={weather} loading={weatherLoading} />
         </section>
 
-        <section aria-labelledby="climate-alerts-title" className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
-              <AlertTriangle className="size-5" />
-            </div>
-            <div>
-              <h2 id="climate-alerts-title" className="text-lg font-semibold">
-                Clima futuro y alertas
-              </h2>
-              <p className="text-sm text-muted-foreground">Pronóstico y alertas para tu municipio</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {alertsLoading ? (
-              <p className="text-sm text-muted-foreground">Cargando alertas...</p>
-            ) : alertsError ? (
-              <p className="text-sm text-destructive">Error: {alertsError}</p>
-            ) : alerts.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {alerts.map((alert) => (
-                  <ClimateAlertCard key={alert.id} alert={alert} />
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <ForecastCard 
-                forecast={forecast} 
-                loading={forecastLoading} 
-
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <MonthlyForecastCard forecast={monthlyForecast} loading={monthlyForecastLoading} />
-            </div>
-          </div>
-        </section>
-
         <section aria-labelledby="map-title" className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -196,19 +154,11 @@ export default function InicioPage() {
                 ¿Qué puedes sembrar aquí?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Cultivos recomendados para {selectedLocation.name} con su confidence o escort correspondiente
+                Cultivos recomendados para {selectedLocation.name}
               </p>
             </div>
           </div>
-          {recommendations?.source && (
-            <RecommendationSourceBanner
-              source={recommendations.source}
-              sourceDescription={recommendations.sourceDescription}
-              whyItMatters={recommendations.whyItMatters}
-              modelVersion={recommendations.modelVersion}
-              method={recommendations.method}
-            />
-          )}
+
           {recommendationsLoading || cropsLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -227,6 +177,15 @@ export default function InicioPage() {
             <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No hay cultivos recomendados disponibles para esta ubicación.
             </div>
+          )}
+          {recommendations?.source && (
+            <RecommendationSourceBanner
+              source={recommendations.source}
+              sourceDescription={recommendations.sourceDescription}
+              whyItMatters={recommendations.whyItMatters}
+              modelVersion={recommendations.modelVersion}
+              method={recommendations.method}
+            />
           )}
         </section>
 
@@ -267,6 +226,44 @@ export default function InicioPage() {
               tone="accent"
               linkLabel="Ver calendario"
             />
+          </div>
+        </section>
+
+        <section aria-labelledby="climate-alerts-title" className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+              <AlertTriangle className="size-5" />
+            </div>
+            <div>
+              <h2 id="climate-alerts-title" className="text-lg font-semibold">
+                Clima futuro y alertas
+              </h2>
+              <p className="text-sm text-muted-foreground">Pronóstico y alertas para tu municipio</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {alertsLoading ? (
+              <p className="text-sm text-muted-foreground">Cargando alertas...</p>
+            ) : alertsError ? (
+              <p className="text-sm text-destructive">Error: {alertsError}</p>
+            ) : alerts.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {alerts.map((alert) => (
+                  <ClimateAlertCard key={alert.id} alert={alert} />
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="flex min-w-0 flex-col gap-2">
+              <ForecastCard forecast={forecast} loading={forecastLoading} />
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-2">
+              <MonthlyForecastCard forecast={monthlyForecast} loading={monthlyForecastLoading} />
+            </div>
           </div>
         </section>
       </div>

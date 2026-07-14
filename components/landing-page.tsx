@@ -40,6 +40,7 @@ import { buildLocationPath } from "@/lib/routing"
 import { GeoButton, MunicipalitySearchAutocomplete } from "@/components/location"
 import { Municipality } from "@/types"
 import { useTheme } from "next-themes"
+import { RepositoryHubButton } from "@/components/repository-hub-button"
 
 gsap.registerPlugin(useGSAP)
 
@@ -48,7 +49,8 @@ export function LandingPage() {
   const { selectedLocation, setSelectedLocation } = useLocation()
   const { resolvedTheme, setTheme } = useTheme()
   const currentYear = new Date().getFullYear()
-  const isDark = resolvedTheme === "dark"
+  const [themeMounted, setThemeMounted] = useState(false)
+  const isDark = themeMounted && resolvedTheme === "dark"
 
   // Refs for GSAP animation
   const cardsContainerRef = useRef<HTMLDivElement>(null)
@@ -60,6 +62,10 @@ export function LandingPage() {
   const toggleCardsRef = useRef<(() => void) | undefined>(undefined)
 
   const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    setThemeMounted(true)
+  }, [])
 
   // Crop selection state
   const [selectedCrop, setSelectedCrop] = useState("")
@@ -393,6 +399,8 @@ export function LandingPage() {
         muted
         loop
         playsInline
+        preload="metadata"
+        poster="/ai%20images/portada%20Agroplan.webp"
         className="absolute inset-0 h-full w-full object-cover"
       >
         <source src="/video/hero.mp4" type="video/mp4" />
@@ -405,32 +413,45 @@ export function LandingPage() {
         }`}
       />
 
-      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
-        <Link
-          href="/presentacion"
-          className="flex h-10 items-center gap-2 rounded-xl border border-orange-300/90 bg-orange-500/25 px-3 text-xs font-bold text-white shadow-[0_0_18px_rgba(251,146,60,0.4)] backdrop-blur-md transition-all hover:border-orange-200 hover:bg-orange-500/40 hover:shadow-[0_0_24px_rgba(251,146,60,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 sm:px-4 sm:text-sm"
-          aria-label="Ver presentación de AgroPlan Colombia"
-        >
-          <span className="size-1.5 rounded-full bg-orange-200 shadow-[0_0_8px_rgba(254,215,170,0.95)]" />
-          <Presentation className="size-4 sm:size-5" />
-          <span className="hidden sm:inline">Presentación</span>
-        </Link>
+      <div className="absolute inset-x-4 top-4 z-20 flex items-start justify-between sm:inset-x-6 sm:top-6">
+        <RepositoryHubButton placement="landing" />
+        <div className="flex items-center gap-2">
+          <div className="group/presentation relative">
+            <Link
+              href="/presentacion"
+              className="flex h-10 items-center gap-2 rounded-xl border border-orange-300/90 bg-orange-500/25 px-3 text-xs font-bold text-white shadow-[0_0_18px_rgba(251,146,60,0.4)] backdrop-blur-md transition-all hover:border-orange-200 hover:bg-orange-500/40 hover:shadow-[0_0_24px_rgba(251,146,60,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 sm:px-4 sm:text-sm"
+              aria-describedby="presentation-tooltip"
+              aria-label="Ver presentación oficial de Datos al Ecosistema 2026"
+            >
+              <span className="size-1.5 rounded-full bg-orange-200 shadow-[0_0_8px_rgba(254,215,170,0.95)]" />
+              <Presentation className="size-4 sm:size-5" />
+              <span className="hidden sm:inline">Presentación</span>
+            </Link>
+            <span
+              id="presentation-tooltip"
+              role="tooltip"
+              className="pointer-events-none absolute right-0 top-full mt-3 hidden w-max max-w-56 rounded-xl border border-white/20 bg-black/85 px-3 py-2 text-xs font-medium leading-relaxed text-white opacity-0 shadow-xl backdrop-blur-md transition-opacity duration-200 group-hover/presentation:opacity-100 group-focus-within/presentation:opacity-100 sm:block"
+            >
+              Ver presentación oficial de Datos al Ecosistema 2026.
+            </span>
+          </div>
 
-        <button
-          type="button"
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          className="flex size-10 items-center justify-center rounded-xl border border-white/25 bg-black/35 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-          aria-pressed={isDark}
-        >
-          {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
-        </button>
+          <button
+            type="button"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            className="flex size-10 items-center justify-center rounded-xl border border-white/25 bg-black/35 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+            aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            aria-pressed={isDark}
+          >
+            {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Content */}
       <div className="relative flex min-h-svh flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 text-center">
+        {/* Header  */}
+        <div className="mb-6 text-center sm: mt-10">
           <Image
             src="/ai%20images/agroplan.webp"
             alt="Agroplan"
@@ -439,7 +460,7 @@ export function LandingPage() {
             className="mx-auto mb-4 size-20 rounded-2xl object-cover shadow-2xl ring-2 ring-white/30"
             priority
           />
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl mx-10 ">
             Planifica mejor. Cosecha más.
           </h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-white/90 sm:text-base">
@@ -751,10 +772,11 @@ export function LandingPage() {
         <div className="mt-6 flex flex-col items-center gap-2 text-center text-xs text-white/70">
           <Link
             href="/concurso"
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            className="flex items-center gap-2 rounded-full border border-white/25 bg-black/35 px-4 py-2 font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-orange-200/80 hover:bg-orange-500/35 hover:shadow-[0_0_18px_rgba(251,146,60,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200"
+            aria-label="Explorar el espacio oficial del concurso Datos al Ecosistema 2026"
           >
-            <Trophy className="size-3" />
-            <span>Datos al ecosistema 2026</span>
+            <Trophy className="size-3.5 text-orange-200" />
+            <span>Datos al Ecosistema 2026</span>
           </Link>
           <p>
             © {currentYear} AgroPlan Colombia · Inteligencia para el Campo

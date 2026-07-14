@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -36,19 +36,28 @@ const MAX_CONCURRENT_PDFS = 2
 const requestLog = new Map<string, number[]>()
 let activePdfCount = 0
 let chromiumExecutablePromise: Promise<string> | undefined
+type PdfLogger = (message: string, details?: unknown) => void
 
-async function getChromiumExecutablePath(): Promise<string> {
+async function getChromiumExecutablePath(log: PdfLogger): Promise<string> {
   chromiumExecutablePromise ??= (async () => {
     try {
       await access(CHROMIUM_VERIFIED_MARKER)
-      return chromium.executablePath(CHROMIUM_PACK_DIR)
+      const executablePath = await chromium.executablePath(CHROMIUM_PACK_DIR)
+      log('Reusing verified Chromium cache', { executablePath })
+      return executablePath
     } catch {
       // The temporary cache is only trusted after this process verifies the archive.
+      log('Verified Chromium cache not available; downloading artifact')
     }
 
     const archivePath = join(tmpdir(), 'agroplan-chromium-v149.tar')
+    const downloadStartedAt = Date.now()
     const response = await fetch(CHROMIUM_PACK_URL, {
       signal: AbortSignal.timeout(300_000),
+    })
+    log('Chromium artifact response received', {
+      status: response.status,
+      elapsedMs: Date.now() - downloadStartedAt,
     })
     if (!response.ok || !response.body) {
       throw new Error(`Unable to download Chromium pack: HTTP ${response.status}`)
@@ -60,10 +69,12 @@ async function getChromiumExecutablePath(): Promise<string> {
       ),
       createWriteStream(archivePath),
     )
+    log('Chromium artifact downloaded', { elapsedMs: Date.now() - downloadStartedAt })
 
     const hash = createHash('sha256')
     await pipeline(createReadStream(archivePath), hash)
     const actualHash = hash.digest('hex')
+    log('Chromium artifact hash calculated', { actualHash })
     if (actualHash !== CHROMIUM_PACK_SHA256) {
       await rm(archivePath, { force: true })
       throw new Error('Chromium pack integrity check failed')
@@ -74,9 +85,11 @@ async function getChromiumExecutablePath(): Promise<string> {
     await mkdir(CHROMIUM_PACK_DIR, { recursive: true })
     await pipeline(createReadStream(archivePath), extract(CHROMIUM_PACK_DIR))
     await rm(archivePath, { force: true })
+    log('Chromium artifact extracted', { directory: CHROMIUM_PACK_DIR })
 
     const chromiumPath = await chromium.executablePath(CHROMIUM_PACK_DIR)
     await writeFile(CHROMIUM_VERIFIED_MARKER, CHROMIUM_PACK_SHA256, 'utf8')
+    log('Chromium executable ready', { executablePath: chromiumPath })
     return chromiumPath
   })().catch((error) => {
     chromiumExecutablePromise = undefined
@@ -172,6 +185,10 @@ function isValidLocation(location: unknown): location is PdfLocation {
   )
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function getPrintableSelector(page: string): string {
   if (page.endsWith('/inicio')) return '#pdf-content'
   if (page.endsWith('/calendario')) return '#pdf-calendario'
@@ -180,88 +197,145 @@ function getPrintableSelector(page: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const requestId = request.headers.get('x-request-id') || randomUUID()
+  const requestStartedAt = Date.now()
+  const log: PdfLogger = (message, details) => {
+    console.log(`[PDF API][${requestId}] ${message}`, details ?? '')
+  }
+  const logError = (message: string, error?: unknown) => {
+    console.error(`[PDF API][${requestId}] ${message}`, error ?? '')
+  }
+
+  log('Request received', {
+    method: request.method,
+    contentType: request.headers.get('content-type'),
+    contentLength: request.headers.get('content-length'),
+    activePdfCount,
+  })
+
   const contentLength = Number(request.headers.get('content-length') || 0)
   if (contentLength > MAX_REQUEST_BYTES) {
+    log('Request rejected: body too large', { contentLength, maxBytes: MAX_REQUEST_BYTES })
     return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
   }
 
   if (!request.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+    log('Request rejected: invalid content type')
     return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 415 })
   }
 
   const clientKey = getClientKey(request)
   if (!consumeRateLimit(clientKey)) {
+    log('Request rejected: rate limit exceeded')
     return NextResponse.json({ error: 'Too many PDF requests' }, { status: 429 })
   }
 
   if (activePdfCount >= MAX_CONCURRENT_PDFS) {
+    log('Request rejected: concurrency limit exceeded', { maxConcurrent: MAX_CONCURRENT_PDFS })
     return NextResponse.json({ error: 'PDF service is busy' }, { status: 503 })
   }
 
   let body: unknown
   try {
-    body = await request.json()
+    const rawBody = await request.text()
+    const bodyBytes = new TextEncoder().encode(rawBody).byteLength
+    if (bodyBytes > MAX_REQUEST_BYTES) {
+      log('Request rejected: body exceeds actual size limit', {
+        bodyBytes,
+        maxBytes: MAX_REQUEST_BYTES,
+      })
+      return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+    }
+    body = JSON.parse(rawBody)
   } catch {
+    log('Request rejected: invalid JSON')
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!body || typeof body !== 'object') {
+  if (!isRecord(body)) {
+    log('Request rejected: body is not an object')
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const payload = body as Record<string, unknown>
-  const page = payload.page ?? '/cultivos'
-  const filename = sanitizeFilename(payload.filename)
-  const location = payload.location
+  const page = body.page ?? '/cultivos'
+  const requestedFilename = body.filename ?? 'documento.pdf'
+  const location = body.location
 
   if (location !== undefined && !isValidLocation(location)) {
+    log('Request rejected: invalid location payload')
     return NextResponse.json({ error: 'Invalid location payload' }, { status: 400 })
   }
 
-  if (typeof page !== 'string' || !page.startsWith('/')) {
-    console.error('[PDF API] Invalid page path:', page)
+  if (
+    typeof requestedFilename !== 'string' ||
+    requestedFilename.length === 0 ||
+    requestedFilename.length > 120
+  ) {
+    log('Request rejected: invalid filename')
+    return NextResponse.json({ error: 'Invalid filename' }, { status: 400 })
+  }
+  const filename = sanitizeFilename(requestedFilename)
+
+  if (
+    typeof page !== 'string' ||
+    !page.startsWith('/') ||
+    page.startsWith('//') ||
+    /[\u0000-\u001f\u007f]/.test(page)
+  ) {
+    logError('Request rejected: invalid page path', page)
     return NextResponse.json({ error: 'Invalid page path' }, { status: 400 })
   }
 
   if (!isPrintablePath(page)) {
-    console.error('[PDF API] Unsupported printable path:', page)
+    logError('Request rejected: unsupported printable path', page)
     return NextResponse.json({ error: 'Unsupported printable path' }, { status: 400 })
   }
 
-  const url = `${getTrustedOrigin()}${page}`
+  const origin = getTrustedOrigin()
+  const url = `${origin}${page}`
   activePdfCount += 1
 
-  console.log(`[PDF API] Starting PDF generation for page: ${page}`)
-  console.log(`[PDF API] URL: ${url}`)
-  console.log(`[PDF API] Filename: ${filename}`)
+  log('Starting PDF generation', {
+    page,
+    url,
+    filename,
+    activePdfCount,
+  })
   if (location) {
-    console.log(`[PDF API] Location provided: ${location.name}, ${location.department}`)
+    log('Location provided', {
+      id: location.id,
+      name: location.name,
+      department: location.department,
+    })
   }
 
   const startTime = Date.now()
   let browser
 
   try {
-    console.log('[PDF API] Launching Puppeteer browser...')
+    log('Launching Puppeteer browser')
+    const chromiumPath = await getChromiumExecutablePath(log)
+    log('Using Chromium executable', { chromiumPath })
     browser = await puppeteer.launch({
       args: await puppeteer.defaultArgs({
         args: chromium.args,
         headless: 'shell',
       }),
-      executablePath: await getChromiumExecutablePath(),
+      executablePath: chromiumPath,
       headless: 'shell',
     })
-    console.log('[PDF API] Browser launched successfully')
+    log('Browser launched successfully')
 
     const browserPage = await browser.newPage()
+    log('Created browser page')
     // Keep responsive layouts in their desktop state while generating the PDF.
     await browserPage.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 })
     await browserPage.emulateMediaType('screen')
-    console.log('[PDF API] Created new page')
+    log('Configured desktop viewport', { width: 1440, height: 1000 })
 
     // Seed Zustand's persisted location before loading the route.
     if (location) {
-      console.log('[PDF API] Injecting location into localStorage')
+      log('Injecting location into localStorage')
       await browserPage.evaluateOnNewDocument((locationData) => {
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem(
@@ -272,24 +346,32 @@ export async function POST(request: NextRequest) {
       }, location)
     }
 
-    console.log(`[PDF API] Navigating to ${url}...`)
+    log('Navigating to page', { url })
+    const navigationStartedAt = Date.now()
     await browserPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
+    log('Navigation completed', { elapsedMs: Date.now() - navigationStartedAt })
 
     const printableSelector = getPrintableSelector(page)
-    console.log(`[PDF API] Waiting for printable content: ${printableSelector}`)
+    log('Waiting for printable selector', { printableSelector })
     await browserPage.waitForSelector(printableSelector, { timeout: 25000 })
+    log('Printable selector found', { printableSelector })
 
-    // The application has long-lived background requests (sidebar data and map tiles).
-    // Waiting for networkidle0 would block until the navigation timeout despite the
-    // printable content already being rendered.
-    await browserPage.waitForNetworkIdle({
-      concurrency: 2,
-      idleTime: 500,
-      timeout: 5000,
-    }).catch(() => {
-      console.warn('[PDF API] Background requests are still active; continuing with rendered content')
-    })
+    log('Waiting briefly for background requests')
+    await browserPage
+      .waitForNetworkIdle({
+        concurrency: 2,
+        idleTime: 500,
+        timeout: 5000,
+      })
+      .then(() => log('Background request wait completed'))
+      .catch((error: unknown) => {
+        log('Background requests remain active; continuing with rendered content', {
+          errorName: error instanceof Error ? error.name : 'UnknownError',
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+      })
 
+    log('Waiting for fonts and images')
     await browserPage.evaluate(async () => {
       await document.fonts.ready
       const pendingImages = Promise.all(
@@ -305,9 +387,10 @@ export async function POST(request: NextRequest) {
         new Promise<void>((resolve) => window.setTimeout(resolve, 3000)),
       ])
     })
+    log('Fonts and images readiness wait completed')
 
     // Hide interactive elements that should not appear in the PDF.
-    console.log('[PDF API] Applying PDF-specific styles (hiding navigation, buttons)')
+    log('Applying PDF-specific styles')
     await browserPage.addStyleTag({
       content: `
         [data-pdf-hide], [aria-label="Navegación principal"], nav[aria-label="Navegación principal"], .fixed { display: none !important; }
@@ -328,21 +411,19 @@ export async function POST(request: NextRequest) {
         }
       })
     })
+    log('PDF-specific styles applied')
 
-    console.log('[PDF API] Generating PDF buffer...')
+    log('Generating PDF buffer')
     const pdfBuffer = await browserPage.pdf({
       format: 'A4',
       printBackground: true,
       margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
       preferCSSPageSize: true,
     })
-
-    const pdfSizeKB = (pdfBuffer.length / 1024).toFixed(2)
-    const totalTime = ((Date.now() - startTime) / 1000).toFixed(2)
-
-    console.log(`[PDF API] PDF generated successfully`)
-    console.log(`[PDF API] PDF size: ${pdfSizeKB} KB`)
-    console.log(`[PDF API] Total time: ${totalTime}s`)
+    log('PDF generated successfully', {
+      sizeBytes: pdfBuffer.length,
+      elapsedMs: Date.now() - requestStartedAt,
+    })
 
     return new NextResponse(pdfBuffer, {
       headers: {
@@ -352,7 +433,13 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(2)
-    console.error(`[PDF API] PDF generation failed after ${totalTime}s:`, error)
+    logError('PDF generation failed', {
+      elapsedSeconds: totalTime,
+      elapsedMs: Date.now() - requestStartedAt,
+      errorName: error instanceof Error ? error.name : 'UnknownError',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     return NextResponse.json(
       {
         error: 'Failed to generate PDF',
@@ -364,10 +451,15 @@ export async function POST(request: NextRequest) {
     )
   } finally {
     activePdfCount = Math.max(0, activePdfCount - 1)
+    log('PDF request finished', {
+      elapsedMs: Date.now() - requestStartedAt,
+      activePdfCount,
+      browserClosed: Boolean(browser),
+    })
     if (browser) {
-      console.log('[PDF API] Closing browser...')
+      log('Closing browser')
       await browser.close()
-      console.log('[PDF API] Browser closed')
+      log('Browser closed')
     }
   }
 }

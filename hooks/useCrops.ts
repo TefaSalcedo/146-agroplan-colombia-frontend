@@ -137,6 +137,7 @@ export function useCropNationalGuide(cropId: string) {
   const [guide, setGuide] = useState<CropNationalGuideResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     const loadGuide = async () => {
@@ -154,7 +155,7 @@ export function useCropNationalGuide(cropId: string) {
     }
 
     loadGuide()
-  }, [cropId])
+  }, [cropId, reloadKey])
 
-  return { guide, loading, error }
+  return { guide, loading, error, reload: () => setReloadKey((key) => key + 1) }
 }

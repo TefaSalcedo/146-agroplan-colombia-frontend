@@ -172,6 +172,7 @@ export function MunicipalitySearchAutocomplete({
         inputValue={search}
         onInputChange={handleInputChange}
         placeholder={placeholder}
+        ariaLabel="Buscar municipio o departamento"
         emptyMessage={emptyMessage}
         loading={loading || disabled}
         inputClassName="pl-10"

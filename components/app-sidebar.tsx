@@ -15,7 +15,6 @@ import {
   Loader2,
   MapPin,
   Moon,
-  Sprout,
   Sun,
   Thermometer,
   Trophy,
@@ -27,6 +26,7 @@ import { buildNavHref } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
+import { RepositoryHubButton } from "@/components/repository-hub-button"
 import { useCropsLite, useCrop, useDepartments, useMunicipalities, useWeather } from "@/hooks"
 import { concursoSections, getConcursoSection } from "@/lib/concurso-sections"
 import { ApiError } from "@/lib/api-client/client"
@@ -81,6 +81,7 @@ function LocationPanelContent({
       <div className="relative">
         <button
           onClick={onToggle}
+          type="button"
           className={cn(
             buttonVariants({ variant: "default" }),
             "w-full bg-primary hover:bg-primary/90"
@@ -90,10 +91,13 @@ function LocationPanelContent({
         </button>
         <button
           onClick={onToggle}
+          type="button"
           className={cn(
             "absolute right-3 top-1/2 -translate-y-1/2 flex size-8 items-center justify-center rounded-lg transition-transform duration-300 hover:bg-primary/80",
             isOpen ? "rotate-180" : "rotate-0"
           )}
+          aria-label={isOpen ? "Ocultar selector de ubicación" : "Mostrar selector de ubicación"}
+          title={isOpen ? "Ocultar selector de ubicación" : "Mostrar selector de ubicación"}
         >
           {isOpen ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
         </button>
@@ -331,7 +335,6 @@ export function AppSidebar() {
   const isMapaRoute = pathname.startsWith("/mapa")
   const isMunicipioRoute = !isCompetitionRoute && !isMapaRoute
   const activeConcursoSection = getConcursoSection(searchParams.get("section"))
-  const configHref = "/configuracion"
 
   return (
     <aside
@@ -348,15 +351,18 @@ export function AppSidebar() {
             <p className="text-xs text-muted-foreground">Colombia</p>
           </div>
         </Link>
-        <button
-          type="button"
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-          aria-pressed={isDark}
-          className="flex size-9 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50"
-        >
-          {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <RepositoryHubButton placement="inline" />
+          <button
+            type="button"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            aria-pressed={isDark}
+            className="flex size-9 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50"
+          >
+            {isDark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          </button>
+        </div>
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2" aria-label="Navegación principal">

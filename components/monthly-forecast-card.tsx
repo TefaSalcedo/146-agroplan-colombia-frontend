@@ -96,6 +96,9 @@ export function MonthlyForecastCard({ forecast, loading }: MonthlyForecastCardPr
             <p className="text-xs text-muted-foreground">
               {isExpanded ? `Próximos ${displayMonths.length} meses` : `Próximos ${DEFAULT_MONTHS} meses`}
             </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Las etiquetas comparan con el histórico de este mes en la ubicación
+            </p>
           </div>
           {canExpand && (
             <Button

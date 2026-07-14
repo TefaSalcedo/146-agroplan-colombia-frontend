@@ -91,13 +91,13 @@ function CropRing({
   return (
     <Link
       href={href}
-      className="group flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-1 text-center outline-none transition-transform hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-white/90"
+      className="group flex flex-col items-center gap-2 rounded-2xl px-2 py-1.5 text-center outline-none transition-transform hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-white/90"
       aria-label={`Ver detalles de ${crop.name}, recomendación ${hasData ? `${crop.successRate}%` : "sin datos"}`}
     >
       <div className="relative">
         <svg
           viewBox="0 0 100 100"
-          className={cn("transition-transform duration-300 group-hover:scale-105", compact ? "size-18 sm:size-20" : "size-20 sm:size-24")}
+          className={cn("transition-transform duration-300 group-hover:scale-105", compact ? "size-20 sm:size-24" : "size-24 sm:size-28")}
           style={{ transform: "rotate(-90deg)" }}
         >
           <circle
@@ -106,7 +106,7 @@ function CropRing({
             r={radius}
             fill="none"
             stroke="currentColor"
-            strokeWidth="8"
+            strokeWidth="9"
             className="text-white/15"
           />
           <circle
@@ -115,7 +115,7 @@ function CropRing({
             r={radius}
             fill="none"
             stroke={color}
-            strokeWidth="8"
+            strokeWidth="9"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={isAnimated ? offset : circumference}
@@ -125,7 +125,7 @@ function CropRing({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center p-3">
-          <div className={cn("relative overflow-hidden rounded-full shadow-inner", compact ? "size-11 sm:size-12" : "size-12 sm:size-14")}>
+          <div className={cn("relative overflow-hidden rounded-full shadow-inner", compact ? "size-12 sm:size-14" : "size-14 sm:size-16")}>
             <CropImage
               src={crop.image || "/placeholder.svg"}
               alt={crop.name}
@@ -137,7 +137,7 @@ function CropRing({
         </div>
       </div>
       <div>
-        <p className={cn("font-semibold tabular-nums text-white drop-shadow-md", compact ? "text-sm" : "text-base")}>
+        <p className={cn("font-semibold tabular-nums text-white drop-shadow-md", compact ? "text-base" : "text-lg")}>
           {hasData ? `${crop.successRate}%` : "No Data"}
         </p>
         <p className={cn("truncate font-medium text-white/90 drop-shadow-md", compact ? "max-w-18 text-xs sm:max-w-20" : "max-w-24 text-sm sm:max-w-28")}>
@@ -182,8 +182,8 @@ export function SatelliteCropMap({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-border",
-        hasManyCrops ? "h-[540px] sm:h-[520px]" : "h-[420px] sm:h-[460px]",
+        "relative overflow-hidden rounded-3xl border border-border shadow-sm",
+        hasManyCrops ? "h-[600px] sm:h-[560px]" : "h-[480px] sm:h-[500px]",
       )}
     >
       <Map
@@ -197,7 +197,7 @@ export function SatelliteCropMap({
         <MapControls position="bottom-right" showZoom />
       </Map>
 
-      <div className="pointer-events-none absolute inset-0 p-4 sm:p-5">
+      <div className="pointer-events-none absolute inset-0 p-4 sm:p-6">
         <div className="pointer-events-auto absolute left-4 top-4 rounded-2xl border border-white/15 bg-black/30 px-4 py-2 text-white shadow-lg backdrop-blur-xl">
           <p className="text-sm font-semibold drop-shadow-md">{location.name}</p>
           <p className="text-xs text-white/80 drop-shadow-md">
@@ -206,14 +206,14 @@ export function SatelliteCropMap({
         </div>
 
         {crops.length > 0 && (
-          <div className="pointer-events-auto absolute left-1/2 top-1/2 w-[min(92%,34rem)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/25 bg-black/15 p-4 shadow-[0_14px_40px_rgba(0,0,0,0.24)] backdrop-blur-md sm:p-5">
-            <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-white/95 drop-shadow sm:text-sm">
+          <div className="pointer-events-auto absolute left-1/2 top-1/2 w-[min(94%,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/25 bg-black/10 p-6 shadow-[0_14px_40px_rgba(0,0,0,0.2)] backdrop-blur-sm sm:p-8">
+            <p className="mb-3 text-center text-sm font-semibold uppercase tracking-wider text-white/95 drop-shadow sm:mb-4">
               Cultivos recomendados
             </p>
-            <p className="mb-3 text-center text-[11px] text-white/75 sm:text-xs">
+            <p className="mb-5 text-center text-xs text-white/75 sm:mb-6 sm:text-sm">
               Selecciona un cultivo para ver su recomendación
             </p>
-            <div className={cn("grid items-start justify-items-center gap-x-3 gap-y-3 sm:gap-x-5 sm:gap-y-4", cropGridClass)}>
+            <div className={cn("grid items-start justify-items-center gap-x-5 gap-y-6 sm:gap-x-8 sm:gap-y-7", cropGridClass)}>
               {crops.map((crop) => (
                 <CropRing key={crop.id} crop={crop} href={getCropHref(crop)} compact={hasManyCrops} />
               ))}
