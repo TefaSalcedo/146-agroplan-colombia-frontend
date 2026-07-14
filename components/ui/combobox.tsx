@@ -18,6 +18,7 @@ interface ComboboxProps {
   inputValue?: string
   onInputChange?: (value: string) => void
   placeholder?: string
+  ariaLabel?: string
   emptyMessage?: string
   loading?: boolean
   disabled?: boolean
@@ -32,6 +33,7 @@ function Combobox({
   inputValue: inputValueProp,
   onInputChange,
   placeholder = "Buscar...",
+  ariaLabel = "Buscar opciones",
   emptyMessage = "No se encontraron resultados",
   loading = false,
   disabled = false,
@@ -100,6 +102,7 @@ function Combobox({
           ref={inputRef}
           type="text"
           role="combobox"
+          aria-label={ariaLabel}
           aria-controls={listboxId}
           aria-expanded={open}
           aria-autocomplete="list"

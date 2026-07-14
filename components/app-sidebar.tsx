@@ -81,6 +81,7 @@ function LocationPanelContent({
       <div className="relative">
         <button
           onClick={onToggle}
+          type="button"
           className={cn(
             buttonVariants({ variant: "default" }),
             "w-full bg-primary hover:bg-primary/90"
@@ -90,10 +91,13 @@ function LocationPanelContent({
         </button>
         <button
           onClick={onToggle}
+          type="button"
           className={cn(
             "absolute right-3 top-1/2 -translate-y-1/2 flex size-8 items-center justify-center rounded-lg transition-transform duration-300 hover:bg-primary/80",
             isOpen ? "rotate-180" : "rotate-0"
           )}
+          aria-label={isOpen ? "Ocultar selector de ubicación" : "Mostrar selector de ubicación"}
+          title={isOpen ? "Ocultar selector de ubicación" : "Mostrar selector de ubicación"}
         >
           {isOpen ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
         </button>

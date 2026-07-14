@@ -49,7 +49,8 @@ export function LandingPage() {
   const { selectedLocation, setSelectedLocation } = useLocation()
   const { resolvedTheme, setTheme } = useTheme()
   const currentYear = new Date().getFullYear()
-  const isDark = resolvedTheme === "dark"
+  const [themeMounted, setThemeMounted] = useState(false)
+  const isDark = themeMounted && resolvedTheme === "dark"
 
   // Refs for GSAP animation
   const cardsContainerRef = useRef<HTMLDivElement>(null)
@@ -61,6 +62,10 @@ export function LandingPage() {
   const toggleCardsRef = useRef<(() => void) | undefined>(undefined)
 
   const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    setThemeMounted(true)
+  }, [])
 
   // Crop selection state
   const [selectedCrop, setSelectedCrop] = useState("")
@@ -394,6 +399,8 @@ export function LandingPage() {
         muted
         loop
         playsInline
+        preload="metadata"
+        poster="/ai%20images/portada%20Agroplan.webp"
         className="absolute inset-0 h-full w-full object-cover"
       >
         <source src="/video/hero.mp4" type="video/mp4" />

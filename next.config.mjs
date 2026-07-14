@@ -4,7 +4,6 @@ const apiOrigin = new URL(apiBaseUrl)
 
 const nextConfig = {
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: apiOrigin.protocol.replace(':', ''),

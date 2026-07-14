@@ -240,8 +240,6 @@ function SoilCard({ item }: { item: AiInsightsSoilAndFertilizer }) {
 }
 
 export function AiInsightsPanel({ insights, loading, error, retryAttempt, municipalityName, onReload }: AiInsightsPanelProps) {
-  console.log("[AiInsightsPanel] render:", { loading, error, retryAttempt, hasInsights: !!insights, status: insights?.status })
-
   const isRetrying = loading && retryAttempt && retryAttempt > 0
 
   if (loading) {

@@ -259,6 +259,13 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     }
     return defaultStyles;
   }, [styles, blank]);
+  const initialMapConfigRef = useRef({
+    resolvedTheme,
+    mapStyles,
+    projection,
+    props,
+    viewport,
+  });
 
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
@@ -274,8 +281,11 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const initialConfig = initialMapConfigRef.current;
     const initialStyle =
-      resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
+      initialConfig.resolvedTheme === "dark"
+        ? initialConfig.mapStyles.dark
+        : initialConfig.mapStyles.light;
     currentStyleRef.current = initialStyle;
 
     const map = new MapLibreGL.Map({
@@ -285,8 +295,8 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       attributionControl: {
         compact: true,
       },
-      ...props,
-      ...viewport,
+      ...initialConfig.props,
+      ...initialConfig.viewport,
     });
 
     const styleDataHandler = () => {
@@ -296,8 +306,8 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       // else we have to force update every layer on setStyle change
       styleTimeoutRef.current = setTimeout(() => {
         setIsStyleLoaded(true);
-        if (projection) {
-          map.setProjection(projection);
+        if (initialConfig.projection) {
+          map.setProjection(initialConfig.projection);
         }
       }, 100);
     };
@@ -324,8 +334,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       setIsStyleLoaded(false);
       setMapInstance(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [clearStyleTimeout]);
 
   // Sync controlled viewport to map
   useEffect(() => {
@@ -467,13 +476,20 @@ function MapMarker({
     onDrag,
     onDragEnd,
   };
+  const initialMarkerConfigRef = useRef({
+    markerOptions,
+    draggable,
+    longitude,
+    latitude,
+  });
 
   const marker = useMemo(() => {
+    const initialConfig = initialMarkerConfigRef.current;
     const markerInstance = new MapLibreGL.Marker({
-      ...markerOptions,
+      ...initialConfig.markerOptions,
       element: document.createElement("div"),
-      draggable,
-    }).setLngLat([longitude, latitude]);
+      draggable: initialConfig.draggable,
+    }).setLngLat([initialConfig.longitude, initialConfig.latitude]);
 
     const handleClick = (e: MouseEvent) => callbacksRef.current.onClick?.(e);
     const handleMouseEnter = (e: MouseEvent) =>
@@ -508,7 +524,6 @@ function MapMarker({
 
     return markerInstance;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -520,8 +535,7 @@ function MapMarker({
       marker.remove();
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [map, marker]);
 
   const { offset, rotation, rotationAlignment, pitchAlignment } = markerOptions;
 
@@ -626,19 +640,19 @@ function MarkerPopup({
   const { marker, map } = useMarkerContext();
   const container = useMemo(() => document.createElement("div"), []);
   const { offset, maxWidth } = popupOptions;
+  const initialPopupOptionsRef = useRef(popupOptions);
 
   const popup = useMemo(() => {
     const popupInstance = new MapLibreGL.Popup({
       offset: 16,
-      ...popupOptions,
+      ...initialPopupOptionsRef.current,
       closeButton: false,
     })
       .setMaxWidth("none")
       .setDOMContent(container);
 
     return popupInstance;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [container]);
 
   useEffect(() => {
     if (!map) return;
@@ -649,8 +663,7 @@ function MarkerPopup({
     return () => {
       marker.setPopup(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [container, map, marker, popup]);
 
   // Sync popup options when they change.
   useEffect(() => {
@@ -692,17 +705,17 @@ function MarkerTooltip({
   const { marker, map } = useMarkerContext();
   const container = useMemo(() => document.createElement("div"), []);
   const { offset, maxWidth } = popupOptions;
+  const initialTooltipOptionsRef = useRef(popupOptions);
 
   const tooltip = useMemo(() => {
     const tooltipInstance = new MapLibreGL.Popup({
       offset: 16,
-      ...popupOptions,
+      ...initialTooltipOptionsRef.current,
       closeOnClick: true,
       closeButton: false,
     }).setMaxWidth("none");
 
     return tooltipInstance;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -723,8 +736,7 @@ function MarkerTooltip({
       marker.getElement()?.removeEventListener("mouseleave", handleMouseLeave);
       tooltip.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [container, map, marker, tooltip]);
 
   // Sync tooltip options when they change.
   useEffect(() => {
@@ -1022,18 +1034,23 @@ function MapPopup({
   onCloseRef.current = onClose;
   const container = useMemo(() => document.createElement("div"), []);
   const { offset, maxWidth } = popupOptions;
+  const initialPopupOptionsRef = useRef({
+    popupOptions,
+    longitude,
+    latitude,
+  });
 
   const popup = useMemo(() => {
+    const initialConfig = initialPopupOptionsRef.current;
     const popupInstance = new MapLibreGL.Popup({
       offset: 16,
-      ...popupOptions,
+      ...initialConfig.popupOptions,
       closeButton: false,
     })
       .setMaxWidth("none")
-      .setLngLat([longitude, latitude]);
+      .setLngLat([initialConfig.longitude, initialConfig.latitude]);
 
     return popupInstance;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1052,8 +1069,7 @@ function MapPopup({
         popup.remove();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [container, map, popup]);
 
   // Sync popup position and options when they change.
   useEffect(() => {
@@ -1126,12 +1142,21 @@ function MapRoute({
   const id = propId ?? autoId;
   const sourceId = `route-source-${id}`;
   const layerId = `route-layer-${id}`;
+  const initialRouteConfigRef = useRef({
+    sourceId,
+    layerId,
+    color,
+    width,
+    opacity,
+    dashArray,
+  });
 
   // Add source and layer on mount
   useEffect(() => {
     if (!isLoaded || !map) return;
+    const initialConfig = initialRouteConfigRef.current;
 
-    map.addSource(sourceId, {
+    map.addSource(initialConfig.sourceId, {
       type: "geojson",
       data: {
         type: "Feature",
@@ -1141,27 +1166,26 @@ function MapRoute({
     });
 
     map.addLayer({
-      id: layerId,
+      id: initialConfig.layerId,
       type: "line",
-      source: sourceId,
+      source: initialConfig.sourceId,
       layout: { "line-join": "round", "line-cap": "round" },
       paint: {
-        "line-color": color,
-        "line-width": width,
-        "line-opacity": opacity,
-        ...(dashArray && { "line-dasharray": dashArray }),
+        "line-color": initialConfig.color,
+        "line-width": initialConfig.width,
+        "line-opacity": initialConfig.opacity,
+        ...(initialConfig.dashArray && { "line-dasharray": initialConfig.dashArray }),
       },
     });
 
     return () => {
       try {
-        if (map.getLayer(layerId)) map.removeLayer(layerId);
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        if (map.getLayer(initialConfig.layerId)) map.removeLayer(initialConfig.layerId);
+        if (map.getSource(initialConfig.sourceId)) map.removeSource(initialConfig.sourceId);
       } catch {
         // ignore
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map]);
 
   // When coordinates change, update the source data
@@ -1330,6 +1354,13 @@ function MapGeoJSON<
   const sourceId = `geojson-source-${id}`;
   const fillLayerId = `geojson-fill-${id}`;
   const lineLayerId = `geojson-line-${id}`;
+  const initialGeoJSONConfigRef = useRef({
+    data,
+    promoteId,
+    sourceId,
+    fillLayerId,
+    lineLayerId,
+  });
 
   const defaults = GEOJSON_DEFAULT_COLORS[resolvedTheme];
 
@@ -1358,23 +1389,23 @@ function MapGeoJSON<
   // Add source on mount.
   useEffect(() => {
     if (!isLoaded || !map) return;
+    const initialConfig = initialGeoJSONConfigRef.current;
 
-    map.addSource(sourceId, {
+    map.addSource(initialConfig.sourceId, {
       type: "geojson",
-      data,
-      ...(promoteId ? { promoteId } : {}),
+      data: initialConfig.data,
+      ...(initialConfig.promoteId ? { promoteId: initialConfig.promoteId } : {}),
     });
 
     return () => {
       try {
-        if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
-        if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId);
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        if (map.getLayer(initialConfig.lineLayerId)) map.removeLayer(initialConfig.lineLayerId);
+        if (map.getLayer(initialConfig.fillLayerId)) map.removeLayer(initialConfig.fillLayerId);
+        if (map.getSource(initialConfig.sourceId)) map.removeSource(initialConfig.sourceId);
       } catch {
         // style may be mid-reload
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map]);
 
   // Sync data when it changes.
@@ -1702,6 +1733,16 @@ function MapArc<T extends MapArcDatum = MapArcDatum>({
     }),
     [data, curvature, samples],
   );
+  const initialArcConfigRef = useRef({
+    sourceId,
+    layerId,
+    hitLayerId,
+    geoJSON,
+    hitWidth,
+    mergedLayout,
+    mergedPaint,
+    beforeId,
+  });
 
   const latestRef = useRef({ data, onClick, onHover });
   latestRef.current = { data, onClick, onHover };
@@ -1709,49 +1750,49 @@ function MapArc<T extends MapArcDatum = MapArcDatum>({
   // Add source and layers on mount.
   useEffect(() => {
     if (!isLoaded || !map) return;
+    const initialConfig = initialArcConfigRef.current;
 
-    map.addSource(sourceId, {
+    map.addSource(initialConfig.sourceId, {
       type: "geojson",
-      data: geoJSON,
+      data: initialConfig.geoJSON,
       promoteId: "id",
     });
 
     map.addLayer(
       {
-        id: hitLayerId,
+        id: initialConfig.hitLayerId,
         type: "line",
-        source: sourceId,
+        source: initialConfig.sourceId,
         layout: DEFAULT_ARC_LAYOUT,
         paint: {
           "line-color": "rgba(0, 0, 0, 0)",
-          "line-width": hitWidth,
+          "line-width": initialConfig.hitWidth,
           "line-opacity": 1,
         },
       },
-      beforeId,
+      initialConfig.beforeId,
     );
 
     map.addLayer(
       {
-        id: layerId,
+        id: initialConfig.layerId,
         type: "line",
-        source: sourceId,
-        layout: mergedLayout,
-        paint: mergedPaint,
+        source: initialConfig.sourceId,
+        layout: initialConfig.mergedLayout,
+        paint: initialConfig.mergedPaint,
       },
-      beforeId,
+      initialConfig.beforeId,
     );
 
     return () => {
       try {
-        if (map.getLayer(layerId)) map.removeLayer(layerId);
-        if (map.getLayer(hitLayerId)) map.removeLayer(hitLayerId);
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        if (map.getLayer(initialConfig.layerId)) map.removeLayer(initialConfig.layerId);
+        if (map.getLayer(initialConfig.hitLayerId)) map.removeLayer(initialConfig.hitLayerId);
+        if (map.getSource(initialConfig.sourceId)) map.removeSource(initialConfig.sourceId);
       } catch {
         // ignore
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map]);
 
   // Sync features when data / curvature / samples change.
@@ -1917,6 +1958,18 @@ function MapClusterLayer<
   const clusterLayerId = `clusters-${id}`;
   const clusterCountLayerId = `cluster-count-${id}`;
   const unclusteredLayerId = `unclustered-point-${id}`;
+  const initialClusterConfigRef = useRef({
+    data,
+    clusterMaxZoom,
+    clusterRadius,
+    clusterColors,
+    clusterThresholds,
+    pointColor,
+    sourceId,
+    clusterLayerId,
+    clusterCountLayerId,
+    unclusteredLayerId,
+  });
 
   const stylePropsRef = useRef({
     clusterColors,
@@ -1927,39 +1980,40 @@ function MapClusterLayer<
   // Add source and layers on mount
   useEffect(() => {
     if (!isLoaded || !map) return;
+    const initialConfig = initialClusterConfigRef.current;
 
     // Add clustered GeoJSON source
-    map.addSource(sourceId, {
+    map.addSource(initialConfig.sourceId, {
       type: "geojson",
-      data,
+      data: initialConfig.data,
       cluster: true,
-      clusterMaxZoom,
-      clusterRadius,
+      clusterMaxZoom: initialConfig.clusterMaxZoom,
+      clusterRadius: initialConfig.clusterRadius,
     });
 
     // Add cluster circles layer
     map.addLayer({
-      id: clusterLayerId,
+      id: initialConfig.clusterLayerId,
       type: "circle",
-      source: sourceId,
+      source: initialConfig.sourceId,
       filter: ["has", "point_count"],
       paint: {
         "circle-color": [
           "step",
           ["get", "point_count"],
-          clusterColors[0],
-          clusterThresholds[0],
-          clusterColors[1],
-          clusterThresholds[1],
-          clusterColors[2],
+          initialConfig.clusterColors[0],
+          initialConfig.clusterThresholds[0],
+          initialConfig.clusterColors[1],
+          initialConfig.clusterThresholds[1],
+          initialConfig.clusterColors[2],
         ],
         "circle-radius": [
           "step",
           ["get", "point_count"],
           20,
-          clusterThresholds[0],
+          initialConfig.clusterThresholds[0],
           30,
-          clusterThresholds[1],
+          initialConfig.clusterThresholds[1],
           40,
         ],
         "circle-stroke-width": 1,
@@ -1970,9 +2024,9 @@ function MapClusterLayer<
 
     // Add cluster count text layer
     map.addLayer({
-      id: clusterCountLayerId,
+      id: initialConfig.clusterCountLayerId,
       type: "symbol",
-      source: sourceId,
+      source: initialConfig.sourceId,
       filter: ["has", "point_count"],
       layout: {
         "text-field": "{point_count_abbreviated}",
@@ -1986,12 +2040,12 @@ function MapClusterLayer<
 
     // Add unclustered point layer
     map.addLayer({
-      id: unclusteredLayerId,
+      id: initialConfig.unclusteredLayerId,
       type: "circle",
-      source: sourceId,
+      source: initialConfig.sourceId,
       filter: ["!", ["has", "point_count"]],
       paint: {
-        "circle-color": pointColor,
+        "circle-color": initialConfig.pointColor,
         "circle-radius": 5,
         "circle-stroke-width": 2,
         "circle-stroke-color": "#fff",
@@ -2000,17 +2054,18 @@ function MapClusterLayer<
 
     return () => {
       try {
-        if (map.getLayer(clusterCountLayerId))
-          map.removeLayer(clusterCountLayerId);
-        if (map.getLayer(unclusteredLayerId))
-          map.removeLayer(unclusteredLayerId);
-        if (map.getLayer(clusterLayerId)) map.removeLayer(clusterLayerId);
-        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        if (map.getLayer(initialConfig.clusterCountLayerId))
+          map.removeLayer(initialConfig.clusterCountLayerId);
+        if (map.getLayer(initialConfig.unclusteredLayerId))
+          map.removeLayer(initialConfig.unclusteredLayerId);
+        if (map.getLayer(initialConfig.clusterLayerId))
+          map.removeLayer(initialConfig.clusterLayerId);
+        if (map.getSource(initialConfig.sourceId))
+          map.removeSource(initialConfig.sourceId);
       } catch {
         // ignore
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map, sourceId]);
 
   // Update source data when data prop changes (only for non-URL data)

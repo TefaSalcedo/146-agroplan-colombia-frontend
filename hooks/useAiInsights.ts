@@ -82,11 +82,9 @@ export function useAiInsights(municipalityId: string) {
 
   const loadInsights = useCallback(async (id: string, attempt = 0) => {
     if (!id) {
-      console.log("[useAiInsights] Empty municipalityId, skipping fetch")
       return
     }
 
-    console.log(`[useAiInsights] Fetching AI insights for municipalityId: ${id} (attempt ${attempt + 1}/${MAX_RETRIES + 1})`)
     setLoading(true)
     setError(null)
     setRetryAttempt(attempt)
@@ -99,14 +97,12 @@ export function useAiInsights(municipalityId: string) {
     abortControllerRef.current = controller
 
     const timeoutId = setTimeout(() => {
-      console.warn(`[useAiInsights] Request timeout for municipalityId: ${id} after ${REQUEST_TIMEOUT_MS}ms`)
       controller.abort()
     }, REQUEST_TIMEOUT_MS)
 
     try {
       const data = await fetchAiInsights(id, { signal: controller.signal })
       clearTimeout(timeoutId)
-      console.log("[useAiInsights] AI insights fetched successfully:", data)
       setInsights(data)
       setError(null)
       setRetryAttempt(0)
@@ -128,7 +124,6 @@ export function useAiInsights(municipalityId: string) {
       if (shouldRetry) {
         const errorMessage = getRetryErrorMessage(err, attempt + 1, MAX_RETRIES + 1)
         setError(errorMessage)
-        console.log(`[useAiInsights] Will retry in ${RETRY_DELAY_MS}ms`)
         retryTimeoutRef.current = setTimeout(() => {
           retryTimeoutRef.current = null
           loadInsights(id, attempt + 1)
