@@ -311,7 +311,10 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         }
       }, 100);
     };
-    const loadHandler = () => setIsLoaded(true);
+    const loadHandler = () => {
+      setIsLoaded(true);
+      setIsStyleLoaded(true);
+    };
 
     // Viewport change handler - skip if triggered by internal update
     const handleMove = () => {
