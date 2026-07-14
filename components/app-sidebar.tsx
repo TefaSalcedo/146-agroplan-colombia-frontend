@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { navItems } from "@/lib/nav"
-import { buildNavHref } from "@/lib/routing"
+import { buildLocationPath, buildNavHref, isCropDetailPath } from "@/lib/routing"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLocation } from "@/context/LocationContext"
@@ -270,6 +270,9 @@ export function AppSidebar() {
 
           const nearbyMunicipality = await fetchNearbyMunicipality(latitude, longitude, 20)
           setSelectedLocation(nearbyMunicipality)
+          if (isCropDetailPath(pathname)) {
+            router.replace(buildLocationPath(nearbyMunicipality.department, nearbyMunicipality.name, "inicio"))
+          }
         } catch (error) {
           const message =
             error instanceof ApiError && error.status && [400, 404].includes(error.status)
@@ -317,6 +320,9 @@ export function AppSidebar() {
     try {
       const municipality = await fetchMunicipality(selectedMunic)
       setSelectedLocation(municipality)
+      if (isCropDetailPath(pathname)) {
+        router.replace(buildLocationPath(municipality.department, municipality.name, "inicio"))
+      }
     } catch (error) {
       const message =
         error instanceof ApiError && error.status === 404

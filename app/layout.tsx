@@ -5,11 +5,12 @@ import './globals.css'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { siteOrigin, siteUrl, socialImagePath } from '@/lib/site-config'
 
 // Using system fonts via CSS classes
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://agroplan.co'),
+  metadataBase: siteOrigin,
   title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva | Qué Sembrar Hoy',
   description:
     'AgroPlan es un sistema de IA que ayuda a agricultores y alcaldías en Colombia a decidir qué cultivar, cuándo sembrar y dónde. Zonificación agroclimática inteligente basada en datos reales de tu región.',
@@ -32,13 +33,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_CO',
-    url: 'https://agroplan.co',
+    url: siteUrl,
     siteName: 'AgroPlan Colombia',
     title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva',
     description: 'Sistema de IA para agricultura inteligente en Colombia. Descubre qué sembrar con precisión.',
     images: [
       {
-        url: '/ai%20images/portada%20Agroplan.webp',
+        url: socialImagePath,
         alt: 'AgroPlan Colombia: inteligencia agrícola predictiva',
       },
     ],
@@ -47,10 +48,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'AgroPlan Colombia - Inteligencia Agrícola Predictiva',
     description: 'Descubre qué sembrar, cuándo y dónde con inteligencia agrícola para Colombia.',
-    images: ['/ai%20images/portada%20Agroplan.webp'],
+    images: [socialImagePath],
   },
   alternates: {
-    canonical: 'https://agroplan.co',
+    canonical: siteUrl,
   },
   robots: {
     index: true,

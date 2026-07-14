@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
+import { TextToSpeechControls } from "@/components/text-to-speech-controls"
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import type {
@@ -317,11 +318,20 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
     return null
   }
 
+  const speechText = [
+    insights.summary,
+    ...insights.alternativeCrops.flatMap((crop) => [crop.cropName, crop.why]),
+    ...insights.farmingSystems.flatMap((system) => [system.title, system.recommendation]),
+    ...insights.soilAndFertilizer.flatMap((item) => [item.title, item.content]),
+  ]
+    .filter(Boolean)
+    .join(". ")
+
   return (
     <Card className="relative overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 sm:p-6">
       <div className="relative flex flex-col gap-8">
         {/* Header */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10">
             <Image
               src="/ai%20images/agroplan.webp"
@@ -331,7 +341,7 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
               className="size-9 rounded-full object-cover"
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold">Recomendaciones con IA</h2>
               <Badge variant="secondary" className="text-xs">
@@ -342,6 +352,7 @@ export function AiInsightsPanel({ insights, loading, error, retryAttempt, munici
               Análisis personalizado para <span className="font-medium text-foreground">{municipalityName || insights.municipalityName}</span>
             </p>
           </div>
+          <TextToSpeechControls text={speechText} />
         </div>
 
         {/* Summary */}

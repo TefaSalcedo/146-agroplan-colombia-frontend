@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { MapPin, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -9,6 +10,7 @@ import type { Municipality } from '@/types'
 import { useLocation } from '@/context/LocationContext'
 import { fetchMunicipality } from '@/lib/api-client/municipalities'
 import { ApiError } from '@/lib/api-client/client'
+import { buildLocationPath, isCropDetailPath } from '@/lib/routing'
 
 interface LocationSelectorModalProps {
   isOpen: boolean
@@ -17,6 +19,8 @@ interface LocationSelectorModalProps {
 
 export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModalProps) {
   const { selectedLocation, setSelectedLocation } = useLocation()
+  const pathname = usePathname()
+  const router = useRouter()
   const { departments, loading: deptsLoading } = useDepartments()
   const { municipalities, loading: municsLoading } = useMunicipalities()
   const [selectedDept, setSelectedDept] = useState('')
@@ -48,6 +52,9 @@ export function LocationSelectorModal({ isOpen, onClose }: LocationSelectorModal
       const municipality = await fetchMunicipality(selectedMunic)
       setSelectedLocation(municipality)
       onClose()
+      if (isCropDetailPath(pathname)) {
+        router.replace(buildLocationPath(municipality.department, municipality.name, 'inicio'))
+      }
     } catch (error) {
       const message =
         error instanceof ApiError && error.status === 404

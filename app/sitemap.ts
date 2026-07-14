@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const siteUrl = 'https://agroplan.co'
+import { siteUrl } from '@/lib/site-config'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()

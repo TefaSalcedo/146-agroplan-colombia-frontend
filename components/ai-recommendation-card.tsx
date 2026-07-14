@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
+import { TextToSpeechControls } from "@/components/text-to-speech-controls"
 import type { CropRecommendationResponse } from "@/lib/api-client/types"
 
 interface ParsedRecommendation {
@@ -88,30 +89,41 @@ export function AIRecommendationCard({
   error,
 }: AIRecommendationCardProps) {
   const parsed = recommendation?.text ? parseRecommendationText(recommendation.text) : null
+  const speechText = parsed
+    ? [
+        parsed.summary,
+        ...parsed.sections.flatMap((section) => [section.title, ...section.items]),
+      ]
+        .filter(Boolean)
+        .join(". ")
+    : ""
 
   return (
     <Card className="relative overflow-hidden border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6">
       <div className="relative flex flex-col gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <Image
-                src="/ai%20images/agroplan.webp"
-                alt="Asistente IA de Agroplan"
-                width={32}
-                height={32}
-                className="size-8 rounded-xl object-cover"
-              />
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <Image
+                  src="/ai%20images/agroplan.webp"
+                  alt="Asistente IA de Agroplan"
+                  width={32}
+                  height={32}
+                  className="size-8 rounded-xl object-cover"
+                />
+              </div>
+              <h2 className="text-lg font-bold">Recomendación Inteligente IA</h2>
+              <Badge variant="secondary" className="text-xs">
+                IA
+              </Badge>
             </div>
-            <h2 className="text-lg font-bold">Recomendación Inteligente IA</h2>
-            <Badge variant="secondary" className="text-xs">
-              IA
-            </Badge>
+            <p className="text-sm text-muted-foreground">
+              Recomendación personalizada para <span className="font-medium text-foreground">{cropName}</span> en{" "}
+              <span className="font-medium text-foreground">{municipalityName}</span>
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Recomendación personalizada para <span className="font-medium text-foreground">{cropName}</span> en{" "}
-            <span className="font-medium text-foreground">{municipalityName}</span>
-          </p>
+          {!loading && !error && <TextToSpeechControls text={speechText} />}
         </div>
 
         {loading && (

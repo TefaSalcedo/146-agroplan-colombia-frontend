@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CropImage } from "@/components/crop-image"
+import { TextToSpeechControls } from "@/components/text-to-speech-controls"
 import { MONTHS_LONG } from "@/lib/constants"
 import type {
   CalendarBatchResponse,
@@ -192,9 +193,12 @@ function CropTabContent({ result }: { result: CalendarCropResult }) {
 
       {result.explanation?.text && (
         <Card className="flex flex-col gap-3 p-5">
-          <div className="flex items-center gap-2">
-            <CloudSun className="size-5 text-primary" />
-            <h3 className="font-semibold">Análisis inteligente</h3>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CloudSun className="size-5 text-primary" />
+              <h3 className="font-semibold">Análisis inteligente</h3>
+            </div>
+            <TextToSpeechControls text={result.explanation.text} />
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">{result.explanation.text}</p>
           {result.explanation.model && (
