@@ -130,8 +130,8 @@ export function CropMapSidebar({
                   <span>No recomendado</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 rounded-lg bg-blue-50 p-2 text-xs dark:bg-blue-950/30">
-                <Info className="mt-0.5 size-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-start gap-2 rounded-lg bg-orange-50 p-2 text-xs dark:bg-orange-950/30">
+                <Info className="mt-0.5 size-3.5 shrink-0 text-orange-600 dark:text-orange-400" />
                 <p className="text-muted-foreground">Siembra en los meses marcados para mejores resultados.</p>
               </div>
             </div>

@@ -1,5 +1,5 @@
-import { PageLoading } from '@/components/page-loading'
+import { LoadingScreen } from '@/components/status-page-shell'
 
 export default function Loading() {
-  return <PageLoading title="Cargando aplicación..." />
+  return <LoadingScreen title="Cargando aplicación..." />
 }

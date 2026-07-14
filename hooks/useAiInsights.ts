@@ -7,6 +7,10 @@ const MAX_RETRIES = 2
 const REQUEST_TIMEOUT_MS = 10000
 const RETRY_DELAY_MS = 2000
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof Error && (err.name === "AbortError" || /abort/i.test(err.message))
+}
+
 function getRetryErrorMessage(err: unknown, attempt: number, maxAttempts: number): string {
   if (err instanceof ApiError) {
     if (err.status === 500) {
@@ -24,10 +28,10 @@ function getRetryErrorMessage(err: unknown, attempt: number, maxAttempts: number
     if (err.status === 408) {
       return `La consulta tardó demasiado. Reintentando automáticamente (${attempt + 1}/${maxAttempts})...`
     }
-    return err.message
+    return `No fue posible cargar las recomendaciones. Reintentando automáticamente (${attempt + 1}/${maxAttempts})...`
   }
 
-  if (err instanceof Error && err.name === "AbortError") {
+  if (isAbortError(err)) {
     return `La consulta tardó más de lo esperado. Reintentando automáticamente (${attempt + 1}/${maxAttempts})...`
   }
 
@@ -51,10 +55,10 @@ function getFinalErrorMessage(err: unknown): string {
     if (err.status === 408) {
       return "La consulta tardó demasiado. El servicio de IA no respondió a tiempo."
     }
-    return err.message
+    return "No fue posible cargar las recomendaciones. Por favor, inténtalo de nuevo."
   }
 
-  if (err instanceof Error && err.name === "AbortError") {
+  if (isAbortError(err)) {
     return "La consulta tardó demasiado. El servicio de IA no respondió a tiempo."
   }
 
@@ -118,7 +122,7 @@ export function useAiInsights(municipalityId: string) {
 
       const isRetryable =
         (err instanceof ApiError && (err.status === 500 || err.status === 503 || err.status === 502 || err.status === 408)) ||
-        (err instanceof Error && err.name === "AbortError")
+        isAbortError(err)
       const shouldRetry = isRetryable && attempt < MAX_RETRIES
 
       if (shouldRetry) {

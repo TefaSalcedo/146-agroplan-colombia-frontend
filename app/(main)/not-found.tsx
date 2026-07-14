@@ -1,20 +1,23 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Search, Home, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { ArrowLeft, Home, Search } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { StatusPageShell } from '@/components/status-page-shell'
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <Card className="flex max-w-md flex-col items-center gap-6 p-8 text-center">
-        <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <Search className="size-10" />
+    <StatusPageShell>
+      <Card className="mt-6 w-full max-w-xl items-center gap-6 border-border/80 bg-card/85 p-6 text-center shadow-2xl shadow-primary/10 backdrop-blur-md sm:p-8">
+        <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15 sm:size-20">
+          <Search className="size-8 sm:size-10" />
         </div>
 
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold">Página no encontrada</h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Error 404</p>
+          <h1 className="text-2xl font-bold sm:text-3xl">Página no encontrada</h1>
           <p className="text-muted-foreground">
             Lo sentimos, no pudimos encontrar la página que buscas dentro de la
             aplicación principal.
@@ -40,7 +43,7 @@ export default function NotFound() {
           </Button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
+        <div className="mt-2 flex flex-col gap-2 text-sm text-muted-foreground">
           <p>Páginas disponibles:</p>
           <div className="flex flex-wrap justify-center gap-2">
             <Link
@@ -64,6 +67,6 @@ export default function NotFound() {
           </div>
         </div>
       </Card>
-    </div>
+    </StatusPageShell>
   )
 }
