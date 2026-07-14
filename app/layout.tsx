@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 // Using system fonts to avoid Google Fonts connectivity issues
+import { ScrollToTop } from '@/components/scroll-to-top'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning className="bg-background">
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <ScrollToTop />
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>

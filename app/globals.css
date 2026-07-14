@@ -186,6 +186,12 @@
   }
 }
 
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -203,10 +209,70 @@
 
 .concurso-shell {
   --concurso-oak: oklch(0.48 0.09 65);
+  --concurso-muted: oklch(0.42 0.015 145);
 }
 
 .dark .concurso-shell {
   --concurso-oak: oklch(0.62 0.10 70);
+  --concurso-muted: oklch(0.74 0.015 140);
+}
+
+@keyframes status-page-orb-drift {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate3d(-3%, -2%, 0) scale(0.95);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate3d(5%, 4%, 0) scale(1.08);
+  }
+}
+
+@keyframes status-page-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.status-page-shell {
+  background-image:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 32%),
+    radial-gradient(circle at 84% 86%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 34%);
+}
+
+.status-page-orb {
+  filter: blur(48px);
+  opacity: 0.55;
+  pointer-events: none;
+  transform: translateZ(0);
+  animation: status-page-orb-drift 10s ease-in-out infinite;
+}
+
+.status-page-orb-primary {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.status-page-orb-accent {
+  animation-delay: -4s;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.status-page-dot {
+  animation: status-page-dot-pulse 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-page-orb,
+  .status-page-dot {
+    animation: none;
+  }
 }
 
 @keyframes repository-hub-shimmer {
@@ -241,15 +307,52 @@
   z-index: 1;
 }
 
+@keyframes repository-hub-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translate3d(-18%, -12%, 0) scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate3d(18%, 12%, 0) scale(1.1);
+  }
+}
+
+.repository-hub-glow,
+.project-ecosystem-glow {
+  animation: repository-hub-glow 7s ease-in-out infinite;
+  background: radial-gradient(circle, rgb(255 237 213 / 0.5), transparent 68%);
+  border-radius: 9999px;
+  filter: blur(10px);
+  height: 18rem;
+  pointer-events: none;
+  position: absolute;
+  right: -5rem;
+  top: -7rem;
+  width: 18rem;
+}
+
+.project-ecosystem-glow {
+  left: -5rem;
+  right: auto;
+  top: auto;
+  bottom: -9rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .repository-hub-button::before {
+  .repository-hub-button::before,
+  .repository-hub-glow,
+  .project-ecosystem-glow {
     animation: none;
   }
 }
 
+
 @media (prefers-color-scheme: dark) {
   :root:not(.light) .concurso-shell {
     --concurso-oak: oklch(0.62 0.10 70);
+    --concurso-muted: oklch(0.74 0.015 140);
   }
 }
 
@@ -265,7 +368,33 @@
 .concurso-shell .text-white\/80,
 .concurso-shell .text-white\/70,
 .concurso-shell .text-white\/60 {
-  color: var(--muted-foreground) !important;
+  color: var(--concurso-muted) !important;
+}
+
+.concurso-shell .project-ecosystem-hero {
+  color: white !important;
+}
+
+.concurso-shell .project-ecosystem-hero .text-white {
+  color: white !important;
+}
+
+.concurso-shell .project-ecosystem-hero .text-white\/95 {
+  color: rgb(255 255 255 / 0.95) !important;
+}
+
+.concurso-shell .project-ecosystem-hero .text-white\/90,
+.concurso-shell .project-ecosystem-hero .text-white\/85 {
+  color: rgb(255 255 255 / 0.9) !important;
+}
+
+.concurso-shell .project-ecosystem-hero .text-white\/75 {
+  color: rgb(255 255 255 / 0.85) !important;
+}
+
+.concurso-shell .project-repository-link,
+.concurso-shell .project-repository-link:hover {
+  color: white !important;
 }
 
 .concurso-shell .bg-white\/5,

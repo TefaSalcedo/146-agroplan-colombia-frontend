@@ -500,7 +500,7 @@ function RecommendationChart() {
       </div>
       <svg viewBox="0 0 320 190" className="mt-5 h-[clamp(15rem,38vh,24rem)] w-full" role="img" aria-label="Probabilidad de recomendación para aguacate, cebolla y fresa">
         <defs>
-          {recommendationChartData.map(({ name, image }) => (
+          {recommendationChartData.map(({ name }) => (
             <clipPath key={name} id={`crop-${name.toLowerCase()}`}>
               <circle cx="0" cy="0" r="26" />
             </clipPath>

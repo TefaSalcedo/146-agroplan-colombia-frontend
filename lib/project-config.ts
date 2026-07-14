@@ -12,13 +12,49 @@ export const projectConfig = {
     competition: "Datos Abiertos Colombia 2026"
   },
 
-  // GitHub Repositories
+  // Project repositories and published model artifacts
   repositories: [
     {
-      name: "Backend API",
+      name: "AgroPlan Colombia ML",
+      category: "Machine Learning",
+      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-ml",
+      description: "Pipeline de Machine Learning basado en CRISP-ML para preparar datos, entrenar modelos y evaluar resultados.",
+      technology: "Python, Scikit-learn, LightGBM, XGBoost"
+    },
+    {
+      name: "Backend",
+      category: "API REST",
       url: "https://github.com/TefaSalcedo/146-agroplan-colombia-backend",
-      description: "API REST construida con FastAPI que sirve los endpoints de predicción, datos climáticos y catálogos de cultivos.",
+      description: "API REST construida con FastAPI para servir predicciones, datos climáticos y catálogos de cultivos.",
       technology: "FastAPI, Python, PostgreSQL"
+    },
+    {
+      name: "Frontend",
+      category: "Dashboard web",
+      url: "https://github.com/TefaSalcedo/146-agroplan-colombia-frontend",
+      description: "Dashboard web que acerca las recomendaciones de AgroPlan a productores agrícolas y entidades territoriales.",
+      technology: "Next.js, React, TypeScript, Tailwind CSS"
+    },
+    {
+      name: "MCP Datos Abiertos",
+      category: "Agentes de IA",
+      url: "https://github.com/BOTOOM/146-datos-abiertos-mcp",
+      description: "MCP para consultar datos.gov.co y conectar fuentes de datos abiertos con agentes de inteligencia artificial.",
+      technology: "MCP, TypeScript, datos.gov.co"
+    },
+    {
+      name: "HF: Zonificación",
+      category: "Modelo publicado",
+      url: "https://huggingface.co/SRBOTOM/agroplan-zonificacion",
+      description: "Modelo entrenado para apoyar la zonificación agroclimática y recomendar cultivos según las condiciones del territorio.",
+      technology: "Hugging Face, LightGBM, CatBoost, KNN"
+    },
+    {
+      name: "HF: Rendimiento",
+      category: "Modelo publicado",
+      url: "https://huggingface.co/SRBOTOM/agroplan-rendimiento",
+      description: "Modelo entrenado para estimar el rendimiento agrícola esperado y apoyar decisiones de planificación productiva.",
+      technology: "Hugging Face, XGBoost, LightGBM"
     }
   ],
 
@@ -181,7 +217,11 @@ export const projectConfig = {
       name: "DIVIPOLA",
       source: "DANE (Departamento Administrativo Nacional de Estadística)",
       portal: "datos.gov.co",
-      description: "División Político-Administrativa de Colombia con información de departamentos y municipios.",
+      datasetId: "gdxc-w37w",
+      url: "https://www.datos.gov.co/d/gdxc-w37w",
+      description: "División Político-Administrativa de Colombia con códigos de municipios para georreferenciación y ubicación de datos agrícolas.",
+      records: 1122,
+      license: "Datos Abiertos Colombia",
       usage: "Georreferenciación y ubicación de datos agrícolas"
     }
   ],

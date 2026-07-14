@@ -169,7 +169,7 @@ function MapContent({
       ],
     )
 
-    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 2.5, duration: 0 })
+    map.fitBounds(expandedBounds, { padding: 48, maxZoom: 1.8, duration: 0 })
   }, [map, points])
 
   useEffect(() => {
@@ -270,9 +270,9 @@ export function CropNationwideMap({
   return (
     <Map
       bounds={MAP_CONTEXT_BOUNDS}
-      fitBoundsOptions={{ padding: 48, maxZoom: 2.5 }}
+      fitBoundsOptions={{ padding: 48, maxZoom: 1.8 }}
       maxBounds={MAP_VIEW_BOUNDS}
-      minZoom={2.2}
+      minZoom={1.8}
       maxZoom={12}
       styles={MAP_STYLES}
       scrollZoom

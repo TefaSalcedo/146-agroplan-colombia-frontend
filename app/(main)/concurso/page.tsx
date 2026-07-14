@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react"
 
 export const metadata: Metadata = {
   title: 'Datos al ecosistema 2026 - AgroPlan Colombia',
-  description: 'Información completa del proyecto AgroPlan Colombia para el concurso de Datos Abiertos 2026.',
+  description: 'Explora el ecosistema completo de AgroPlan Colombia: pipeline de Machine Learning, API, dashboard, MCP y modelos publicados para el concurso de Datos Abiertos 2026.',
 }
 
 function ConcursoFallback() {

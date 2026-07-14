@@ -1,17 +1,23 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import {
   AlertCircle,
   ArrowLeft,
   CalendarDays,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
   Droplets,
   Eye,
   EyeOff,
+  GripHorizontal,
   Leaf,
   Loader2,
+  RefreshCw,
   Sparkles,
   Sprout,
   XCircle,
@@ -19,11 +25,11 @@ import {
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CropMapSidebar } from "@/components/crop-map-sidebar"
-import { CropConditionsCard } from "@/components/crop-conditions-card"
+import { CropCoverCard, CropMapSidebar } from "@/components/crop-map-sidebar"
 import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
 import { useCrop, useCropNationalGuide, useCropsLite, useMunicipalities, useZoning } from "@/hooks"
 import { mapSuitabilityColors } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 import type { CropNationalGuideResponse, ZoningMapMunicipalityResult } from "@/lib/api-client/types"
 
 interface CropNationwideMapProps {
@@ -45,9 +51,16 @@ interface CropMapViewProps {
   cropId: string
 }
 
-function NationalGuideSkeleton() {
+function NationalGuideSkeleton({ desktopLayout = false }: { desktopLayout?: boolean }) {
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 md:p-6">
+    <Card
+      className={cn(
+        desktopLayout
+          ? "border-transparent bg-transparent p-5 shadow-none backdrop-blur-none md:p-6"
+          : "border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 md:p-6",
+        desktopLayout ? "h-auto min-h-full" : "h-full overflow-hidden",
+      )}
+    >
       <div className="space-y-5">
         <div className="flex items-center gap-3">
           <Skeleton className="size-11 rounded-full" />
@@ -58,18 +71,20 @@ function NationalGuideSkeleton() {
         </div>
         <DynamicAiLoadingMessage isLoading className="py-1" />
         <Skeleton className="h-16 w-full rounded-xl" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
+        <div className={cn("flex gap-3 overflow-hidden", desktopLayout && "flex-col overflow-visible")}>
+          {[1, 2, 3, 4].map((item) => (
+            <Skeleton
+              key={item}
+              className={cn("h-32 min-w-[86%] rounded-xl md:min-w-[24rem]", desktopLayout && "w-full")}
+            />
+          ))}
         </div>
       </div>
     </Card>
   )
 }
 
-function DisabledNationalGuide() {
+function DisabledNationalGuide({ desktopLayout = false }: { desktopLayout?: boolean }) {
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6">
       <div className="flex flex-col items-center gap-4 text-center">
@@ -82,9 +97,20 @@ function DisabledNationalGuide() {
             Las recomendaciones inteligentes aún no se encuentran disponibles para este cultivo.
           </p>
         </div>
-        <div className="grid w-full max-w-xl gap-2 text-left text-sm text-muted-foreground sm:grid-cols-2">
+        <div
+          className={cn(
+            "flex w-full max-w-xl snap-x gap-2 overflow-x-auto text-left text-sm text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            desktopLayout && "max-w-none flex-col overflow-visible",
+          )}
+        >
           {["Manejo", "Fertilización", "Plagas", "Riego", "Cosecha", "Buenas prácticas"].map((item) => (
-            <div key={item} className="flex items-center gap-2 rounded-lg bg-background/70 px-3 py-2">
+            <div
+              key={item}
+              className={cn(
+                "flex min-w-40 shrink-0 snap-start items-center gap-2 rounded-lg bg-background/70 px-3 py-2",
+                desktopLayout && "w-full",
+              )}
+            >
               <span className="font-bold text-primary">✓</span>
               {item}
             </div>
@@ -95,27 +121,60 @@ function DisabledNationalGuide() {
   )
 }
 
-function NationalGuideError() {
+function NationalGuideError({ onRetry }: { onRetry?: () => void }) {
   return (
-    <Card className="border-destructive/20 bg-destructive/5 p-6">
+    <Card className="border-primary/20 bg-background/95 p-5 shadow-xl backdrop-blur-xl">
       <div className="flex items-start gap-3">
-        <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
-        <div className="space-y-1">
-          <h2 className="font-semibold">No fue posible obtener las recomendaciones inteligentes.</h2>
-          <p className="text-sm text-muted-foreground">Intenta nuevamente más tarde.</p>
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <AlertCircle className="size-5" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="font-semibold">Lo sentimos, las recomendaciones no están disponibles.</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Tuvimos un inconveniente al generarlas. Puedes intentarlo nuevamente sin recargar toda la página.
+          </p>
+          {onRetry && (
+            <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+              <RefreshCw className="size-3.5" />
+              Reintentar
+            </Button>
+          )}
         </div>
       </div>
     </Card>
   )
 }
 
-function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
+function NationalGuideContent({
+  guide,
+  desktopLayout = false,
+}: {
+  guide: CropNationalGuideResponse
+  desktopLayout?: boolean
+}) {
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [activeSection, setActiveSection] = useState(0)
+
+  const scrollToSection = (index: number) => {
+    const carousel = carouselRef.current
+    const section = carousel?.children[index]
+    if (!carousel || !(section instanceof HTMLElement)) return
+
+    carousel.scrollTo({ left: section.offsetLeft - carousel.offsetLeft, behavior: "smooth" })
+    setActiveSection(index)
+  }
+
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 md:p-6">
-      <div className="space-y-6">
+    <Card
+      className={cn(
+        "border-primary/20 bg-background/90 p-3 shadow-xl backdrop-blur-xl md:p-4",
+        desktopLayout ? "h-auto min-h-full" : "h-full overflow-hidden",
+      )}
+    >
+      <div className="space-y-3 md:space-y-2">
         <div className="flex items-center gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Sparkles className="size-6" />
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary md:size-8">
+            <Sparkles className="size-6 md:size-4" />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -127,13 +186,35 @@ function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
         </div>
 
         {guide.summary && (
-          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
-            <p className="text-sm leading-relaxed">{guide.summary}</p>
+          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 md:max-h-10 md:overflow-hidden md:p-2">
+            <p className="text-sm leading-relaxed md:line-clamp-1 md:text-xs">{guide.summary}</p>
           </div>
         )}
 
         {guide.sections.length > 0 && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <>
+            <div
+              ref={carouselRef}
+              className={cn(
+                "-mx-1 flex gap-3 px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                desktopLayout
+                  ? "flex-col overflow-visible"
+                  : "snap-x snap-mandatory overflow-x-auto md:h-[15svh] md:min-h-[132px]",
+              )}
+              aria-label="Tarjetas de recomendaciones inteligentes"
+              onScroll={!desktopLayout ? (event) => {
+                const carousel = event.currentTarget
+                const firstSection = carousel.children[0]
+                if (!(firstSection instanceof HTMLElement)) return
+                const sectionWidth = firstSection.offsetWidth + 12
+                setActiveSection(Math.min(guide.sections.length - 1, Math.round(carousel.scrollLeft / sectionWidth)))
+              } : undefined}
+              onWheel={!desktopLayout ? (event) => {
+                if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+                  event.currentTarget.scrollLeft += event.deltaY
+                }
+              } : undefined}
+            >
             {guide.sections.map((section, index) => {
               const Icon = section.title.toLowerCase().includes("riego")
                 ? Droplets
@@ -144,7 +225,15 @@ function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
                     : Sprout
 
               return (
-                <div key={`${section.title}-${index}`} className="rounded-xl border border-primary/15 bg-card/70 p-4 transition-shadow hover:shadow-md">
+                <div
+                  key={`${section.title}-${index}`}
+                  className={cn(
+                    "flex min-h-28 items-start rounded-xl border border-primary/15 bg-card/85 p-4 transition-shadow hover:shadow-md",
+                    desktopLayout
+                      ? "w-full"
+                      : "w-[min(86vw,24rem)] shrink-0 snap-start md:h-full md:min-h-0 md:w-[min(31vw,25rem)]",
+                  )}
+                >
                   <div className="flex items-start gap-3">
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="size-4" />
@@ -157,7 +246,25 @@ function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
                 </div>
               )
             })}
-          </div>
+            </div>
+            {!desktopLayout && (
+              <div className="mt-1 flex items-center justify-center gap-1.5" aria-label="Navegación de recomendaciones">
+                {guide.sections.map((section, index) => (
+                  <button
+                    key={`${section.title}-dot-${index}`}
+                    type="button"
+                    className={cn(
+                      "size-1.5 rounded-full bg-primary/25 transition-all",
+                      index === activeSection && "w-4 bg-primary",
+                    )}
+                    onClick={() => scrollToSection(index)}
+                    aria-label={`Ver recomendación ${index + 1}: ${section.title}`}
+                    aria-current={index === activeSection ? "true" : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         <p className="text-xs text-muted-foreground">
@@ -168,15 +275,17 @@ function NationalGuideContent({ guide }: { guide: CropNationalGuideResponse }) {
   )
 }
 
-function NationalGuide({ guide, loading, error }: {
+function NationalGuide({ guide, loading, error, onRetry, desktopLayout = false }: {
   guide: CropNationalGuideResponse | null
   loading: boolean
   error: string | null
+  onRetry?: () => void
+  desktopLayout?: boolean
 }) {
-  if (loading) return <NationalGuideSkeleton />
-  if (error || guide?.status === "error") return <NationalGuideError />
-  if (guide?.status === "llm_disabled") return <DisabledNationalGuide />
-  if (guide) return <NationalGuideContent guide={guide} />
+  if (loading) return <NationalGuideSkeleton desktopLayout={desktopLayout} />
+  if (error || guide?.status === "error") return <NationalGuideError onRetry={onRetry} />
+  if (guide?.status === "llm_disabled") return <DisabledNationalGuide desktopLayout={desktopLayout} />
+  if (guide) return <NationalGuideContent guide={guide} desktopLayout={desktopLayout} />
   return null
 }
 
@@ -187,14 +296,20 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   const { crops: catalogCrops } = useCropsLite()
   const { municipalities } = useMunicipalities()
   const { getMap, loading: zoningLoading, error: zoningError } = useZoning()
-  const { guide: nationalGuide, loading: guideLoading, error: guideError } = useCropNationalGuide(cropReady ? cropId : "")
+  const {
+    guide: nationalGuide,
+    loading: guideLoading,
+    error: guideError,
+    reload: reloadNationalGuide,
+  } = useCropNationalGuide(cropReady ? cropId : "")
 
   const [zoningResults, setZoningResults] = useState<ZoningMapMunicipalityResult[]>([])
   const [selectedMunicipality, setSelectedMunicipality] = useState<
     (ZoningMapMunicipalityResult & { department: string }) | null
   >(null)
   const [showMapLegend, setShowMapLegend] = useState(true)
-  const [showCropConditions, setShowCropConditions] = useState(false)
+  const [recommendationsExpanded, setRecommendationsExpanded] = useState(false)
+  const [desktopRecommendationsOpen, setDesktopRecommendationsOpen] = useState(true)
 
   const departmentsByMunicipality = useMemo(
     () => Object.fromEntries(municipalities.map((municipality) => [municipality.id, municipality.department])),
@@ -224,6 +339,18 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   }, [cropId, cropReady, getMap])
 
   const error = cropError || zoningError
+  const nationalGuideHasError = Boolean(guideError || nationalGuide?.status === "error")
+
+  useEffect(() => {
+    if (nationalGuideHasError) {
+      setDesktopRecommendationsOpen(false)
+    }
+  }, [nationalGuideHasError])
+
+  const handleNationalGuideRetry = () => {
+    setDesktopRecommendationsOpen(true)
+    reloadNationalGuide()
+  }
 
   if (error) {
     return (
@@ -244,9 +371,9 @@ export function CropMapView({ cropId }: CropMapViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-8">
-      <Card className="overflow-hidden rounded-2xl border-2 p-0">
-        <div className="relative h-[60vh]">
+    <div className="flex flex-col gap-6 pb-8 md:h-screen md:w-screen md:block">
+      <Card className="overflow-hidden rounded-2xl border-2 p-0 md:h-full md:w-full md:rounded-none md:border-0">
+        <div className="relative h-[60svh] min-h-0 md:h-full">
           <div className="absolute right-4 top-4 z-10 flex items-start gap-2">
             {showMapLegend && (
               <div className="rounded-xl border border-white/40 bg-background/70 p-3 text-xs text-foreground shadow-xl backdrop-blur-xl">
@@ -297,36 +424,6 @@ export function CropMapView({ cropId }: CropMapViewProps) {
             </div>
           )}
 
-          {cropReady && crop && (
-            <div className="absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)]">
-            {showCropConditions ? (
-              <div className="relative max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl">
-                <CropConditionsCard crop={crop} glass />
-                <button
-                  type="button"
-                  className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-                  onClick={() => setShowCropConditions(false)}
-                  aria-label="Ocultar condiciones ideales"
-                  title="Ocultar condiciones ideales"
-                >
-                  <EyeOff className="size-4" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-full border border-white/20 bg-background/20 px-2.5 py-1 text-[10px] text-foreground/60 shadow-sm backdrop-blur-md transition-colors hover:bg-background/40 hover:text-foreground"
-                onClick={() => setShowCropConditions(true)}
-                aria-label="Mostrar condiciones ideales"
-                title="Mostrar condiciones ideales"
-              >
-                <Eye className="size-4" />
-                <span>Ver condiciones ideales</span>
-              </button>
-            )}
-            </div>
-          )}
-
           <div className="relative h-full">
             {zoningLoading && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/90 backdrop-blur-sm">
@@ -344,7 +441,7 @@ export function CropMapView({ cropId }: CropMapViewProps) {
           </div>
 
           {selectedMunicipality && cropReady && crop && (
-            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[calc(60vh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
+            <div className="absolute inset-x-4 bottom-4 z-10 max-h-[calc(95svh-2rem)] overflow-y-auto rounded-2xl border-2 border-border bg-card/95 p-5 shadow-2xl backdrop-blur-sm md:inset-x-auto md:right-4 md:bottom-4 md:w-96">
               <div className="space-y-4">
                 <div>
                   <p className="text-xl font-bold leading-tight">{selectedMunicipality.municipalityName}</p>
@@ -368,19 +465,126 @@ export function CropMapView({ cropId }: CropMapViewProps) {
               </div>
             </div>
           )}
+
+          <div
+            className={cn(
+              "absolute inset-x-3 bottom-3 z-30 hidden overflow-hidden transition-[height] duration-500 ease-out md:block lg:hidden",
+              recommendationsExpanded ? "h-[min(52svh,520px)]" : "h-[22%] min-h-[180px] max-h-[240px]",
+            )}
+            onWheel={(event) => {
+              if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+                setRecommendationsExpanded(event.deltaY < 0)
+              }
+            }}
+          >
+            <button
+              type="button"
+              className="absolute left-1/2 top-1 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/20 bg-background/90 px-3 py-1 text-xs font-semibold text-muted-foreground shadow-md backdrop-blur-xl transition-colors hover:text-foreground"
+              onClick={() => setRecommendationsExpanded((isExpanded) => !isExpanded)}
+              aria-expanded={recommendationsExpanded}
+              aria-controls="tablet-national-guide"
+            >
+              <GripHorizontal className="size-4" />
+              {recommendationsExpanded ? "Ocultar recomendaciones" : "Ver recomendaciones"}
+              {recommendationsExpanded ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
+            </button>
+            <div id="tablet-national-guide" className="h-full pt-7">
+              {cropReady ? (
+                <NationalGuide
+                  guide={nationalGuide}
+                  loading={guideLoading}
+                  error={guideError}
+                  onRetry={handleNationalGuideRetry}
+                />
+              ) : (
+                <NationalGuideSkeleton />
+              )}
+            </div>
+          </div>
+
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-40 hidden lg:block">
+            <aside
+              id="desktop-national-guide"
+              className={cn(
+                "pointer-events-auto absolute inset-y-4 right-0 flex w-[min(34vw,420px)] flex-col overflow-y-auto rounded-l-2xl border border-r-0 transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-out",
+                !cropReady || guideLoading
+                  ? "border-transparent bg-transparent shadow-none backdrop-blur-none"
+                  : "border-primary/20 bg-background/90 shadow-2xl backdrop-blur-xl",
+                desktopRecommendationsOpen ? "translate-x-0" : "translate-x-full",
+              )}
+              aria-hidden={!desktopRecommendationsOpen}
+              inert={!desktopRecommendationsOpen}
+            >
+              <button
+                type="button"
+                className="absolute left-2 top-1/2 z-10 flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-primary/20 bg-background/95 text-muted-foreground shadow-lg transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setDesktopRecommendationsOpen(false)}
+                aria-label="Ocultar recomendaciones inteligentes"
+                title="Ocultar recomendaciones"
+                tabIndex={desktopRecommendationsOpen ? 0 : -1}
+              >
+                <ChevronRight className="size-5" />
+              </button>
+              <div className="flex-1 overflow-y-auto p-3 md:p-4">
+                {cropReady ? (
+                  <NationalGuide
+                    guide={nationalGuide}
+                    loading={guideLoading}
+                    error={guideError}
+                    onRetry={handleNationalGuideRetry}
+                    desktopLayout
+                  />
+                ) : (
+                  <NationalGuideSkeleton desktopLayout />
+                )}
+              </div>
+            </aside>
+
+            {nationalGuideHasError && (
+              <div className="pointer-events-auto absolute right-4 top-4 z-50 hidden w-[min(34vw,420px)] lg:block">
+                <NationalGuideError onRetry={handleNationalGuideRetry} />
+              </div>
+            )}
+
+            <button
+              type="button"
+              className={cn(
+                "pointer-events-auto absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-l-xl border border-r-0 border-primary/20 bg-background/95 text-muted-foreground shadow-xl backdrop-blur-xl transition-[opacity,transform] duration-300 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                desktopRecommendationsOpen && "pointer-events-none translate-x-4 opacity-0",
+              )}
+              onClick={() => setDesktopRecommendationsOpen(true)}
+              aria-label="Mostrar recomendaciones inteligentes"
+              title="Mostrar recomendaciones"
+              aria-expanded={desktopRecommendationsOpen}
+              aria-controls="desktop-national-guide"
+              tabIndex={desktopRecommendationsOpen ? -1 : 0}
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+          </div>
         </div>
       </Card>
 
-      <section aria-label="Recomendaciones inteligentes">
+      <section aria-label="Recomendaciones inteligentes" className="md:hidden">
         {cropReady ? (
-          <NationalGuide guide={nationalGuide} loading={guideLoading} error={guideError} />
+          <NationalGuide
+            guide={nationalGuide}
+            loading={guideLoading}
+            error={guideError}
+            onRetry={handleNationalGuideRetry}
+          />
         ) : (
           <NationalGuideSkeleton />
         )}
       </section>
 
+      <div className="space-y-4 md:hidden">
+        <CropCoverCard crop={crop} />
+      </div>
+
       <div className="md:hidden">
         <CropMapSidebar
+          showCropCard={false}
           crop={crop}
           crops={catalogCrops}
           selectedCropId={cropId}

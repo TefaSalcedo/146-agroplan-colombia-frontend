@@ -15,7 +15,6 @@ import {
   Loader2,
   MapPin,
   Moon,
-  Sprout,
   Sun,
   Thermometer,
   Trophy,
@@ -332,7 +331,6 @@ export function AppSidebar() {
   const isMapaRoute = pathname.startsWith("/mapa")
   const isMunicipioRoute = !isCompetitionRoute && !isMapaRoute
   const activeConcursoSection = getConcursoSection(searchParams.get("section"))
-  const configHref = "/configuracion"
 
   return (
     <aside

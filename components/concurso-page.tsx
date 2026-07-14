@@ -16,6 +16,8 @@ import {
   Award,
   BookOpen,
   ChevronDown,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react"
 import { concursoSections, getConcursoSection, type ConcursoSection } from "@/lib/concurso-sections"
 
@@ -134,7 +136,7 @@ export function ConcursoPage() {
               <Card className="border-white/20 bg-white/10 p-6 backdrop-blur-sm">
                 <div className="mb-4 flex items-center gap-3">
                   <GitBranch className="concurso-oak h-8 w-8" />
-                  <h3 className="text-xl font-semibold text-white">1 Repositorio público</h3>
+                  <h3 className="text-xl font-semibold text-white">{projectConfig.repositories.length} recursos públicos</h3>
                 </div>
                 <p className="text-white/80">API pública del proyecto disponible para consulta</p>
               </Card>
@@ -161,38 +163,72 @@ export function ConcursoPage() {
       case "nuestro-proyecto":
         return (
           <div className="space-y-8">
-            <div>
-              <h2 className="mb-4 text-center text-3xl font-bold text-white">Nuestro Proyecto</h2>
-              <p className="max-w-3xl text-lg text-white/80">{projectConfig.project.description}</p>
+            <div className="project-ecosystem-hero relative overflow-hidden rounded-3xl border border-orange-200/70 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-6 text-white shadow-[0_20px_60px_rgba(194,65,12,0.28)] sm:p-8">
+              <div className="project-ecosystem-glow" aria-hidden="true" />
+              <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div className="max-w-3xl">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/20 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                    <Sparkles className="size-4" aria-hidden="true" />
+                    Ecosistema conectado
+                  </div>
+                  <h2 className="mb-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">Nuestro proyecto</h2>
+                  <p className="text-base leading-7 text-white/95 sm:text-lg">{projectConfig.project.description}</p>
+                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/75">
+                    Seis piezas trabajan juntas: desde el pipeline de Machine Learning hasta la API, el dashboard, el MCP y los modelos publicados.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 rounded-2xl border border-white/40 bg-black/20 p-4 backdrop-blur-sm">
+                  <GitBranch className="size-8 text-white" aria-hidden="true" />
+                  <div>
+                    <p className="text-3xl font-bold text-white">{projectConfig.repositories.length}</p>
+                    <p className="text-xs font-medium uppercase tracking-wider text-white/90">recursos públicos</p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative z-10 mt-6 flex items-center gap-2 text-sm font-medium text-white/95">
+                <span className="size-2 animate-pulse rounded-full bg-lime-300" aria-hidden="true" />
+                Código, modelos y datos abiertos en un mismo flujo
+              </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-white">Repositorios</h3>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Repositorios relacionados</h3>
+                  <p className="text-sm text-white/70">Explora cómo se construye y se publica AgroPlan Colombia.</p>
+                </div>
+                <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">{projectConfig.repositories.length} componentes</span>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
-                {projectConfig.repositories.map((repo) => (
-                  <Card key={repo.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
-                    <div className="mb-4 flex items-start justify-between">
-                      <div>
-                        <h4 className="concurso-oak mb-2 text-xl font-semibold">{repo.name}</h4>
-                        <p className="mb-3 text-sm text-white/70">{repo.technology}</p>
+                {projectConfig.repositories.map((repo, index) => (
+                  <Card
+                    key={repo.name}
+                    className="group relative flex flex-col border-orange-200/80 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/60 hover:bg-orange-50 hover:shadow-[0_12px_32px_rgba(194,65,12,0.16)] dark:border-orange-900/70 dark:hover:bg-orange-950/30"
+                  >
+                    <div className="mb-4 flex items-start gap-3">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-800 transition-colors group-hover:bg-orange-700 group-hover:text-white dark:bg-orange-500/20 dark:text-orange-200 dark:group-hover:bg-orange-500">
+                        <GitBranch className="size-5" aria-hidden="true" />
                       </div>
-                      <a href={repo.url} target="_blank" rel="noopener noreferrer" className="concurso-oak transition-opacity hover:opacity-80">
-                        <GitBranch className="h-6 w-6" />
-                      </a>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <h4 className="text-lg font-semibold text-white">{repo.name}</h4>
+                          <span className="shrink-0 rounded-full border border-orange-200 bg-orange-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-orange-800 dark:border-orange-700/60 dark:bg-orange-500/20 dark:text-orange-200">
+                            {repo.category}
+                          </span>
+                        </div>
+                        <p className="text-xs text-white/60">Componente {String(index + 1).padStart(2, "0")}</p>
+                      </div>
                     </div>
-                    <p className="mb-4 text-white/80">{repo.description}</p>
+                    <p className="mb-4 flex-1 text-sm leading-6 text-white/80">{repo.description}</p>
+                    <p className="mb-5 text-xs font-medium text-orange-800 dark:text-orange-200">{repo.technology}</p>
                     <a
                       href={repo.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={buttonVariants({
-                        variant: "outline",
-                        size: "sm",
-                        className: "concurso-oak w-full border-accent bg-accent hover:bg-accent/80",
-                      })}
+                      className="project-repository-link inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Ver en GitHub
+                      Explorar recurso
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                     </a>
                   </Card>
                 ))}
@@ -307,18 +343,18 @@ export function ConcursoPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 {projectConfig.externalDataSources.map((source) => (
                   <Card key={source.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
-                    <div className="mb-4 flex items-start justify-between">
+                    <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                       <h4 className="text-lg font-semibold text-white">{source.name}</h4>
-                      <div className="text-right">
+                      <div className="flex w-full items-center justify-between rounded-lg bg-primary/15 p-2 sm:w-auto sm:bg-transparent sm:p-0">
                         <div className="text-xl font-bold text-green-400">{formatConcursoNumber(source.records)}</div>
-                        <div className="text-xs text-white/70">registros</div>
+                        <div className="text-xs text-white/70 sm:ml-2">registros</div>
                       </div>
                     </div>
                     <p className="mb-2 text-sm text-white/70">{source.source}</p>
                     <p className="mb-4 text-white/80">{source.description}</p>
-                    <div className="mb-4 flex items-center gap-2">
-                      <span className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground">{source.license}</span>
-                      <span className="concurso-oak rounded bg-accent/30 px-2 py-1 text-xs">{source.usage}</span>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">{source.license}</span>
+                      <span className="concurso-oak rounded-full bg-accent/40 px-3 py-1 text-xs font-medium">{source.usage}</span>
                     </div>
                     <a
                       href={source.url}
@@ -342,30 +378,32 @@ export function ConcursoPage() {
               <h3 className="text-2xl font-bold text-white">Datasets del Concurso</h3>
               <div className="space-y-4">
                 {projectConfig.datasets.map((dataset) => (
-                  <Card key={dataset.name} className="border-white/20 bg-white/10 p-6">
-                    <div className="mb-4 flex items-start justify-between">
-                      <div>
+                  <Card key={dataset.name} className="border-white/20 bg-white/10 p-6 md:border-white/20 md:bg-white/10">
+                    <div className="mb-4 flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
+                      <div className="flex-1">
                         <h4 className="mb-2 text-xl font-semibold text-white">{dataset.name}</h4>
-                        <div className="mb-2 flex items-center gap-2 text-sm text-white/70">
-                          <span className="font-medium">Fuente:</span>
-                          <span>{dataset.source}</span>
-                        </div>
-                        {dataset.datasetId && (
-                          <div className="flex items-center gap-2 text-sm text-white/70">
-                            <span className="font-medium">Dataset ID:</span>
-                            <code className="rounded bg-white/10 px-2 py-1">{dataset.datasetId}</code>
+                        <div className="mb-2 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-white/90">Fuente:</span>
+                            <span className="text-white/80">{dataset.source}</span>
                           </div>
-                        )}
+                          {dataset.datasetId && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-white/90">ID:</span>
+                              <code className="rounded-lg bg-primary/20 px-2 py-1 text-sm font-mono text-primary-foreground sm:bg-white/10 sm:text-white">{dataset.datasetId}</code>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-400">{formatConcursoNumber(dataset.records)}</div>
-                        <div className="text-sm text-white/70">registros</div>
+                      <div className="flex w-full items-center justify-between rounded-lg bg-primary/15 p-3 sm:w-auto sm:bg-transparent sm:p-0">
+                        <div className="text-2xl font-bold text-green-400 sm:text-right">{formatConcursoNumber(dataset.records)}</div>
+                        <div className="text-xs text-white/70 sm:ml-2 sm:text-sm">registros</div>
                       </div>
                     </div>
                     <p className="mb-4 text-white/80">{dataset.description}</p>
-                    <div className="mb-4 flex items-center gap-2">
-                      <span className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground">{dataset.license}</span>
-                      <span className="concurso-oak rounded-full bg-accent/30 px-3 py-1 text-sm">{dataset.usage}</span>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">{dataset.license}</span>
+                      <span className="concurso-oak rounded-full bg-accent/40 px-3 py-1 text-sm font-medium">{dataset.usage}</span>
                     </div>
                     {dataset.url && (
                       <a
@@ -375,7 +413,7 @@ export function ConcursoPage() {
                         className={buttonVariants({
                           variant: "outline",
                           size: "sm",
-                          className: "border-white/30 bg-white/10 text-white hover:bg-white/20",
+                          className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20 sm:w-auto",
                         })}
                       >
                         <ExternalLink className="mr-2 h-4 w-4" />
@@ -384,10 +422,16 @@ export function ConcursoPage() {
                     )}
                     {dataset.datasets && (
                       <div className="mt-4 border-t border-white/20 pt-4">
-                        <p className="mb-2 text-sm font-medium text-white">Datasets individuales:</p>
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                        <p className="mb-3 text-sm font-medium text-white">Datasets individuales:</p>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                           {dataset.datasets.map((ds) => (
-                            <a key={ds.id} href={ds.url} target="_blank" rel="noopener noreferrer" className="text-sm text-green-400 hover:text-green-300 hover:underline">
+                            <a
+                              key={ds.id}
+                              href={ds.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/20 sm:bg-white/10 sm:text-green-400 sm:hover:bg-white/20"
+                            >
                               {ds.crop}
                             </a>
                           ))}
@@ -427,6 +471,53 @@ export function ConcursoPage() {
                 </Card>
               ))}
             </div>
+          </div>
+        )
+      case "software-libre":
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-center text-3xl font-bold text-white">Software libre</h2>
+              <p className="text-white/80">
+                Este proyecto agradece profundamente a las comunidades de software libre que hacen posible esta iniciativa. Muchas gracias a todos los desarrolladores, mantenedores y contribuyentes que comparten su trabajo con el mundo.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {projectConfig.openSourceSoftware.map((software) => (
+                <Card key={software.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
+                  <div className="mb-4 flex items-center gap-3">
+                    <Code2 className="h-6 w-6 text-green-400" />
+                    <h3 className="text-lg font-semibold text-white">{software.name}</h3>
+                  </div>
+                  <p className="mb-4 text-sm text-white/80">{software.description}</p>
+                  <div className="mb-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium text-white/70">Licencia:</span>
+                      <span className="text-white/80">{software.license}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium text-white/70">Uso:</span>
+                      <span className="text-white/80">{software.usage}</span>
+                    </div>
+                  </div>
+                  <a
+                    href={software.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                      className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
+                    })}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Visitar sitio
+                  </a>
+                </Card>
+              ))}
+            </div>
+
           </div>
         )
 
@@ -483,54 +574,6 @@ export function ConcursoPage() {
                 className="pointer-events-none absolute left-1/2 top-0 z-0 hidden size-16 -translate-x-1/2 object-cover md:block"
               />
             </div>
-          </div>
-        )
-
-      case "software-libre":
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h2 className="text-center text-3xl font-bold text-white">Software libre</h2>
-              <p className="text-white/80">
-                Este proyecto agradece profundamente a las comunidades de software libre que hacen posible esta iniciativa. Muchas gracias a todos los desarrolladores, mantenedores y contribuyentes que comparten su trabajo con el mundo.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projectConfig.openSourceSoftware.map((software) => (
-                <Card key={software.name} className="border-white/20 bg-white/10 p-6 transition-all hover:bg-white/15">
-                  <div className="mb-4 flex items-center gap-3">
-                    <Code2 className="h-6 w-6 text-green-400" />
-                    <h3 className="text-lg font-semibold text-white">{software.name}</h3>
-                  </div>
-                  <p className="mb-4 text-sm text-white/80">{software.description}</p>
-                  <div className="mb-4 space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium text-white/70">Licencia:</span>
-                      <span className="text-white/80">{software.license}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium text-white/70">Uso:</span>
-                      <span className="text-white/80">{software.usage}</span>
-                    </div>
-                  </div>
-                  <a
-                    href={software.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "sm",
-                      className: "w-full border-white/30 bg-white/10 text-white hover:bg-white/20",
-                    })}
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Visitar sitio
-                  </a>
-                </Card>
-              ))}
-            </div>
-
             <Card className="border-white/20 bg-white/10 p-8 text-center backdrop-blur-sm">
               <Heart className="concurso-oak mx-auto mb-4 h-10 w-10" />
               <h3 className="mb-2 text-2xl font-bold text-white">Muchas gracias</h3>

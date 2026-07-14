@@ -171,11 +171,6 @@ function getCropIconColor(cropName: string): string {
   return "bg-primary/10 text-primary"
 }
 
-function makeBullet(text: string): string {
-  // Truncate long explanations to keep cards scannable.
-  return text.length > 120 ? `${text.slice(0, 120).trim()}...` : text
-}
-
 function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
   const confidence = crop.confidence
   const percent = getConfidencePercent(confidence)
@@ -186,7 +181,7 @@ function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
       </div>
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="font-semibold leading-tight">{crop.cropName}</h4>
+          <h4 className="min-w-0 break-words font-semibold leading-tight">{crop.cropName}</h4>
           <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", getConfidenceBadge(confidence))}>
             {getConfidenceLabel(confidence)}
           </Badge>
@@ -197,7 +192,7 @@ function AlternativeCropCard({ crop }: { crop: AiInsightsAlternativeCrop }) {
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Confianza: {percent}%</p>
         </div>
-        <p className="text-sm leading-snug text-muted-foreground line-clamp-3">{makeBullet(crop.why)}</p>
+        <p className="break-words text-sm leading-snug text-muted-foreground">{crop.why}</p>
       </div>
     </Card>
   )
@@ -213,14 +208,14 @@ function FarmingSystemCard({ system }: { system: AiInsightsFarmingSystem }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="font-semibold leading-tight">{system.title}</h4>
+            <h4 className="min-w-0 break-words font-semibold leading-tight">{system.title}</h4>
             <div className={cn("flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium", getSuitableBadge(suitable))}>
               {renderSuitableIcon(suitable)}
               <span>{getSuitableLabel(suitable)}</span>
             </div>
           </div>
-          <p className="mt-1.5 text-sm leading-snug text-muted-foreground line-clamp-3">
-            {makeBullet(system.recommendation)}
+          <p className="mt-1.5 break-words text-sm leading-snug text-muted-foreground">
+            {system.recommendation}
           </p>
         </div>
       </div>
@@ -236,8 +231,8 @@ function SoilCard({ item }: { item: AiInsightsSoilAndFertilizer }) {
           {renderSoilIcon(item.title, "size-5 text-emerald-600")}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight">{item.title}</h4>
-          <p className="mt-1.5 text-sm leading-snug text-muted-foreground line-clamp-3">{makeBullet(item.content)}</p>
+          <h4 className="break-words font-semibold leading-tight">{item.title}</h4>
+          <p className="mt-1.5 break-words text-sm leading-snug text-muted-foreground">{item.content}</p>
         </div>
       </div>
     </Card>
