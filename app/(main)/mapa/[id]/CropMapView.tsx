@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CropCoverCard, CropMapSidebar } from "@/components/crop-map-sidebar"
 import { DynamicAiLoadingMessage } from "@/components/dynamic-ai-loading-message"
+import { TextToSpeechControls } from "@/components/text-to-speech-controls"
 import { useCrop, useCropNationalGuide, useCropsLite, useMunicipalities, useZoning } from "@/hooks"
 import { mapSuitabilityColors } from "@/lib/constants"
 import { cn } from "@/lib/utils"
@@ -155,6 +156,12 @@ function NationalGuideContent({
 }) {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState(0)
+  const speechText = [
+    guide.summary,
+    ...guide.sections.flatMap((section) => [section.title, section.content]),
+  ]
+    .filter(Boolean)
+    .join(". ")
 
   const scrollToSection = (index: number) => {
     const carousel = carouselRef.current
@@ -173,17 +180,18 @@ function NationalGuideContent({
       )}
     >
       <div className="space-y-3 md:space-y-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary md:size-8">
             <Sparkles className="size-6 md:size-4" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-bold">Recomendaciones Inteligentes</h2>
               <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">IA</span>
             </div>
             <p className="text-sm text-muted-foreground">Generadas por IA para este cultivo</p>
           </div>
+          <TextToSpeechControls text={speechText} />
         </div>
 
         {guide.summary && (
