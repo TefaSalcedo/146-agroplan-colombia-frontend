@@ -45,3 +45,7 @@ export function buildNavHref(
   if (!location) return '/'
   return buildLocationPath(location.department, location.name, segment)
 }
+
+export function isCropDetailPath(pathname: string): boolean {
+  return /^\/[^/]+\/[^/]+\/cultivos\/[^/]+$/.test(pathname)
+}
