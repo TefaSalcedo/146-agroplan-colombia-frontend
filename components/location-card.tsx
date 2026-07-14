@@ -5,44 +5,44 @@ import type { Location } from "@/types"
 const RURAL_IMAGE = "/ai images/Image-rural.webp"
 const URBAN_IMAGE = "/ai images/Image-urban.webp"
 
-const capitalCities = new Set([
-  "Bogotá, D.C.",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Manizales",
-  "Armenia",
-  "Cúcuta",
-  "Ibagué",
-  "Neiva",
-  "Popayán",
-  "Pasto",
-  "Villavicencio",
-  "Yopal",
-  "Arauca",
-  "Puerto Carreño",
-  "Inírida",
-  "Mitú",
-  "Leticia",
-  "Mocoa",
-  "Florencia",
-  "San José del Guaviare",
-  "Quibdó",
-  "Montería",
-  "Sincelejo",
-  "Riohacha",
-  "Valledupar",
+const urbanCities = new Set([
+  "bogota",
+  "medellin",
+  "cali",
+  "barranquilla",
+  "cartagena",
+  "bucaramanga",
+  "santa marta",
+  "pereira",
+  "manizales",
+  "cucuta",
+  "ibague",
+  "villavicencio",
+  "monteria",
+  "armenia",
+  "neiva",
+  "valledupar",
+  "pasto",
+  "sincelejo",
+  "tunja",
+  "popayan",
 ])
 
-function isCapitalCity(municipality: string): boolean {
-  return capitalCities.has(municipality)
+function normalizeCityName(city: string): string {
+  return city
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s*,\s*d\.?c\.?$/, "")
+    .trim()
+}
+
+function isUrbanCity(municipality: string): boolean {
+  return urbanCities.has(normalizeCityName(municipality))
 }
 
 function getLocationImage(location: Location): string {
-  return isCapitalCity(location.municipality) ? URBAN_IMAGE : RURAL_IMAGE
+  return isUrbanCity(location.municipality) ? URBAN_IMAGE : RURAL_IMAGE
 }
 
 interface LocationCardProps {
