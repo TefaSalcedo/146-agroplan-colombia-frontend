@@ -154,11 +154,11 @@ export default function InicioPage() {
                 ¿Qué puedes sembrar aquí?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Cultivos recomendados para {selectedLocation.name} 
+                Cultivos recomendados para {selectedLocation.name}
               </p>
             </div>
           </div>
-         
+
           {recommendationsLoading || cropsLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -178,9 +178,7 @@ export default function InicioPage() {
               No hay cultivos recomendados disponibles para esta ubicación.
             </div>
           )}
-           {recommendations?.source && (
-
-        
+          {recommendations?.source && (
             <RecommendationSourceBanner
               source={recommendations.source}
               sourceDescription={recommendations.sourceDescription}
